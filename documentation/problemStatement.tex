@@ -1,0 +1,31 @@
+\section{Problem Statement}
+\label{sec:problemStatement}
+% Intro: What is the context of our project?
+Virtual reality (VR) and augmented reality (AR) are both still in the early stages of production. Because the industry is so new, entrepreneurs and industry leaders are still coming up with new ways virtual reality and augmented reality can be harnessed to create great products.
+% 1. Ways that VR/XR can be beneficial:
+
+% - Problem: VR Experiences require large downloads
+Currently, most products require being downloaded onto a computer before being run. Examples of this method of distribution include steam games that support virtual reality and product training simulations that are downloaded to a computer. While this is great for larger apps that require gigabytes of textures and 3D object files downloaded before they can even run, many smaller AR or VR apps might not need as much overhead. 
+% - Solution: Websites are always up to date and don't require installation
+
+This is where Web virtual reality and augmented reality comes into play. New web specifications have been created that call for a virtual reality web API (application programmer interface, the tools developers use to build applications on top of an existing framework) called the WebXR API. The idea is that a user could navigate to a website via a typical web browser such as Google Chrome, Safari, or Firefox and without downloading client side software, render VR or AR to a headset such as the Oculus Rift or Microsoft HoloLens. This would allow users to quickly view new AR and VR experiences in the same way that streaming makes watching videos online much faster and easier.
+% - Problem: The existing api (WebVR) couldn't handle handheld controllers or mixing Computer Generated Content with the real world
+% - Solution: Web XR exposes endpoints for controller location data and reserves space to implement augmented reality where computer graphics mixes with camera data or the real world (Multiple Layers in the WebXR standard)
+
+The WebXR API is the successor to an API called WebVR. WebVR provides simple virtual reality functionality, but doesn't have built in support for augmented reality. WebVR is compatible with lots of different VR devices and browsers but has struggled in its absence of VR controller support. Users have been unable to interact with the virtual environment they have been presented with. This has been a barrier to most developers who want to create immersive VR experiences for their users. Developers end up needing to add the same workarounds to each project, so the community decided that a new API specification is needed. 
+
+% - Problem: VR/AR experiences rarely have a fallback for those with vision or auditory disabilities.
+
+% - Solution: The web has native support for screen readers and announcing content changes
+
+% - Problem: VR/AR experiences often require large downloads and target either low end phones or high end headsets
+% - Solution: Websites have a long history / Solid design patterns for "progressively enhancing" a website from mobile friendly to desktop friendly
+
+% 2. WebXR has tremendous advantages, Why isn't it being used?
+
+% - Problem: Lack of examples / information on how much effort it will require
+% - Problem: Lack of stability (old WebVR will require poly-filling)
+% - Problem: The news needs to be spread that the Kronos group is standardizing OpenXR and that the web will be getting it in parallel
+Currently, because the WebXR API is in such early stages (it isn’t even available for some browsers yet), there are not a lot of examples for developers to use as a reference point while creating new experiences. Without a strong set of open source examples and articles where developers can learn from others’ mistakes, creating WebXR projects becomes a lot more time consuming. There is also a lot more troubleshooting and research involved in the process before developers can create a new experience.
+
+We, Group 47, have the honor of being pioneers in this field as there are little to no applications that showcase the abilities of WebXR. Our central purpose is to essentially develop a leading example for WebXR applications. It is imperative that we make an enjoyable VR experience that enhances the web user experience.
