@@ -1,0 +1,32 @@
+\documentclass[draftclsnofoot,onecolumn]{IEEEtran}
+\usepackage[utf8]{inputenc}
+
+\title{Problem Statement}
+\author{Evan Brass}
+\date{October 2018}
+
+\begin{document}
+
+
+\begin{abstract}
+\par \textcolor{red} Web-based VR is new and solidifying, and a hard sell for developers on a budget who wish to build VR experiences for existing websites.  They would benefit from a demo that takes the content of an existing website and displays it uniquely for VR devices and is open-source so that they can make an informed proposal to their managers.  Ideally this website would be information based and not a VR game or other pure experience because those have excellent existing examples.
+\end{abstract}
+
+\maketitle
+
+\section{Problem}
+\par VR and AR devices can deliver entirely new experiences but are only utilized on a few websites/projects and these are largely educational demos that don’t display the same content as the original website.  In short, they haven’t reached adoption among most categories of websites.  We believe that, as with many new technologies, it is hard to justify the time and effort it will take to learn and then implement a VR capable website, especially if there are few existing VR examples to show and those examples are tech demos rather than VR “upgrades” to an existing website.  This leaves a chicken and egg problem where users don’t buy VR gear because their everyday tasks won’t be improved by it, and developers can’t justify spending resources to include VR on their own websites because there are few users who would be able to take advantage of it.
+
+\par This is unfortunate given that humans have innate and adolescent understandings of time, space, color, sound, and motion.  To this day, virtual reality is the closest technology that has come to immersing us in places with time, space, color, sound, and motion of our own design.  VR can rehabilitate, train, inform, and entertain and what better way to distribute these experiences than the web?  The web has repeatedly catalyzed innovation in security, user experience, accessibility, and community in a way that only a zero-install, any-device, always up-to-date, interlinked, and culture-transcendent platform can.  We won’t know what VR can do for blogs, bank websites, social media, video conferencing, or gaming until people start applying it to those things.  The internet has a large market share in many of these categories, so it makes sense that it should also be part of the marriage of VR and these fields.
+
+\section{Proposed Solution}
+\par We propose to augment an existing Intel website (01.org) with a VR experience that displays the same content in a way that utilizes the capabilities of modern VR equipment.  The website would rely on emerging technologies like WebGL, the VR Device API, as well as HTML5 Canvas, and the associated canvas drawing APIs.  We would do our best to build a creative and aesthetic experience that follows existing best practices and any best practices we discover while working on our project.  The code would then be open-sourced so that the community can benefit, and we can show future employers our work.  The existing website hosts close to 200 projects from embedded tools to user experience.  It also has a member portal.  Once we meet with our client we’ll have a better idea of how they think that those structures (member area, projects, project categories, community pages, etc.) should be mapped to VR structures (space, time / animations, objects, etc.).  I imagine that this will take most of the time we have to explore because that mapping is challenging and likely unique per project hosted on 01.org.
+
+\par The web is approachable but becomes challenging when a website exceeds all but the most basic needs.  Depending on our target hardware and content, we may need to utilize complimentary web technologies to achieve a fluid experience.  Some of these technologies might be Web Workers, Web Assembly, Service Workers, and Typed Arrays or even SIMD.  I imagine these being last resorts to performance problems because they’re difficult to use and complicate the development cycle (introducing build steps and synchronizing interfaces between Web Assembly and Javascript)
+
+\section{Performance Metrics}
+\par We have two sides to measure our project on.  Firstly, we need to build a VR experience that is engaging, uses the capabilities of the VR hardware, and displays the information in a logical and explorable fashion.  We can gauge our success on this axis by presenting our VR experience to our clients, friends, family, or a more formal experimental group and collecting their evaluations of the presentation of the content, aesthetics and engagement.  Judging when we’re finished with the graphics side of the program would need to be a tiered.  A lowest tier where the content is all accessible though perhaps no better or worse than through the original website.  We would then iteratively enrich the experience, in accordance with our design, until we have exhausted our resources (budgeted time, ideas).  We will ensure that our client’s expectations are set so that we can accomplish our project to their satisfaction.  Secondly, we need to write code that is easy to understand and demonstrates enough methods that a developer attempting to augment their own website can learn the fundamentals and get an idea of what their own project will require in terms of knowledge and effort.  For this criterion, since our code will be public (eventually or as we work), we can have fellow programmers analyze our code for clarity and concision.  As a stretch goal we could also compile the contents of our weekly reports into a timeline with estimations for how much time each portion of our project took to implement, test, and verify as well as any infrastructure or other problems we encountered and the solutions we developed to resolve those problems.  This could be posted with our code so that it could guide others intending to complete similar projects.
+
+\par Much like a research project, our project is open ended.  Our research question would be, “How can we display this information in the most natural way given that we have VR at our disposal?”  Who knows where that could lead which is why would need to brainstorm early and get a workable design so that we can stay focused when curiosity tries to knock us of track.
+
+\end{document}
