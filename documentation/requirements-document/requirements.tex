@@ -1,0 +1,68 @@
+\section{Specific requirements}
+\subsection{External interfaces}
+\begin{itemize}
+    \item Users may interface with the website using:
+    \begin{itemize}
+    \item Mobile devices with positional tracking
+        \item Head mounted displays, whether they are opaque, transparent, or utilize video pass-through
+        \item Fixed displays with head tracking capabilities
+    \end{itemize}
+    \item Users will be able to interact with objects in the environment through their controller (or simulated/virtual controller)
+    \begin{itemize}
+        \item Translate objects
+        \item Scale objects
+        \item Rotate objects
+        \item Pick up/grasp objects
+        \item Drop/throw objects
+    \end{itemize}
+    \item Users must be able to change physical constants.  Potential mechanisms for doing that:
+    \begin{itemize}
+        \item Physical Constants Dashboard with levers/switches/dials to change the environment
+        \item Floating user interfaces around the objects with icons/bars and other traditional UI features
+    \end{itemize}
+    \item User can "pause/play". 
+    \begin{itemize}
+        \item During pause mode, objects are not animated and are not affected by the physics engine.
+        \item During play mode, objects are animated and are affected by physics.
+    \end{itemize}
+    \item User can "freeze" objects, stopping all kinematic forces that the object is experiencing
+    \item User can spawn in a multitude of objects stored on the website through a spawn menu
+        
+\end{itemize}
+
+\subsection{Functions}
+\begin{itemize}
+    \item Utilize all core features of WebXR including:
+    \begin{itemize}
+        \item Headset location and orientation
+        \item Controller location and orientation
+        \item Multi-platform compatibility
+        \item Parsing input from XR devices
+    \end{itemize}
+    \item The website will load the correct VR environment depending on the hardware that the user has.
+    \item Website will pause when a controller has been disconnected and resume when the connection is reestablished.
+    \item Website will notify user if web browser/hardware is not compatible with WebXR
+    \item Render environment and physics in real time
+\end{itemize}
+\subsection{Usability requirements}
+Offer a way of manipulating objects in the simulation for all supported platforms.  On a phone this might mean having a virtual manipulator at a fixed location from the user's face. On devices like the Oculus Rift, this would probably mean the hand controllers.
+
+We want to pair a non-technical-user friendly physics demonstration with a technical-user friendly code base.
+
+\subsection{Performance requirements}
+\begin{itemize}
+    \item Latency must not exceed 11 milliseconds within the simulation.
+    \item Re-factor to distribute to multiple web workers if needed to achieve performance requirements.
+    \item Meet an average 60 frames per second, appropriately degrading the content to meet that budget on mobile phones and other low powered devices.
+    \item HMDs should be running at 90 fps
+\end{itemize}
+%\subsection{Logical database requirements}
+%Content - See IEEE 9.5.14
+%\subsection{Design constraints}
+\subsection{Software system attributes}
+\begin{itemize}
+    \item Landing page will be compatible with all evergreen browsers
+    \item Website will be compatible with browsers that support WebXR
+    \item Website will be compatible with (List VR/AR devices here)
+    \item Website will run on multiple devices and operating systems (Windows, Android, Mac, iOS)
+\end{itemize}
