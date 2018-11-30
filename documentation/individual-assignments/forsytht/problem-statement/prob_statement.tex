@@ -1,0 +1,113 @@
+\documentclass[draftclsnofoot,onecolumn,letterpaper,10pt]{article}
+
+\usepackage{bibentry}
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+%\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage[TABBOTCAP, tight]{subfig}
+\usepackage{enumitem}
+%\usepackage{pstricks, pst-node}
+%\usepackage{pst-node}
+
+\usepackage[margin=0.75in]{geometry}
+%\geometry{textheight=8.5in, textwidth=6in}
+
+%random comment
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\newcommand{\toc}{\tableofcontents}
+
+%\usepackage{hyperref}
+
+\def\name{D. Kevin McGrath}
+
+%pull in the necessary preamble matter for pygments outpu
+\input{pygments.tex}
+
+%% The following metadata will show up in the PDF properties
+% \hypersetup{
+%   colorlinks = false,
+%   urlcolor = black,
+%   pdfauthor = {\name},
+%   pdfkeywords = {cs311 ``operating systems'' files filesystem I/O},
+%   pdftitle = {CS 311 Project 1: UNIX File I/O},
+%   pdfsubject = {CS 311 Project 1},
+%   pdfpagemode = UseNone
+% }
+
+\parindent = 0.0 in
+\parskip = 0.1 in
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    {\scshape\LARGE Oregon State University \par}
+    \vspace{1cm}
+    {\scshape\Large CS 461: Senior Software Engineering Project I\par}
+    \vspace{1.5cm}
+    {\Large\bfseries Immersive Web VR/AR:\par}
+    {\huge\bfseries Problem Statement\par}
+    \vspace{2cm}
+    {\Large Tim Forsyth\par}
+    \vfill
+
+    \begin{abstract}
+WebVR is a new, cutting edge technology that allows users to access VR content straight from their web browsers. While virtual and augmented reality is gaining traction, there aren't any great examples of the potentials of WebVR. This is where this project comes in. The goal is to showcase and display the potential of WebVR through an immersive VR experience that can be enjoyed straight from a web browser. We want to create an interactive experience that can draw in not only consumers, but also gain interest from developers towards creating content themselves using WebVR.
+    \end{abstract}
+
+    \vfill
+
+    {\large Fall 2018\par}
+\end{titlepage}
+
+%\clearpage
+%\tableofcontents
+%\newpage
+
+%input the pygmentized output of mt19937ar.c, using a (hopefully) unique name
+%this file only exists at compile time. Feel free to change that.
+
+\section{The Problem}
+Virtual and augmented reality is gaining traction amongst consumers as well as large enterprises. However, a large challenge within the VR field is content delivery, which requires large downloads and complex app store installations. Tons of VR content that has been developed has not been able to grow properly because it was too cumbersome for developers to send their creations to market due to the multiple vendors and other hassles they have to go through. 
+
+This is where WebVR comes into play. WebVR is a new and cutting edge web browser technology that allows users to experience VR content straight from their web browser. It integrates VR into the web browsing experience and allows developers to seamlessly develop VR content across multiple different systems and web browsers without worrying about compromising the function of their product.
+
+WebVR is looking towards the future to change what we know web browsing to be. Imagine shopping online at IKEA, for instance, and being able to go into a VR environment to really visualize a piece of furniture or be able to display that piece of furniture in your own house by the way of augmented reality. This is the future we are heading towards. However, in order to do this, consumers and developers need to know about WebVR and the potential that it has to make a huge impact on how we go about browsing the web.
+
+In order for a new technology to break out and become mainstream, it needs consumers as well as developers. To get both of these, it needs to be attractive. For the consumer, there has to be a clear use that is objectively easy to operate as well as convenient. For the developer, there need to be consumers and it should also be more convenient to develop with. In the case of WebVR, it being a fairly new creation means it does not have much of either consumers or developers. Our solution is to create an immersive VR experience that can showcase the prowess of WebVR to both potential consumers as well as potential developers.
+
+\section{Proposed Solution}
+The goal of this project is to put on display an example of how WebVR can be used to create an entertaining, interactive VR experience within a web browser. A demonstration of the capabilities of WebVR can help towards creating interest from both consumers and developers. The most important factor, however, is that it is a fun and interactive experience. Creating a great user experience is key in creating interest. This means we will need to research and find the best way to bring a VR experience to the web as well as the potential value of bringing VR or AR to a website.
+
+There are tons of potential ideas for VR experiences that can help showcase the capabilities of WebVR. Thus, we are still in the process of collaborating to find the best experience we can create. An interactive experience means there is a need of some sort of object that users can touch or move around. This has lead to the idea of creating a VR Battleship game.
+
+The Battleship game would play just like any other version of Battleship, however, it would be in a VR environment where the room you are in makes up the game board. Users would be able to see and interact with their battleships as they place them on the board as well as take turns throwing bombs at their opponent as they try to sink their battleships, all in an immersive VR environment.
+
+Another potential experience is the mapping of projects from the 01.org website, where this will eventually be showcased, in a VR environment. Projects could become rooms that users would explore and interact with to learn more about them. It would be like a virtual reality museum dedicated to showcasing 01.org content.
+
+Many things can be turned into a great immersive experience in VR, such as something that lets you select a seat in a stadium and enter the stadium in a virtual environment in order to get a taste of what the experience would be like sitting there. There are endless ideas, but another great one is a physics simulator.
+
+A physics simulator would be perfect for showcasing a VR experience. The greatest factor in generating interest is user experience. As an avid gamer, I have a decent understanding of what it takes for something to have a great user experience. As mentioned previously, user interaction is key. Would you rather watch a ball bounce up and down or be able to throw that ball off a wall? Would you rather watch a pendulum go back and forth or be able to spin it in any direction? Clearly, interaction is both more engaging and more entertaining. A physics simulator would be a great way of providing this user interaction. The users would be given a box containing various items that they could mess around in a simulated environment. There is also potential for allowing users to change the laws of physics, increasing or lowering gravity to visualize the effect it would have on various objects.
+
+This simulator could be more than just a sandbox to play around in, it could also have practical uses. There are tons of schools around the world that aren't able to afford fully fledged out physics labs. Being able to go onto a web browser and be fully immersed in what is essentially a VR physics lab would give these schools a way for students to have the opportunity to visually learn. This is why it is such a great solution for showcasing WebVR. It shows developers what you can create in a web based VR environment as well as shows consumers and even large enterprises the potential real world uses of web based virtual reality.
+
+\section{Performance Metrics}
+We need to deliver a fully functional prototype of an immersive experience in virtual reality. The experience needs to be interactive. It needs to grab the attention of the user. It can be hard to determine if something is accomplishing this goal without having third party users testing it. Luckily, we have the Engineering Expo. The best way to know if we are successful in our attempt at promoting WebVR will be the Engineering Expo. An imperative part of our project is the user experience. If we generate attention and good feedback at the Engineering Expo, then we'll know that we've succeeded.
+
+\nocite{*}
+\bibliographystyle{IEEEtran}
+\nobibliography{references}
+
+\end{document}
