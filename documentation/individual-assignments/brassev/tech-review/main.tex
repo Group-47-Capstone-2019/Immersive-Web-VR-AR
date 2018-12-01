@@ -1,0 +1,58 @@
+\documentclass[draftclsnofoot,onecolumn]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage{abstract}
+\usepackage{cite}
+\usepackage{hyperref}
+
+\title{Tech Review: Performance \\
+    \large Demonstrating WebXR through an educational physics experience}
+
+\author{Group 47: Evan Brass (brassev) – Web Developer}
+\date{November 2018}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Our goal is to build an educational physics simulation that demonstrates the defining features of a WebXR experience.  Of extra concern is keeping our experience running smoothly across our target hardware while running our physics simulations and rendering frames for the head-mounted display.  We don’t want to cause discomfort or nausea because we are lagging.  To do this, we may need to incorporate other new web technologies that bring native-like performance to modern web applications.  This document describes some of our initial plans for how we will run our application smoothly.
+\end{abstract}
+
+\section{Goal of the project}
+We will build a virtual reality experience for multiple devices that demonstrates the feature set exposed in the new WebXR standard.  WebXR allows a unified interface for the variety of VR headsets, controllers, and also reserves surface area for future devices including artificial and mixed reality devices which haven’t been invented yet.  We want our project to serve the community by being a well-rounded use case.  A use case whose code patterns and design solutions could transfer to other VR projects.  We want to realize this new technology into something that other developers can learn from and reference to gauge the effort required to bring virtual reality to their own projects and inspire viewers to learn more about the physics presented or the technology we present it with.
+\section{Introduction}
+My research is about how we will improve the experience if we find it becoming too much for one or more of our target hardware platforms.  Each device's hardware is not something we can change.  We must either utilize it more effectively or tune the content to match the available hardware.  Utilizing the hardware more efficiently is usually something we can do before our app reaches the client.  After it reaches the client we can only decrease the content that we show if we're lagging and to do that we need to be able to detect when we're lagging.  The last experience that we can improve is the loading experience by making it efficient and comprehensible to the browser.
+\section{Running Efficiently}
+JavaScript is the language of the web.  Its design makes it especially suited to a fast-paced industry where the freedom of dynamic typing, interpretation, and garbage-collection work well.  However, these features slow JavaScript.  There’re a few methods of getting around that.  Note: I’ve read many times, “that premature optimization is the root of all evil”, but I believe that premature optimization is the expression of loving your tools more than your product.  I think we’ll need some of these technologies, but I imagine that we’ll only need them in some sections of our project and not every single line.
+
+The first method of improving our execution speed is to follow a set of rules that make for fast JavaScript\cite{WEBSITE:1}.  These rules include not changing the types of items stored in arrays or of a field of on an object, not changing the prototype of objects after creation, etc.  The performance gains we can get are upper bounded by how many rules we can remember or lint for.  An alternative to that is using Google’s Closure compiler.  Closure can rename variables, remove dead code paths, and even inline functions\cite{WEBSITE:2}.  But it’s also largely an internal Google tool so it’s harder to work with and the annotations that help inform it are clunky\cite{WEBSITE:3}.
+
+If writing JavaScript that’s fast enough for our critical loops is too challenging, then perhaps we can utilize the new Web Assembly standard which is much faster than JavaScript.  Web Assembly is a specification for a binary format that has functionality common to most modern CPUs.  It has static types, manual memory management, and gets compiled to the native architecture’s instruction format making it very fast and efficient.  It has none of the garbage collection, and interpretation costs that JavaScript does\cite{WEBSITE:4}.
+
+It’s still early enough that there isn’t much tooling however.  Debugging would be challenging.  It also can’t completely replace JavaScript because it has no direct access to any of the Browser APIs (yet).  We would still need to call those from within JavaScript.  There’s a compiler which can do all of that for C++/C called Emscripten.  It does all the Web Assembly compilation automatically and contains a runtime of JavaScript to affect the browser\cite{WEBSITE:5}.  C and C++ aren’t memory safe, though, so there’s a reasonable chance that we’ll encounter memory errors.  Tracking those could be painful without better Web Assembly tooling like source maps that don’t exist yet\cite{WEBSITE:6}.
+
+There’s a language called Rust that is memory safe and can be compiled to Web Assembly, but it doesn’t include the automatic JavaScript runtime that Emscripten includes\cite{WEBSITE:7}.  The safety means we don’t need to fear memory issues and might be able to manage without the debugging tools much better.  But Rust’s Web Assembly target doesn’t have a runtime which means we would be writing a lot of glue code between our Rust and the Browser APIs we might need.
+
+Unfortunately, we can’t take advantage of the data race freedom inherent to Rust because JavaScript (which hosts the Web Assembly modules) is single-threaded.  To get parallelism in JavaScript we need to use web workers and Rust’s native multi-threading and thread safe memory sharing can’t be directly turned into web workers.  Web workers use an event-based channel mechanism for data sharing which is the only system we can use to communicate between workers\cite{WEBSITE:8}.  The web has no alternative parallelism strategy.  Workers are our only option.
+
+\section{Lagging Gracefully}
+Lag is inevitable and, like congestion in a network, indicates we’re using the hardware to its best capacity.  We don’t want to overload the end user’s hardware, but we don’t want to underutilize when an improved experience can run on their computer’s extra power. 
+\subsection{Detecting Lag}
+There’s two ways that I found to detect if we’re lagging and accommodate for it.  The simplest way is to check the timestamps whenever we submit a frame.  If the current timestamp is too far past our previous timestamp, then we’re lagging, and the user’s hardware is likely accommodating for us.  This method is accurate but means that we are using our render loop to check if our render loop is too slow.  We want our render loop to be as fast as possible, so this doesn’t seem like the best option.
+
+An alternative is to use a feature called “requestIdleCallback” which lets us utilize the browser’s scheduler to run something at a set timeout unless the CPU has some “free time” earlier\cite{WEBSITE:9}.  This way we can run our evaluation function to check if we are getting lots of idle cycles and improve the content of our app or we can trim our content to relieve CPU pressure if we’re consistently hitting that timeout.
+\subsection{Responding to Lag}
+We have several features we can turn on or off to make an experience which runs smoothly for all of our target users.  We can reduce the number of objects the user is allowed to have in the scene at any given time to speed up physics and rendering times.  We could fallback to a more approximated and faster physics engine or engine setting.  We could decrease or remove peripheral effects like shadows, particles, or lighting elements.
+\section{Loading Efficiently}
+There’s a couple of things we can do to make entering our experience an easy and quick operation.  Two of them are to prefetch resources that we’ll need later and to, in the case of Web Assembly modules, precompile them.  In the case of ECMAScript modules (If we end up using them) we can fetch and the browser can even evaluate the module before we lazily load it later.  The prefetching and evaluation system for HTML uses links in the header with different relationships.  The three most appropriate like types for our project would be: 
+\begin{enumerate}
+    \item $<$link rel=”preload”$>$ - Requests that the browser fetch and load the resource
+    \item $<$link rel=”modulepreload”$>$ - For use with ES6 modules.  The browser may be able to process the module before you even import it.
+    \item $<$link rel=”preconnect”$>$ - Open a connection to be used for the resource without sharing any information until it requested by the page.
+\end{enumerate}
+There are other link types, but they mostly reflect relationships across domains, or between pages rather than describing the resources of a single page\cite{WEBSITE:10}.  In the case of Web Assembly, we can prime the browser’s cache using these links, but we’ll still need to compile those modules after they arrive.  This can be a low priority task scheduled with the idle callback from above or something else.  Once compiled, we can share the same module across multiple web workers (via the channels) meaning less overall compilation.
+\section{All together}
+I’m recommending that when we encounter performance problems, we migrate some of our performance critical JavaScript to Rust that we compile to Web Assembly and run across – perhaps – a pool of web workers.  I recommend that we experiment with both methods of lag detection – timestamps and idle callbacks – and pick the one that fits best with the rest of our design or is most efficient.  I recommend that we try splitting our code into individual modules and utilize the browser’s preload, pre-connect, and module-preload link elements to inform the browser of those dependencies so that it can prime its cache.  I also recommend that we use a tool like Closure to optimize and minify our JavaScript.
+\bibliography{references}
+\bibliographystyle{ieeetr}
+\end{document}
