@@ -1,0 +1,53 @@
+\section{Introduction}
+\subsection{Purpose}
+The purpose of this project is to provide a technical demonstration of the WebXR API capabilities. It will be an example of how WebXR can be used to create an entertaining, interactive VR experience within a web browser. It will have a focus on education and act as a virtual physics lab.
+
+\subsection{Scope}
+WebPhysicsVR will be an interactive physics simulation that utilizes the WebXR API. Its primary use is as tech demo and a platform for education.
+
+As a tech demo, our project will incorporate all the major features of WebXR. We'll want to faithfully present the physical concepts in an educational and engaging fashion while also focusing on designing a quality WebXR experience.  
+
+At a minimum, users should be able to visualize the effects of gravity.  If we have time to do so, we could visualize other forces like adding friction between objects or giving certain objects magnetism as well as mass.  
+
+We intend to support a spectrum of VR devices though we will only test on a few selected devices that we have access to.
+\subsection{Product overview}
+%\subsubsection{Perspective}
+\subsubsection{User Interfaces}
+Users with compatible hardware will be able to experience an immersive/enhanced version of the website right when they access it, with a click of a button.
+
+Within the VR experience, we will have interfaces for the user to manipulate the objects and physical constants. These interfaces will be displayed in the most contextually meaningful location in the environment.  This might mean different floating icons around the 3d objects, floating interfaces or control objects that are within the environment.
+
+\subsubsection{Hardware Interfaces}
+WebXR is compatible with a range of XR devices, web browsers and operating systems. This includes mobile devices. For the full intended experience, an HMD with body and controller tracking devices should be used.
+
+\subsubsection{Software Interfaces}
+\begin{itemize}
+    \item WebXR API
+    \item WebGL 2.0
+    \item (Some physics API)
+    \item If needed:
+    \begin{itemize}
+        \item Web Workers
+        \item Web Assembly (for physics / processing intensive code or porting non-JavaScript libraries)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Functions}
+The main functions of this website are:
+\begin{itemize}
+    \item VR Experience accessible without need to download client side software 
+    \item Interactive physics environment
+\end{itemize}
+%\subsubsection{User characteristics}
+%See IEEE 9.5.5
+%\subsubsection{Limitations}
+%See IEEE 9.5.6
+\subsection{Definitions}
+\begin{itemize}
+    \item XR : Family of hardware devices capable of Virtual Reality and Augmented Reality.
+    \item API : Application Program Interface.
+    \item HMD : Head mounted display. There is an optic lens for each eye which runs at 90Hz.
+    \item WebXR : Open source web API for accessing virtual reality (VR) and augmented reality (AR) devices, including sensors and head-mounted displays.
+    \item WebGL : Open graphics API.
+    \item Web Worker : API for performing and communicating between parallel computation on the Web.
+\end{itemize}
