@@ -1,0 +1,153 @@
+\documentclass[onecolumn, draftclsnofoot,10pt, compsoc]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{setspace}
+\usepackage{abstract}
+\usepackage{geometry}
+\geometry{textheight=9.5in, textwidth=7in}
+\parindent = 0.0 in
+\parskip = 0.1 in
+
+% 1. Fill in these details
+\def \CapstoneTeamName{WebXR Team}
+\def \CapstoneTeamNumber{47}
+\def \GroupMemberOne{Jonathan Jones}
+\def \GroupMemberTwo{Evan Brass}
+\def \GroupMemberThree{Brooks Mikkelsen}
+\def \GroupMemberFour{Tim Forsyth}
+\def \GroupMemberFive{Brandon Mei}
+\def \CapstoneProjectName{Creating Immersive Experiences on the Web using VR and AR}
+\def \CapstoneSponsorCompany{Intel}
+\def \CapstoneSponsorPerson{Alexis Menard}
+
+% 2. Uncomment the appropriate line below so that the document type works
+\def \DocType{		        %Problem Statement
+				%Requirements Document
+				%Technology Review
+				%Design Document
+				Progress Report
+				}
+			
+\newcommand{\NameSigPair}[1]{\par
+\makebox[2.75in][r]{#1} \hfil 	\makebox[3.25in]{\makebox[2.25in]{\hrulefill} \hfill		\makebox[.75in]{\hrulefill}}
+\par\vspace{-12pt} \textit{\tiny\noindent
+\makebox[2.75in]{} \hfil		\makebox[3.25in]{\makebox[2.25in][r]{Signature} \hfill	\makebox[.75in][r]{Date}}}}
+% 3. If the document is not to be signed, uncomment the RENEWcommand below
+%\renewcommand{\NameSigPair}[1]{#1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\begin{titlepage}
+    \pagenumbering{gobble}
+    \begin{singlespace}
+    	%\includegraphics[height=4cm]{coe_v_spot1}
+        \hfill 
+        % 4. If you have a logo, use this includegraphics command to put it on the coversheet.
+        %\includegraphics[height=4cm]{CompanyLogo}   
+        \par\vspace{.2in}
+        \centering
+        \scshape{
+            \huge CS Capstone \DocType \par
+            {\large\today}\par
+            \vspace{.5in}
+            \textbf{\Huge\CapstoneProjectName}\par
+            \vfill
+            {\large Prepared for}\par
+            \Huge \CapstoneSponsorCompany\par
+            \vspace{5pt}
+            {\Large\NameSigPair{\CapstoneSponsorPerson}\par}
+            {\large Prepared by }\par
+            Group \CapstoneTeamNumber - WebPhysicsVR\par
+            % 5. comment out the line below this one if you do not wish to name your team
+            %\CapstoneTeamName\par 
+            \vspace{5pt}
+            {\Large
+                \NameSigPair{\GroupMemberOne}\par
+                \NameSigPair{\GroupMemberTwo}\par
+                \NameSigPair{\GroupMemberThree}\par
+                \NameSigPair{\GroupMemberFour}\par
+                \NameSigPair{\GroupMemberFive}\par
+            }
+            \vspace{20pt}
+        }
+        %\renewcommand{\abstracttextfont}{\sffamily}
+        \begin{abstract}
+        This document is intended to detail the progress of the WebPhysicsVR project group. Included are project goals, current status and a retrospective of the last ten weeks.
+        % 6. Fill in your abstract
+        \end{abstract}     
+    \end{singlespace}
+\end{titlepage}
+\newpage
+\pagenumbering{arabic}
+\tableofcontents
+% 7. uncomment this (if applicable). Consider adding a page break.
+%\listoffigures
+%\listoftables
+\clearpage
+
+% 8. now you write!
+\section{Project Recap}
+\subsection{Purpose}
+WebPhysicsVR will be a virtual reality physics simulation that can be accessed directly from a web browser that supports the WebXR API. There will be several stations that demonstrate common physics experiments that might be experienced in middle or high school. The overarching purpose of this project is to be an example for future developers of the new WebXR API that is built for developing VR and AR projects on the web. The underlying goal of the physics simulation is to provide something that may be useful within classrooms that can't afford a full-fledged physics lab.
+
+\subsection{Goals}
+During one of our meetings with Alexis, he gave us his goals for the project:
+\begin{itemize}
+\item Cost - Enable expensive experiments which wouldn't be accessible except through VR.
+\item Improvements - Recreate physics experiments which are impossible to preform without VR.
+\end{itemize}
+
+\section{Current Progress}
+We've finished most of our pre-project documents.  Our next step is to decide what experiments we will be building and then implement those. 
+
+Current ideas for project experiments:
+\begin{itemize}
+    \item Pendulum Period and Puzzle
+    \item Speed of falling objects in a Vacuum/Air resistance
+    \item Simple Newton's Cradle
+\end{itemize}
+
+\subsection{Research}
+We have domain experts in most of the technologies accessible to us that we intend to use.  Most of the research that we need to do is cross training so that we can share the responsibility for more than one or two sections of the project.
+
+\section{Group Activities By Week}
+\subsection{Week 1}
+N/A; The group was not formed yet.
+\subsection{Week 2}
+N/A; The group was not formed yet.
+\subsection{Week 3}
+The group was formed. Scheduled the TA Meeting, set up communication infrastructure (Discord, Google Group), met with client in Hillsboro and brainstormed couple project ideas, clarified purpose and goals for the project.
+\subsection{Week 4}
+Preliminary research for project technologies. Began working individually on the problem statement. Met together and compiled our thoughts into a single group problem statement document.
+\subsection{Week 5}
+Created a GitHub repository for source code and documentation storage. Selected a physics simulation as our project.
+\subsection{Week 6}
+Drafted a list of project requirements. Discussed with client briefly. Alexis' created a Google drive to store all project related documents. Collaboration with the client was improved with this addition.
+\subsection{Week 7}
+Decided individual topics for the tech reviews and began writing the first drafts.
+\subsection{Week 8}
+Finalized the tech reviews and talked about the design document. Planned for Alexis' arrival.
+\subsection{Week 9}
+Alexis came to Corvallis to do an in-class guest speaker presentation on WebXR, mainly for our group. Met with him afterwards and talked about goals for the project, implementation details, logistics for hardware, and scheduling.
+\subsection{Week 10}
+Drafted and completed the design document.
+
+\section{Retrospective}
+%\begin{table}[ht]
+\centering % used for centering table
+\begin{tabular}{| p{0.1\linewidth} | p{0.25\linewidth} | p{0.25\linewidth} | p{0.25\linewidth} |} % centered columns (4 columns)
+\hline\hline %inserts double horizontal lines
+Member & Positives & Deltas & Actions \\ [0.5ex] % inserts table
+%heading
+\hline\hline % inserts single horizontal line
+Evan Brass & On-boarding of the team went smoothly.  Everyone communicated, discussed the project and was excited about what we are working on. & Our first suggested TA meeting didn't fit with everyone's schedules. & We adjusted our decisions to be vote based and check to make sure we have everyone. \\ \hline
+Tim Forsyth & Found A-Frame, a framework with useful tools for creating graphical user interfaces as well as interfacing with devices. & Need to find out how to integrate A-Frame with other APIs we will be using, such as Three.js and Cannon.js. & Research the APIs more to learn how they interact with each other. \\ \hline
+Jonathan Jones & Technical components for the simulation were well documented. There are many examples of graphical web applications for reference if needed. Client is easy to communicate with and is actively involved in the project. & Missed the client meeting in Corvallis due to some communication problems. & More frequent group meetings. \\ \hline
+Brandon Mei & Found web hosting services that provides static web pages hosting for our project. GitHub Pages is designed to host our project directly from a GitHub repository. & Need to figure out how to integrate CI services for more automatic deployment. & Research a way to help improve performance of a scene for example assets management system.  \\ \hline
+Brooks Mikkelsen & I reviewed options for our project setup and came up with suggestions for the technologies we will be using in addition to the actual coding. I believe that we did a good job as a team working with our client to define what he is looking for out of this project. & We need to be better at planning our work so that we don't overlap when developing. This was not much of an issue this term since a lot of the work was separate documentation, but it will be more important next term since we will all be working on the same code base. & I believe the best way to fix that is to have a weekly time set up as a group to act as a stand up (or scrum) meeting to discuss what we have done and what we will be working on so we don't step on each others' toes. \\ \hline
+\end{tabular}
+\label{table:nonlin} % is used to refer this table in the text
+%\end{table}
+%p{0.3\linewidth}
+
+\end{document}
