@@ -1,1 +1,1 @@
-document.querySelector("body").innerText = "Hello world!";
+document.querySelector("body")!.innerText = "Hello world!";
