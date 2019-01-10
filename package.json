@@ -1,0 +1,26 @@
+{
+  "name": "web-xr-demo",
+  "version": "1.0.0",
+  "description": "Senior Capstone project for 2019 Academic year group 47.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Group-47-Capstone-2019/Immersive-Web-VR-AR.git"
+  },
+  "keywords": [],
+  "author": "bmikkelsen22",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Group-47-Capstone-2019/Immersive-Web-VR-AR/issues"
+  },
+  "homepage": "https://github.com/Group-47-Capstone-2019/Immersive-Web-VR-AR#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "parcel-bundler": "^1.11.0",
+    "typescript": "^3.2.2"
+  }
+}
