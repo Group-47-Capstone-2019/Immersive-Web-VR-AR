@@ -18,8 +18,11 @@
     "url": "https://github.com/Group-47-Capstone-2019/Immersive-Web-VR-AR/issues"
   },
   "homepage": "https://github.com/Group-47-Capstone-2019/Immersive-Web-VR-AR#readme",
-  "dependencies": {},
+  "dependencies": {
+    "three": "^0.100.0"
+  },
   "devDependencies": {
+    "@types/three": "^0.93.15",
     "parcel-bundler": "^1.11.0",
     "typescript": "^3.2.2"
   }
