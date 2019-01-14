@@ -3,7 +3,7 @@ import * as THREE from 'three';
 //Three variables - Global for now
 var scene       : THREE.Scene, 
     camera      : THREE.PerspectiveCamera, 
-    renderer    : THREE.WebGLRenderer,
+    renderer    : THREE.WebGLRenderer;
 /*
  * Initializes three.js
  */
