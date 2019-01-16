@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel src/index.html",
-    "build": "parcel build src/index.html"
+    "build": "parcel build src/index.html",
+    "now-build": "parcel build src/index.html --no-minify"
   },
   "repository": {
     "type": "git",
