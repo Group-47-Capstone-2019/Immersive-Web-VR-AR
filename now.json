@@ -1,11 +1,12 @@
 {
   "version": 2,
+  "name": "webxr-physics",
   "builds": [
     {
       "src": "package.json",
       "use": "@now/static-build",
-      "config": { "distDir": "dist" },
-      "alias": ["webxr-physics.now.sh"]
+      "config": { "distDir": "dist" }
     }
-  ]
+  ],
+  "alias": "webxr-physics.now.sh"
 }
