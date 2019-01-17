@@ -89,7 +89,7 @@ class Experience {
      * This is where the magic happens. Frame updates take place here.
      * Can also be called the event loop
      */
-    _animate()
+    _animate = () =>
     {
         requestAnimationFrame(this._animate);
         this._renderer.render(this._scene, this._camera);
