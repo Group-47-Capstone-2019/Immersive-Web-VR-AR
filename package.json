@@ -22,8 +22,6 @@
     "three": "^0.100.0"
   },
   "devDependencies": {
-    "@types/three": "^0.93.15",
-    "parcel-bundler": "^1.11.0",
-    "typescript": "^3.2.2"
+    "parcel-bundler": "^1.11.0"
   }
 }
