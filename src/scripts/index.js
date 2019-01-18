@@ -22,9 +22,7 @@ class Experience {
         this._width;
         this._height;
 
-        this._getContainer();
-
-        this._initWindow();
+        this._initContainer();
 
         this._createScene();
 
@@ -39,10 +37,11 @@ class Experience {
      * Gets width and height of the current window.
      * Generates an aspect ratio
      */
-    _initWindow()
+    _initContainer()
     {
-        this._width = window.innerWidth;
-        this._height = window.innerHeight;
+        this._getContainer();
+        this._width = this._container.clientWidth;
+        this._height = this._container.clientHeight;
         this._aspect = this._width / this._height;
     }
 
@@ -74,6 +73,7 @@ class Experience {
     _createRenderer()
     {
         this._renderer = new THREE.WebGLRenderer();
+        this._renderer.setSize(this._width, this._height);
         this._container.appendChild(this._renderer.domElement);
     }
 
