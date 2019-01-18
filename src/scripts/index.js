@@ -157,9 +157,13 @@ class Experience {
     _roomTest()
     {
         console.log("In room test");
-
-        const wallMaterial = new THREE.MeshBasicMaterial({color : 0xaaaaaa, side : THREE.DoubleSide});
-        const floorMaterial = new THREE.MeshBasicMaterial({color : 0x888888, side : THREE.DoubleSide});
+        let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        this._scene.add(ambientLight);
+        //const wallMaterial = new THREE.MeshBasicMaterial({color : 0xaaaaaa, side : THREE.DoubleSide});
+        //const floorMaterial = new THREE.MeshBasicMaterial({color : 0x888888, side : THREE.DoubleSide});
+        const wallMaterial = new THREE.MeshPhongMaterial({color : 0xaaaaaa, side : THREE.DoubleSide});
+        const floorMaterial = new THREE.MeshPhongMaterial({color : 0x888888, side : THREE.DoubleSide});
+        
         const wallOutline = new THREE.MeshBasicMaterial({color : 0x000000, wireframe : true, side : THREE.DoubleSide});
 
         const wallGeometry = new THREE.PlaneGeometry(16, 8);
