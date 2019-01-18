@@ -34,6 +34,8 @@ class Experience {
 
         this._initContainer();
 
+        this._setDimensions();
+
         this._createScene();
 
         this._createCamera();
@@ -41,17 +43,27 @@ class Experience {
         this._initGeometry();
 
         this._createRenderer();
+
+        this._setEventListeners();
         
         requestAnimationFrame(this._animate);
+    }
+
+    /*
+     * Query selects container HTML element and clears its content
+     */
+    _initContainer()
+    {
+        this._container = document.querySelector('#container');
+        this._container.innerHTML = '';
     }
 
     /*
      * Gets width and height of the current window.
      * Generates an aspect ratio
      */
-    _initContainer()
+    _setDimensions()
     {
-        this._container = document.querySelector('#container');
         this._width = this._container.clientWidth;
         this._height = this._container.clientHeight;
         this._aspect = this._width / this._height;
@@ -101,6 +113,19 @@ class Experience {
         this._container.appendChild(this._renderer.domElement);
     }
 
+    _setEventListeners()
+    {
+        window.addEventListener('resize', this._onWindowResize);
+    }
+
+    _onWindowResize = () =>
+    {
+        this._setDimensions();
+        this._camera.aspect = this._aspect;
+        this._camera.updateProjectionMatrix();
+        this._renderer.setSize(this._width, this._height);
+    }
+
     /*
      * This is where the magic happens. Frame updates take place here.
      * Can also be called the event loop
@@ -120,7 +145,9 @@ class Experience {
         requestAnimationFrame(this._animate);
     }
 
-    //TESTING FUNCTIONS!
+    // -------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --- TESTING FUNCTIONS ---------------------------------------------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------------------------------------------------------------
 
     /*
      * Adds a simple box to the scene at (0, 0, -5) and tests its existence
@@ -129,7 +156,7 @@ class Experience {
     {
         console.log("In box test");
         let geometry = new THREE.BoxGeometry(1, 1, 1);
-        let material = new THREE.MeshBasicMaterial({color : 0xffffff});
+        let material = new THREE.MeshBasicMaterial({color : 0xffffff, wireframe : true});
 
         if(!geometry)
             console.log("Failed to generate geometry");
