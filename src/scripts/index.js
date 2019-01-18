@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import 'babel-polyfill';
 
 class Experience {
     
@@ -12,7 +13,8 @@ class Experience {
 
     static get DEBUG() {
         return {
-            enabled : true
+            enabled : true,
+            boxTest : true
         }
     }
 
@@ -39,8 +41,8 @@ class Experience {
         this._initGeometry();
 
         this._createRenderer();
-
-        this._animate();
+        
+        requestAnimationFrame(this._animate);
     }
 
     /*
@@ -49,7 +51,7 @@ class Experience {
      */
     _initContainer()
     {
-        this._getContainer();
+        this._container = document.querySelector('#container');
         this._width = this._container.clientWidth;
         this._height = this._container.clientHeight;
         this._aspect = this._width / this._height;
@@ -61,6 +63,7 @@ class Experience {
     _createScene()
     {
         this._scene = new THREE.Scene();
+        this._scene.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color : 0xff0000})));
     }
 
     /*
@@ -82,7 +85,10 @@ class Experience {
      */
     _initGeometry()
     {
-        if(this._debug.enabled) { this._boxTest(); }
+        if(this._debug.enabled) {
+            if(this._debug.boxTest)
+                this._boxTest(); 
+        }
     }
 
     /*
@@ -96,33 +102,34 @@ class Experience {
     }
 
     /*
-     * Query selects for HTML element with 'container' id
-     */
-    _getContainer()
-    {
-        this._container = document.querySelector('#container');
-    }
-
-    /*
      * This is where the magic happens. Frame updates take place here.
      * Can also be called the event loop
      */
     _animate = () =>
     {
-        requestAnimationFrame(this._animate);
+        if(this._debug.enabled) {
+            if(this._debug.boxTest){
+                let box = this._scene.getObjectByName("testBox001");
+                box.rotateX(0.01);
+                box.rotateY(0.01);
+                box.rotateZ(0.03);
+            }
+        }
+
         this._renderer.render(this._scene, this._camera);
+        requestAnimationFrame(this._animate);
     }
 
     //TESTING FUNCTIONS!
 
     /*
-     * Adds a simple box to the scene at (0, 0, -5)
+     * Adds a simple box to the scene at (0, 0, -5) and tests its existence
      */
     _boxTest()
     {
         console.log("In box test");
         let geometry = new THREE.BoxGeometry(1, 1, 1);
-        let material = new THREE.MeshBasicMaterial({color : 0xff0000});
+        let material = new THREE.MeshBasicMaterial({color : 0xffffff});
 
         if(!geometry)
             console.log("Failed to generate geometry");
@@ -134,17 +141,11 @@ class Experience {
             console.log("Failed to create box mesh");
 
         box.name = "testBox001";
-        box.position.set(new THREE.Vector3(0, 0, -5));
+        box.position.set(0, 0, -5);
 
         this._scene.add(box);
 
-        let found = false;
-        this._scene.children.forEach(function(child) {
-            if(child.name == box.name)
-                found = true;
-        });
-
-        if(!found)
+        if(!this._scene.getObjectByName("testBox001"))
             console.log("Box not found in scene");
     }
 };
