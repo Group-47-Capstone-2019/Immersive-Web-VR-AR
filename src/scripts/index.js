@@ -10,8 +10,16 @@ class Experience {
         }
     }
 
+    static get DEBUG() {
+        return {
+            enabled : true
+        }
+    }
+
     constructor()
     {
+        this._debug = Experience.DEBUG;
+
         this._scene;
         this._renderer;
         this._camera;
@@ -29,6 +37,8 @@ class Experience {
         this._createScene();
 
         this._createCamera();
+
+        this._initGeometry();
 
         this._createRenderer();
 
@@ -69,6 +79,14 @@ class Experience {
     }
 
     /*
+     * Creates all the geometry, materials and meshes for the scene
+     */
+    _initGeometry()
+    {
+        if(this._debug.enabled) { this._boxTest(); }
+    }
+
+    /*
      * Generates a new THREE WebGLRenderer and appends it to the HTML container
      */
     _createRenderer()
@@ -93,6 +111,41 @@ class Experience {
     {
         requestAnimationFrame(this._animate);
         this._renderer.render(this._scene, this._camera);
+    }
+
+    //TESTING FUNCTIONS!
+
+    /*
+     * Adds a simple box to the scene at (0, 0, -5)
+     */
+    _boxTest()
+    {
+        console.log("In box test");
+        let geometry = new THREE.BoxGeometry(1, 1, 1);
+        let material = new THREE.MeshBasicMaterial({color : 0xff0000});
+
+        if(!geometry)
+            console.log("Failed to generate geometry");
+        if(!material)
+            console.log("Failed to generate material");
+
+        let box = new THREE.Mesh(geometry, material);
+        if(!box)
+            console.log("Failed to create box mesh");
+
+        box.name = "testBox001";
+        box.position.set(new THREE.Vector3(0, 0, -5));
+
+        this._scene.add(box);
+
+        let found = false;
+        this._scene.children.forEach(function(child) {
+            if(child.name == box.name)
+                found = true;
+        });
+
+        if(!found)
+            console.log("Box not found in scene");
     }
 };
 
