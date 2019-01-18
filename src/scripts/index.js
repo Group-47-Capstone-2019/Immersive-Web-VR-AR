@@ -101,6 +101,7 @@ class Experience {
             if(this._debug.boxTest)
                 this._boxTest(); 
         }
+        this._roomTest();
     }
 
     /*
@@ -148,6 +149,49 @@ class Experience {
     // -------------------------------------------------------------------------------------------------------------------------------------------------------
     // --- TESTING FUNCTIONS ---------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /*
+     * Testing PlaneGeometry for creating walls/floor/roof for a basic room.
+     */
+
+    _roomTest()
+    {
+        console.log("In room test");
+
+        const wallMaterial = new THREE.MeshBasicMaterial({color : 0xaaaaaa});
+
+        const wallGeometry = new THREE.PlaneGeometry(16, 8);
+        const floorGeometry = new THREE.PlaneGeometry(16, 16, 128, 128);
+        
+        let wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.position.z = 8;
+        wall.position.y = 3.5;
+        wall.rotation.x = -Math.PI / 2;
+        this._scene.add(wall);
+
+        wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.position.x = 8;
+        wall.position.y = 3.5;
+        wall.rotation.y = -Math.PI / 2;
+        this._scene.add(wall);
+
+        wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.position.z = -8;
+        wall.position.y = 3.5;
+        this._scene.add(wall);
+
+        wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.position.x = -8;
+        wall.position.y = 3.5;
+        wall.rotation.y = -Math.PI / 2;
+        this._scene.add(wall);
+
+        let floor = new THREE.Mesh(floorGeometry, wallMaterial);
+        floor.position.y = -0.5;
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        this._scene.add(floor);
+    }
 
     /*
      * Adds a simple box to the scene at (0, 0, -5) and tests its existence
