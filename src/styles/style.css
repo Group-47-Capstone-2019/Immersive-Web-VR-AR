@@ -50,7 +50,16 @@ canvas {
 body {
     margin:0px;
     font-family: "Roboto", sans-serif;
+    background-color: #eee;
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: "Merriweather", serif;
+}
+main {
+  background-color: #fff;
+  margin: 0 auto;
+  max-width: 500px;
+  padding: 2em;
+  border-left: 1px solid #aaa;
+  border-right: 1px solid #aaa;
 }
