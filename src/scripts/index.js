@@ -54,8 +54,7 @@ class Experience {
      */
     _initContainer()
     {
-        this._container = document.querySelector('#container');
-        this._container.innerHTML = '';
+        this._container = document.querySelector('header');
     }
 
     /*
