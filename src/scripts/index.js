@@ -101,7 +101,7 @@ class Experience {
             if(this._debug.boxTest)
                 this._boxTest(); 
         }
-        this._roomTest();
+        this._boxRoomTest();
     }
 
     /*
@@ -154,9 +154,33 @@ class Experience {
      * Testing PlaneGeometry for creating walls/floor/roof for a basic room.
      */
 
+
+    _boxRoomTest()
+    {
+        let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        this._scene.add(ambientLight);
+        var roomMaterials = [];
+        var roomMaterialsOutline = [];
+        var texture = "../images/wall.jpg";
+        for (var i = 0; i < 6; i++)
+        {
+            roomMaterials.push(new THREE.MeshBasicMaterial({map : THREE.ImageUtils.loadTexture(texture), side : THREE.BackSide}));
+            roomMaterialsOutline.push(new THREE.MeshPhongMaterial({color : 0x000000, side : THREE.BackSide, wireframe : true}));
+        }
+
+        var roomGeometry = new THREE.CubeGeometry(25, 25, 25);
+        var roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
+        var roomOutlineMat = new THREE.MeshFaceMaterial(roomMaterialsOutline);
+        var room = new THREE.Mesh(roomGeometry, roomMaterial);
+        var roomOutline = new THREE.Mesh(roomGeometry, roomOutlineMat);
+        room.rotation.x += Math.PI / 2;
+        roomOutline.rotation.x += Math.PI / 2;
+        this._scene.add(room);
+        this._scene.add(roomOutline);
+    }
+
     _roomTest()
     {
-        console.log("In room test");
         let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         this._scene.add(ambientLight);
         //const wallMaterial = new THREE.MeshBasicMaterial({color : 0xaaaaaa, side : THREE.DoubleSide});
@@ -171,45 +195,37 @@ class Experience {
         
         let wall = new THREE.Mesh(wallGeometry, wallMaterial);
         wall.position.z = 8;
-        wall.position.y = 0;
         this._scene.add(wall);
 
         wall = new THREE.Mesh(wallGeometry, wallOutline);
         wall.position.z = 8;
-        wall.position.y = 0;
         this._scene.add(wall);
 
         wall = new THREE.Mesh(wallGeometry, wallMaterial);
         wall.position.x = 8;
-        wall.position.y = 0;
         wall.rotation.y = -Math.PI / 2;
         this._scene.add(wall);
 
         wall = new THREE.Mesh(wallGeometry, wallOutline);
         wall.position.x = 8;
-        wall.position.y = 0;
         wall.rotation.y = -Math.PI / 2;
         this._scene.add(wall);
 
         wall = new THREE.Mesh(wallGeometry, wallMaterial);
         wall.position.z = -8;
-        wall.position.y = 0;
         this._scene.add(wall);
 
         wall = new THREE.Mesh(wallGeometry, wallOutline);
         wall.position.z = -8;
-        wall.position.y = 0;
         this._scene.add(wall);
 
         wall = new THREE.Mesh(wallGeometry, wallMaterial);
         wall.position.x = -8;
-        wall.position.y = 0;
         wall.rotation.y = -Math.PI / 2;
         this._scene.add(wall);
 
         wall = new THREE.Mesh(wallGeometry, wallOutline);
         wall.position.x = -8;
-        wall.position.y = 0;
         wall.rotation.y = -Math.PI / 2;
         this._scene.add(wall);
 
@@ -228,13 +244,11 @@ class Experience {
         let roof = new THREE.Mesh(floorGeometry, floorMaterial);
         roof.position.y = 4;
         roof.rotation.x = -Math.PI / 2;
-        roof.receiveShadow = true;
         this._scene.add(roof);
 
         roof = new THREE.Mesh(floorGeometry, wallOutline);
         roof.position.y = 4;
         roof.rotation.x = -Math.PI / 2;
-        roof.receiveShadow = true;
         this._scene.add(roof);
     }
 
