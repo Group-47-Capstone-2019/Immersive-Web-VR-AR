@@ -150,26 +150,24 @@ class Experience {
     // --- TESTING FUNCTIONS ---------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    /*
-     * Testing PlaneGeometry for creating walls/floor/roof for a basic room.
-     */
-
-
     _boxRoomTest()
     {
         let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         this._scene.add(ambientLight);
         var loader = new THREE.TextureLoader();
-        loader.load('../images/wall.jpg', 
+        var roomMaterials = [];
+        var roomGeometry;
+        var roomMaterial;
+        var room;
+        loader.load('images/wall.jpg', 
             function(texture){
-                var roomMaterials = [];
                 for (var i = 0; i < 6; i++)
                 {
-                    roomMaterials.push(new THREE.MeshBasicMaterial({map : texture, overdraw : 0.5, side : THREE.BackSide}));
+                    roomMaterials.push(new THREE.MeshBasicMaterial({map : texture, side : THREE.BackSide}));
                 }
-                var roomGeometry = new THREE.CubeGeometry(25, 25, 25);
-                var roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
-                var room = new THREE.Mesh(roomGeometry, roomMaterial);
+                roomGeometry = new THREE.BoxGeometry(25, 25, 25);
+                roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
+                room = new THREE.Mesh(roomGeometry, roomMaterial);
                 room.rotation.x += Math.PI / 2;
                 this._scene.add(room);
             },
@@ -177,92 +175,14 @@ class Experience {
             function(err){
                 console.error("Texture not loading properly. Oh no!");
             }
-        );
-       
-        //var roomGeometry = new THREE.CubeGeometry(25, 25, 25);
-        //var roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
-        //var room = new THREE.Mesh(roomGeometry, roomMaterial);
-        //room.rotation.x += Math.PI / 2;
-        //this._scene.add(room);
-    }
-
-    _roomTest()
-    {
-        let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-        this._scene.add(ambientLight);
-        //const wallMaterial = new THREE.MeshBasicMaterial({color : 0xaaaaaa, side : THREE.DoubleSide});
-        //const floorMaterial = new THREE.MeshBasicMaterial({color : 0x888888, side : THREE.DoubleSide});
-        const wallMaterial = new THREE.MeshPhongMaterial({color : 0xaaaaaa, side : THREE.DoubleSide});
-        const floorMaterial = new THREE.MeshPhongMaterial({color : 0x888888, side : THREE.DoubleSide});
-        
-        const wallOutline = new THREE.MeshBasicMaterial({color : 0x000000, wireframe : true, side : THREE.DoubleSide});
-
-        const wallGeometry = new THREE.PlaneGeometry(16, 8);
-        const floorGeometry = new THREE.PlaneGeometry(16, 16);
-        
-        let wall = new THREE.Mesh(wallGeometry, wallMaterial);
-        wall.position.z = 8;
-        this._scene.add(wall);
-
-        wall = new THREE.Mesh(wallGeometry, wallOutline);
-        wall.position.z = 8;
-        this._scene.add(wall);
-
-        wall = new THREE.Mesh(wallGeometry, wallMaterial);
-        wall.position.x = 8;
-        wall.rotation.y = -Math.PI / 2;
-        this._scene.add(wall);
-
-        wall = new THREE.Mesh(wallGeometry, wallOutline);
-        wall.position.x = 8;
-        wall.rotation.y = -Math.PI / 2;
-        this._scene.add(wall);
-
-        wall = new THREE.Mesh(wallGeometry, wallMaterial);
-        wall.position.z = -8;
-        this._scene.add(wall);
-
-        wall = new THREE.Mesh(wallGeometry, wallOutline);
-        wall.position.z = -8;
-        this._scene.add(wall);
-
-        wall = new THREE.Mesh(wallGeometry, wallMaterial);
-        wall.position.x = -8;
-        wall.rotation.y = -Math.PI / 2;
-        this._scene.add(wall);
-
-        wall = new THREE.Mesh(wallGeometry, wallOutline);
-        wall.position.x = -8;
-        wall.rotation.y = -Math.PI / 2;
-        this._scene.add(wall);
-
-        let floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.y = -4;
-        floor.rotation.x = -Math.PI / 2;
-        floor.receiveShadow = true;
-        this._scene.add(floor);
-
-        floor = new THREE.Mesh(floorGeometry, wallOutline);
-        floor.position.y = -4;
-        floor.rotation.x = -Math.PI / 2;
-        floor.receiveShadow = true;
-        this._scene.add(floor);
-
-        let roof = new THREE.Mesh(floorGeometry, floorMaterial);
-        roof.position.y = 4;
-        roof.rotation.x = -Math.PI / 2;
-        this._scene.add(roof);
-
-        roof = new THREE.Mesh(floorGeometry, wallOutline);
-        roof.position.y = 4;
-        roof.rotation.x = -Math.PI / 2;
-        this._scene.add(roof);
+        );       
     }
 
     /*
      * Adds a simple box to the scene at (0, 0, -5) and tests its existence
      */
-    _boxTest()
+
+     _boxTest()
     {
         console.log("In box test");
         let geometry = new THREE.BoxGeometry(1, 1, 1);
