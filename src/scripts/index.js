@@ -159,24 +159,31 @@ class Experience {
     {
         let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         this._scene.add(ambientLight);
-        var roomMaterials = [];
-        var roomMaterialsOutline = [];
-        var texture = "../images/wall.jpg";
-        for (var i = 0; i < 6; i++)
-        {
-            roomMaterials.push(new THREE.MeshBasicMaterial({map : THREE.ImageUtils.loadTexture(texture), side : THREE.BackSide}));
-            roomMaterialsOutline.push(new THREE.MeshPhongMaterial({color : 0x000000, side : THREE.BackSide, wireframe : true}));
-        }
-
-        var roomGeometry = new THREE.CubeGeometry(25, 25, 25);
-        var roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
-        var roomOutlineMat = new THREE.MeshFaceMaterial(roomMaterialsOutline);
-        var room = new THREE.Mesh(roomGeometry, roomMaterial);
-        var roomOutline = new THREE.Mesh(roomGeometry, roomOutlineMat);
-        room.rotation.x += Math.PI / 2;
-        roomOutline.rotation.x += Math.PI / 2;
-        this._scene.add(room);
-        this._scene.add(roomOutline);
+        var loader = new THREE.TextureLoader();
+        loader.load('../images/wall.jpg', 
+            function(texture){
+                var roomMaterials = [];
+                for (var i = 0; i < 6; i++)
+                {
+                    roomMaterials.push(new THREE.MeshBasicMaterial({map : texture, overdraw : 0.5, side : THREE.BackSide}));
+                }
+                var roomGeometry = new THREE.CubeGeometry(25, 25, 25);
+                var roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
+                var room = new THREE.Mesh(roomGeometry, roomMaterial);
+                room.rotation.x += Math.PI / 2;
+                this._scene.add(room);
+            },
+            undefined,
+            function(err){
+                console.error("Texture not loading properly. Oh no!");
+            }
+        );
+       
+        //var roomGeometry = new THREE.CubeGeometry(25, 25, 25);
+        //var roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
+        //var room = new THREE.Mesh(roomGeometry, roomMaterial);
+        //room.rotation.x += Math.PI / 2;
+        //this._scene.add(room);
     }
 
     _roomTest()
