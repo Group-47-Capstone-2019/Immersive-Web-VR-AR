@@ -152,30 +152,53 @@ class Experience {
 
     _boxRoomTest()
     {
-        let ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        // Basic lighting
+        let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         this._scene.add(ambientLight);
+
+        let pointLight = new THREE.PointLight(0xffffff, 0.8);
+        pointLight.position.set(0, 0, -5);
+        this._scene.add(pointLight);
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        directionalLight.position.set(0, 0, -5).normalize();
+        this._scene.add(directionalLight);
+
+        var spotLight = new THREE.SpotLight(0xffffff, 1.5);
+        spotLight.position.set( 0, 0, 10);
+        this._scene.add( spotLight );
+
+
         var loader = new THREE.TextureLoader();
         var roomMaterials = [];
-        var roomGeometry;
-        var roomMaterial;
-        var room;
-        loader.load('images/wall.jpg', 
+        var roomGeometry = new THREE.BoxGeometry(12, 8, 12);
+        var wallTexture = './images/wall.png';
+        loader.load(wallTexture, 
             function(texture){
                 for (var i = 0; i < 6; i++)
                 {
-                    roomMaterials.push(new THREE.MeshBasicMaterial({map : texture, side : THREE.BackSide}));
+                    roomMaterials.push(new THREE.MeshPhongMaterial({map : texture, side : THREE.BackSide}));
                 }
-                roomGeometry = new THREE.BoxGeometry(25, 25, 25);
-                roomMaterial = new THREE.MeshFaceMaterial(roomMaterials);
-                room = new THREE.Mesh(roomGeometry, roomMaterial);
-                room.rotation.x += Math.PI / 2;
-                this._scene.add(room);
             },
             undefined,
             function(err){
-                console.error("Texture not loading properly. Oh no!");
+                console.error("Texture not loading properly, using default material.");
+                for (var i = 0; i < 6; i++)
+                {
+                    roomMaterials.push(new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide}));
+                }
             }
-        );       
+        );
+        var room = new THREE.Mesh(roomGeometry, roomMaterials);
+        if(room){
+            //room.rotation.x += Math.PI / 2;
+            room.receiveShadow = true;
+            room.castShadow = true;
+            this._scene.add(room);
+        }
+        else{
+            console.error("Error creating room mesh.");
+        }
     }
 
     /*
