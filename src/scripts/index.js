@@ -4,6 +4,24 @@ import wallTexture from '/images/wall.png';
 
 class Experience {
 
+    static get SETTINGS() {
+        return {
+            global : {
+                lights : {
+                    ambient : true
+                }
+            },
+            room : {
+                textures : {
+                    enabled : false
+                },
+                lights : {
+                    point : true
+                }
+            }
+        }
+    }
+
     static get CAMERA_SETTINGS() {
         return {
             viewAngle : 90,
@@ -21,6 +39,7 @@ class Experience {
 
     constructor()
     {
+        this._settings = Experience.SETTINGS;
         this._debug = Experience.DEBUG;
 
         this._scene;
@@ -109,37 +128,60 @@ class Experience {
      */
     _createRoom()
     {
+        let roomSettings = this._settings.room;
+
         // Basic lighting
-        let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        this._scene.add(ambientLight);
+        if(this._settings.global.lights.ambient)
+        {
+            let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            this._scene.add(ambientLight);
+        }
 
-        let pointLight = new THREE.PointLight(0xffffff, 0.8);
-        pointLight.position.set(0, 0, 0);
-        this._scene.add(pointLight);
+        if(roomSettings.lights.point)
+        {
+            let pointLight = new THREE.PointLight(0xffffff, 0.8);
+            pointLight.position.set(0, 0, 0);
+            this._scene.add(pointLight);
+        }
 
-        var roomMaterials = [];
-        var roomGeometry = new THREE.BoxGeometry(12, 8, 12);
+        //Generate room geometry
+        let roomGeometry = new THREE.BoxGeometry(12, 8, 12);
 
-        //Load texture images via path and converts them to THREE.Texture objects
-        var loader = new THREE.TextureLoader();
-        loader.load('', 
-            function(texture){
-                for (var i = 0; i < 6; i++)
-                {
-                    roomMaterials.push(new THREE.MeshPhongMaterial({map : texture, side : THREE.BackSide}));
+        let roomMaterials;
+        
+        if(roomSettings.textures.enabled)
+        {
+            //Set room materials to an array such that it can hold a texture for each face
+            roomMaterials = [];
+
+            //Load texture images via path and converts them to THREE.Texture objects
+            let loader = new THREE.TextureLoader();
+
+            loader.load(wallTexture, 
+                function(texture){
+                    for (let i = 0; i < 6; i++)
+                    {
+                        roomMaterials.push(new THREE.MeshPhongMaterial({map : texture, side : THREE.BackSide}));
+                    }
+                },
+                undefined,
+                function(err){
+                    console.error("Texture not loading properly, using default material.");
+                    for (let i = 0; i < 6; i++)
+                    {
+                        roomMaterials.push(new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide}));
+                    }
                 }
-            },
-            undefined,
-            function(err){
-                console.error("Texture not loading properly, using default material.");
-                for (var i = 0; i < 6; i++)
-                {
-                    roomMaterials.push(new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide}));
-                }
-            }
-        );
+            );
+            
+        }
+        else //Set material to default if textures are not enabled
+        {
+            roomMaterials = new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide})
+        }
 
-        var room = new THREE.Mesh(roomGeometry, roomMaterials);
+        //Generate room mesh using geometry and materials
+        let room = new THREE.Mesh(roomGeometry, roomMaterials);
 
         if(room){
             room.receiveShadow = true;
