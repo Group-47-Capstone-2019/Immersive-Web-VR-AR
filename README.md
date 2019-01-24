@@ -14,3 +14,6 @@ Start the development server using
 $ npm run dev
 ```
 The project will be running on `http://localhost:1234`. The development server will watch for changes in the source files and automatically reload the page after compiling them.
+
+# Working with remote devices
+To then work on a remote device, install Chrome Canary (we're playing with cutting edge stuff) and open the inspect tab: chrome://inspect  Configure the port forwarding.  It should have a port (such as 8080) for the http that forwards to localhost:1234 and another one from 64320 to localhost:64320 which is how Parcel does it's live updating stuff.
