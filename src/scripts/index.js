@@ -1,8 +1,27 @@
 import * as THREE from 'three';
 import 'babel-polyfill';
+import wallTexture from '/images/wall.png';
 
 class Experience {
-    
+
+    static get SETTINGS() {
+        return {
+            global : {
+                lights : {
+                    ambient : true
+                }
+            },
+            room : {
+                textures : {
+                    enabled : false
+                },
+                lights : {
+                    point : true
+                }
+            }
+        }
+    }
+
     static get CAMERA_SETTINGS() {
         return {
             viewAngle : 90,
@@ -20,6 +39,7 @@ class Experience {
 
     constructor()
     {
+        this._settings = Experience.SETTINGS;
         this._debug = Experience.DEBUG;
 
         this._scene;
@@ -99,6 +119,78 @@ class Experience {
             if(this._debug.boxTest)
                 this._boxTest(); 
         }
+        
+        this._createRoom();
+    }
+
+    /*
+     * Creates initial scene room with settings defined in SETTINGS
+     */
+    _createRoom()
+    {
+        let roomSettings = this._settings.room;
+
+        // Basic lighting
+        if(this._settings.global.lights.ambient)
+        {
+            let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            this._scene.add(ambientLight);
+        }
+
+        if(roomSettings.lights.point)
+        {
+            let pointLight = new THREE.PointLight(0xffffff, 0.8);
+            pointLight.position.set(0, 0, 0);
+            this._scene.add(pointLight);
+        }
+
+        //Generate room geometry
+        let roomGeometry = new THREE.BoxGeometry(12, 8, 12);
+
+        let roomMaterials;
+        
+        if(roomSettings.textures.enabled)
+        {
+            //Set room materials to an array such that it can hold a texture for each face
+            roomMaterials = [];
+
+            //Load texture images via path and converts them to THREE.Texture objects
+            let loader = new THREE.TextureLoader();
+
+            loader.load(wallTexture, 
+                function(texture){
+                    for (let i = 0; i < 6; i++)
+                    {
+                        roomMaterials.push(new THREE.MeshPhongMaterial({map : texture, side : THREE.BackSide}));
+                    }
+                },
+                undefined,
+                function(err){
+                    console.error("Texture not loading properly, using default material.");
+                    for (let i = 0; i < 6; i++)
+                    {
+                        roomMaterials.push(new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide}));
+                    }
+                }
+            );
+            
+        }
+        else //Set material to default if textures are not enabled
+        {
+            roomMaterials = new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide})
+        }
+
+        //Generate room mesh using geometry and materials
+        let room = new THREE.Mesh(roomGeometry, roomMaterials);
+
+        if(room){
+            room.receiveShadow = true;
+            room.castShadow = true;
+            this._scene.add(room);
+        }
+        else{
+            console.error("Error creating room mesh.");
+        }
     }
 
     /*
@@ -150,7 +242,7 @@ class Experience {
     /*
      * Adds a simple box to the scene at (0, 0, -5) and tests its existence
      */
-    _boxTest()
+     _boxTest()
     {
         console.log("In box test");
         let geometry = new THREE.BoxGeometry(1, 1, 1);
