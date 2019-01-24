@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import 'babel-polyfill';
+import wallTexture from '/images/wall.png';
 
 class Experience {
-    
+
     static get CAMERA_SETTINGS() {
         return {
             viewAngle : 90,
@@ -155,7 +156,7 @@ class Experience {
         this._scene.add(ambientLight);
 
         let pointLight = new THREE.PointLight(0xffffff, 0.8);
-        pointLight.position.set(0, 0, -5);
+        pointLight.position.set(0, 0, 0);
         this._scene.add(pointLight);
 
         var directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -166,11 +167,11 @@ class Experience {
         spotLight.position.set( 0, 0, 10);
         this._scene.add( spotLight );
 
-
-        var loader = new THREE.TextureLoader();
         var roomMaterials = [];
         var roomGeometry = new THREE.BoxGeometry(12, 8, 12);
-        var wallTexture = './images/wall.png';
+
+        //Load texture images via path and converts them to THREE.Texture objects
+        var loader = new THREE.TextureLoader();
         loader.load(wallTexture, 
             function(texture){
                 for (var i = 0; i < 6; i++)
