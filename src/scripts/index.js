@@ -159,20 +159,24 @@ class Experience {
         pointLight.position.set(0, 0, 0);
         this._scene.add(pointLight);
 
+        /*        
         var directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        directionalLight.position.set(0, 0, -5).normalize();
+        directionalLight.position.set(0, 0, 0).normalize();
         this._scene.add(directionalLight);
+        */
 
+        /*
         var spotLight = new THREE.SpotLight(0xffffff, 1.5);
-        spotLight.position.set( 0, 0, 10);
+        spotLight.position.set( 0, 0, this._camera.position.z);
         this._scene.add( spotLight );
+        */
 
         var roomMaterials = [];
         var roomGeometry = new THREE.BoxGeometry(12, 8, 12);
 
         //Load texture images via path and converts them to THREE.Texture objects
         var loader = new THREE.TextureLoader();
-        loader.load(wallTexture, 
+        loader.load('', 
             function(texture){
                 for (var i = 0; i < 6; i++)
                 {
@@ -190,7 +194,6 @@ class Experience {
         );
         var room = new THREE.Mesh(roomGeometry, roomMaterials);
         if(room){
-            //room.rotation.x += Math.PI / 2;
             room.receiveShadow = true;
             room.castShadow = true;
             this._scene.add(room);
