@@ -100,7 +100,55 @@ class Experience {
             if(this._debug.boxTest)
                 this._boxTest(); 
         }
-        this._boxRoomTest();
+        
+        this._createRoom();
+    }
+
+    /*
+     * Creates initial scene room with settings defined in SETTINGS
+     */
+    _createRoom()
+    {
+        // Basic lighting
+        let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        this._scene.add(ambientLight);
+
+        let pointLight = new THREE.PointLight(0xffffff, 0.8);
+        pointLight.position.set(0, 0, 0);
+        this._scene.add(pointLight);
+
+        var roomMaterials = [];
+        var roomGeometry = new THREE.BoxGeometry(12, 8, 12);
+
+        //Load texture images via path and converts them to THREE.Texture objects
+        var loader = new THREE.TextureLoader();
+        loader.load('', 
+            function(texture){
+                for (var i = 0; i < 6; i++)
+                {
+                    roomMaterials.push(new THREE.MeshPhongMaterial({map : texture, side : THREE.BackSide}));
+                }
+            },
+            undefined,
+            function(err){
+                console.error("Texture not loading properly, using default material.");
+                for (var i = 0; i < 6; i++)
+                {
+                    roomMaterials.push(new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide}));
+                }
+            }
+        );
+
+        var room = new THREE.Mesh(roomGeometry, roomMaterials);
+
+        if(room){
+            room.receiveShadow = true;
+            room.castShadow = true;
+            this._scene.add(room);
+        }
+        else{
+            console.error("Error creating room mesh.");
+        }
     }
 
     /*
@@ -149,64 +197,9 @@ class Experience {
     // --- TESTING FUNCTIONS ---------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    _boxRoomTest()
-    {
-        // Basic lighting
-        let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        this._scene.add(ambientLight);
-
-        let pointLight = new THREE.PointLight(0xffffff, 0.8);
-        pointLight.position.set(0, 0, 0);
-        this._scene.add(pointLight);
-
-        /*        
-        var directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        directionalLight.position.set(0, 0, 0).normalize();
-        this._scene.add(directionalLight);
-        */
-
-        /*
-        var spotLight = new THREE.SpotLight(0xffffff, 1.5);
-        spotLight.position.set( 0, 0, this._camera.position.z);
-        this._scene.add( spotLight );
-        */
-
-        var roomMaterials = [];
-        var roomGeometry = new THREE.BoxGeometry(12, 8, 12);
-
-        //Load texture images via path and converts them to THREE.Texture objects
-        var loader = new THREE.TextureLoader();
-        loader.load('', 
-            function(texture){
-                for (var i = 0; i < 6; i++)
-                {
-                    roomMaterials.push(new THREE.MeshPhongMaterial({map : texture, side : THREE.BackSide}));
-                }
-            },
-            undefined,
-            function(err){
-                console.error("Texture not loading properly, using default material.");
-                for (var i = 0; i < 6; i++)
-                {
-                    roomMaterials.push(new THREE.MeshPhongMaterial({color : 0x003050, side : THREE.BackSide}));
-                }
-            }
-        );
-        var room = new THREE.Mesh(roomGeometry, roomMaterials);
-        if(room){
-            room.receiveShadow = true;
-            room.castShadow = true;
-            this._scene.add(room);
-        }
-        else{
-            console.error("Error creating room mesh.");
-        }
-    }
-
     /*
      * Adds a simple box to the scene at (0, 0, -5) and tests its existence
      */
-
      _boxTest()
     {
         console.log("In box test");
