@@ -1,6 +1,10 @@
+import WebXRPolyfill from 'webxr-polyfill';
 import * as THREE from 'three';
 import 'babel-polyfill';
 import wallTexture from '/images/wall.png';
+
+//Instantiate the WebXRPolyfill which will modify the page to allow for XR function
+const polyfill = new WebXRPolyfill();
 
 class Experience {
 
@@ -52,6 +56,12 @@ class Experience {
         this._width;
         this._height;
 
+        //XR fields
+        this._xrDevice;
+        this._xrSession;
+        this._xrFrameOfRef;
+        this._xrMagicWindowCanvas;
+
         this._initContainer();
 
         this._setDimensions();
@@ -67,8 +77,10 @@ class Experience {
         this._setEventListeners();
         
         requestAnimationFrame(this._animate);
-    }
 
+        this._validateXR();
+    }
+    
     /*
      * Query selects container HTML element and clears its content
      */
@@ -108,6 +120,33 @@ class Experience {
             this._camSettings.near, 
             this._camSettings.far
             );
+    }
+
+
+    /*
+     * Waits for an XR device to connect to the session and validates its capabilities
+     */
+    _validateXR()
+    {
+        //Check that the browser has XR enabled
+        if(navigator.xr)
+        {
+            // See if a device is available.
+            navigator.xr.requestDevice().then(device => {
+                this._initXR(device);
+            }).catch(function() {
+                console.error("XR Device not found!\nListening for devices . . .");
+            });
+        }
+    }
+
+    /*
+     * Obtains information about the connected XR device
+     */
+    _initXR(device)
+    {
+        console.log("Device found!\n");
+        console.log(device);
     }
 
     /*
@@ -206,6 +245,8 @@ class Experience {
     _setEventListeners()
     {
         window.addEventListener('resize', this._onWindowResize);
+        if(navigator.xr)
+            navigator.xr.addEventListener('devicechange', this._validateXR);
     }
 
     _onWindowResize = () =>
