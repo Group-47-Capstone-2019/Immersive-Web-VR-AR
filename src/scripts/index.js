@@ -79,7 +79,7 @@ class Experience {
         
         requestAnimationFrame(this._animate);
 
-        this._validateXR();
+        this._xrValidate();
     }
     
     /*
@@ -127,17 +127,18 @@ class Experience {
     /*
      * Waits for an XR device to connect to the session and validates its capabilities
      */
-    _validateXR()
+    _xrValidate()
     {
         //Check that the browser has XR enabled
         if(navigator.xr)
         {
             // See if a device is available.
             navigator.xr.requestDevice().then(device => {
-                console.log("Device found!\n");
-                console.log(device);
-                this._xrDevice = device;
-                this._initXR();
+                device.supportsSession({immersive : true}).then(() => {
+                    this._xrInit(device);
+                }).catch(function() {
+                    console.error("XR Device not compatible!");
+                });
             }).catch(function() {
                 console.error("XR Device not found!\nListening for devices . . .");
             });
@@ -147,9 +148,43 @@ class Experience {
     /*
      * Obtains information about the connected XR device
      */
-    _initXR()
+    _xrInit(device)
     {
+        console.log("Compatible XR device found!");
+        console.log(device);
 
+        //TODO: Set up an XR session
+
+        //Give the threejs rendering context access to the xr device
+        this._renderer.vr.setDevice(device);
+        this._xrDevice = device;
+    }
+
+    /*
+     * Called when XR session begins
+     * Gives the threejs renderer a reference to the xr session
+     */
+    _xrOnSessionStart(session)
+    {
+        console.log("Session obtained!");
+        console.log(session);
+
+        session.addEventListener('end', this._xrOnSessionEnd);
+
+        this._renderer.vr.setSession(session);
+        this._xrSession = session;
+    }
+
+    /*
+     * Clears the session field and event listener
+     */
+    _xrOnSessionEnd()
+    {
+        this._xrSession.removeEventListener('end', this._xrOnSessionEnd);
+
+        this._renderer.vr.setSession(null)
+
+        this._xrSession = null;
     }
 
     /*
@@ -249,7 +284,7 @@ class Experience {
     {
         window.addEventListener('resize', this._onWindowResize);
         if(navigator.xr)
-            navigator.xr.addEventListener('devicechange', this._validateXR);
+            navigator.xr.addEventListener('devicechange', this._xrValidate);
     }
 
     _onWindowResize = () =>
