@@ -136,6 +136,9 @@ class Experience {
         });
     }
 
+    /*
+     * Checks for VR support and then creates the enter VR button
+     */
     _onXRSupported(device)
     {
         this._xrDevice = device;
@@ -147,6 +150,9 @@ class Experience {
         });
     }
 
+    /*
+     * Creates a button that renders each eye for VR
+     */
     _createVRButton()
     {
         this._vrButton = document.createElement('button');
