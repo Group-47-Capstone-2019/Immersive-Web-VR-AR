@@ -52,6 +52,9 @@ class Experience {
         this._width;
         this._height;
 
+        this._vrButton;
+        this._xrDevice;
+
         this._initContainer();
 
         this._setDimensions();
@@ -59,6 +62,10 @@ class Experience {
         this._createScene();
 
         this._createCamera();
+
+        //this._checkForXR();
+
+        this._createVRButton();
 
         this._initGeometry();
 
@@ -108,6 +115,48 @@ class Experience {
             this._camSettings.near, 
             this._camSettings.far
             );
+    }
+
+    /*
+     * Checks to see if there is a connected device that supports WebXR and whether or not to display an "Enter VR" button.
+     */
+    _checkForXR()
+    {
+        navigator.xr.requestDevice().then(device => 
+        {
+            this._onXRSupported(device);
+        }, err => 
+        {
+            if(err.message === 'NotFoundError'){
+                console.error('No XR devices found : ', err);
+            }
+            else{
+                console.error('Failure in requesting XR device : ', err);
+            }
+        });
+    }
+
+    _onXRSupported(device)
+    {
+        this._xrDevice = device;
+        this._xrDevice.supportsSession({immersive: true}).then(() =>
+        {
+            this._createVRButton();
+        }).catch((err) => {
+            console.log('VR not supported by device : ' + err);
+        });
+    }
+
+    _createVRButton()
+    {
+        this._vrButton = document.createElement('button');
+        this._vrButton.classList.add('vr-toggle');
+        this._vrButton.textContent = 'Enter VR';
+        this._vrButton.addEventListener('click', _ =>
+        {
+            alert('VR rendering not yet supported.');
+        });
+        document.body.appendChild(this._vrButton);
     }
 
     /*
