@@ -1,10 +1,11 @@
 import WebXRPolyfill from 'webxr-polyfill';
 import * as THREE from 'three';
 import 'babel-polyfill';
+
 import wallTexture from '/images/wall.png';
 
 //Instantiate the WebXRPolyfill which will modify the page to allow for XR function
-const polyfill = new WebXRPolyfill();
+new WebXRPolyfill();
 
 class Experience {
 
@@ -133,7 +134,10 @@ class Experience {
         {
             // See if a device is available.
             navigator.xr.requestDevice().then(device => {
-                this._initXR(device);
+                console.log("Device found!\n");
+                console.log(device);
+                this._xrDevice = device;
+                this._initXR();
             }).catch(function() {
                 console.error("XR Device not found!\nListening for devices . . .");
             });
@@ -143,10 +147,9 @@ class Experience {
     /*
      * Obtains information about the connected XR device
      */
-    _initXR(device)
+    _initXR()
     {
-        console.log("Device found!\n");
-        console.log(device);
+
     }
 
     /*
