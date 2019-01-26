@@ -31,3 +31,7 @@ export function navigate(newPath) {
   window.history.pushState({}, newPath, window.location.origin + newPath);
   navigateToScene(newPath);
 }
+
+window.onpopstate = () => {
+  navigateToScene(window.location.pathname);
+};
