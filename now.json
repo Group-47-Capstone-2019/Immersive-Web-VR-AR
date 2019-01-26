@@ -9,10 +9,10 @@
     }
   ],
   "routes": [
-    { "src": "/planets", "dest": "/index.html?room=planets" },
-    { "src": "/pendulum", "dest": "/index.html?room=pendulum" },
-    { "src": "/gravity", "dest": "/index.html?room=gravity" },
-    { "src": "/lasers", "dest": "/index.html?lasers" }
+    { "src": "/planets", "dest": "/index.html" },
+    { "src": "/pendulum", "dest": "/index.html" },
+    { "src": "/gravity", "dest": "/index.html" },
+    { "src": "/lasers", "dest": "/index.html" }
   ],
   "alias": "webxr-physics.now.sh"
 }
