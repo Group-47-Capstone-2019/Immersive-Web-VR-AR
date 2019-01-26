@@ -8,5 +8,11 @@
       "config": { "distDir": "dist" }
     }
   ],
+  "routes": [
+    { "src": "/planets", "dest": "/index.html?room=planets" },
+    { "src": "/pendulum", "dest": "/index.html?room=pendulum" },
+    { "src": "/gravity", "dest": "/index.html?room=gravity" },
+    { "src": "/lasers", "dest": "/index.html?lasers" }
+  ],
   "alias": "webxr-physics.now.sh"
 }
