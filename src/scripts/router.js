@@ -1,6 +1,7 @@
 import { HomeScene } from './scenes/home';
 import { renderer } from './renderer';
 import { camera } from './renderer/camera';
+import { PlanetsScene } from './scenes/planets';
 
 // update scene when page loaded
 navigateToScene(window.location.pathname);
@@ -12,8 +13,12 @@ navigateToScene(window.location.pathname);
 function navigateToScene(pathname) {
   switch (pathname) {
     case '/':
-      const scene = new HomeScene(renderer, camera);
-      requestAnimationFrame(scene.animate);
+      const homeScene = new HomeScene(renderer, camera);
+      requestAnimationFrame(homeScene.animate);
+      break;
+    case '/planets':
+      const planetScene = new PlanetsScene(renderer, camera);
+      requestAnimationFrame(planetScene.animate);
       break;
   }
 }
