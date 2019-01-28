@@ -4,6 +4,7 @@ import { updateAspectRatio } from './camera';
 
 export const renderer = new WebGLRenderer({ canvas: canvas });
 renderer.setSize(initialWidth, initialHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 
 // update renderer and camera size to match new canvas element size
 const onResize = () => {
