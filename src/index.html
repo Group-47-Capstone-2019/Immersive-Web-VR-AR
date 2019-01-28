@@ -4,26 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/style.css" />
     <title>WebXR Physics</title>
   </head>
   <body>
-    <header>
-      <h1>Web XR Physics Demo</h1>
-    </header>
+    <header><h1>Web XR Physics Demo</h1></header>
+    <canvas id="vr-port"></canvas>
     <main>
-      <p>
-        This is where a description of what we're doing with this would be.
-      </p>
+      <p>This is where a description of what we're doing with this would be.</p>
       <h1>Our Team</h1>
-      <p>
-
-      </p>
+      <p></p>
 
       <ul>
         <li>Alexis M&eacute;nard - Project Client</li>
         <li>Jonathan Jones</li>
-        <li>Brooks Mikkelson</li>
+        <li>Brooks Mikkelsen</li>
         <li>Brandon Mei</li>
         <li>Tim Forsyth</li>
         <li>Evan Brass</li>
@@ -31,9 +26,18 @@
 
       <h2>Available Experiments</h2>
       <ul>
-        <li><a href="?room=planets">Planetary Diorama</a>: View the motion of our solar system in 3d.</li>
-        <li><a href="?room=gravity">Falling Objects</a>: Understand how local gravity affects objects with and without air resistance.</li>
-        <li><a href="?room=pendulum">Pendulums</a>: See how pendulums are affected by a different local gravity.</li>
+        <li>
+          <a id="planets-link" class="link">Planetary Diorama</a>: View the motion of our
+          solar system in 3d.
+        </li>
+        <li>
+          <a id="falling-link" class="link">Falling Objects</a>: Understand how local
+          gravity affects objects with and without air resistance.
+        </li>
+        <li>
+          <a id="pendulums-link" class="link">Pendulums</a>: See how pendulums are affected
+          by a different local gravity.
+        </li>
       </ul>
     </main>
   </body>
