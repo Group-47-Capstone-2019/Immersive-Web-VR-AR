@@ -13,14 +13,20 @@ export const camera = new PerspectiveCamera(
   cameraSettings.near,
   cameraSettings.far
 );
+updateAspectRatio(window.innerWidth, window.innerHeight);
 
 /**
  * updates the camera aspect ratio. to be called when window is
  * resized
- * @param {number} ratio
+ * @param {Number} width
+ * @param {Number} height
  */
-export const updateAspectRatio = ratio => {
+export function updateAspectRatio (width, height) {
+  const ratio = width / height;
+  const PixelsPerDegree = 10;
+  const fov = height / PixelsPerDegree;
   camera.aspect = ratio;
+  camera.fov = fov;
   camera.updateProjectionMatrix();
 };
 

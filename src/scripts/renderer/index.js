@@ -12,11 +12,11 @@ const onResize = () => {
   const { innerWidth, innerHeight } = window;
   const newAspect = innerWidth / innerHeight;
   const oldAspect = getAspectRatio();
-  if ((newAspect > 1 && oldAspect < 1) || (newAspect < 1 && oldAspect > 1)) {
+  if (Math.abs(oldAspect - newAspect) > .1) {
     canvas.width = innerWidth;
     canvas.height = innerHeight;
     renderer.setSize(innerWidth, innerHeight);
-    updateAspectRatio(newAspect);
+    updateAspectRatio(innerWidth, innerHeight);
   }
 };
 
