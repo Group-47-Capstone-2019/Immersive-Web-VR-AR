@@ -1,11 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Merriweather|Roboto');
 
-#vr-port {
+.full-page {
+  width: 100%;
   height: 100vh;
-  width: 100vw;
+  position: relative;
+  text-align: center;
 }
 
-header h1 {
+header {
   margin: 0;
   max-width: 100%;
   max-height: 100%;
@@ -13,6 +15,15 @@ header h1 {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+
+#vr-port {
+  height: 100% !important;
+  width: 100% !important;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
 }
 
 header h1,
@@ -33,14 +44,12 @@ header::after {
 header::after {
   animation: arrow-anim 1s infinite alternate ease-out;
   font-weight: bold;
-  left: 50%;
-  position: absolute;
+  content: '￬';
+  z-index: 2;
+  position: relative;
   display: block;
   font-size: 36px;
-  content: '￬';
   padding: 10px;
-  transform: translateX(-50%);
-  z-index: 2;
 }
 
 body {
