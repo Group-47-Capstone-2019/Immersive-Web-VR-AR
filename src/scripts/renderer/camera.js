@@ -23,3 +23,7 @@ export const updateAspectRatio = ratio => {
   camera.aspect = ratio;
   camera.updateProjectionMatrix();
 };
+
+export function getAspectRatio() {
+  return camera.aspect;
+}
