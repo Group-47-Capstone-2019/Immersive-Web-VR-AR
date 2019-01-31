@@ -1,7 +1,7 @@
 import { PerspectiveCamera } from 'three';
 import { initialAspect } from './canvas';
 
-const cameraSettings = {
+export const cameraSettings = {
   viewAngle: 90,
   near: 0.1,
   far: 1000

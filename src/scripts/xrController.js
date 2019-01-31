@@ -1,5 +1,5 @@
 import {canvas} from './renderer/canvas';
-import {camera} from './renderer/camera';
+import {camera, cameraSettings} from './renderer/camera';
 import {renderer} from './renderer';
 
 import WebXRPolyfill from 'webxr-polyfill';
@@ -7,11 +7,14 @@ import WebXRPolyfill from 'webxr-polyfill';
 
 export const polyfill = new WebXRPolyfill();
 
-//XR fields
+/**
+ * XR fields we are using
+ * Explained here : { https://github.com/immersive-web/webxr-reference/tree/master/webxr-device-api }
+ */
 export let
-    xrDevice,
-    xrSession,
-    xrFrameOfRef,
+    xrDevice,               //Represents a single hardware device and provides methods for obtaining an XRSession object (For interfacing with the device).
+    xrSession,              //Provides the means to interact with an XR Device.
+    xrFrameOfRef,           //Provides information about the spatial point from which AR/VR measurements are made. 
     xrMagicWindowCanvas
 ;
 
@@ -45,7 +48,8 @@ function xrValidate()
 function xrInit(device)
 {
     console.log("Compatible XR device found!");
-    console.log(device);
+
+    xrDevice = device;
 
     //TODO: @author TimForsyth put the reference to your VR button setup here
 
@@ -58,46 +62,82 @@ function xrInit(device)
 /**
  * Checks for magic window compatibility
  */
-function xrValidateMagicWindow(device) 
+function xrValidateMagicWindow() 
 {
     xrMagicWindowCanvas = document.createElement('canvas');
     xrMagicWindowCanvas.setAttribute('id', 'vr-port');
+    xrMagicWindowCanvas.setAttribute('name', 'magic-window');
 
     //Set canvas rendering context to xrpresent
     let xrMagicWindowContext = xrMagicWindowCanvas.getContext('xrpresent');
 
-    device.supportsSession({outputContext : xrMagicWindowContext}).then(() => {
-        console.log("Supports magic window session.");
+    //Checks if the given context can support magic window sessions
+    xrDevice.supportsSession({outputContext : xrMagicWindowContext}).then(() => {
+        console.log("Device supports Magic Window session.");
+        xrEnableMagicWindow(xrMagicWindowContext);
+
+        canvas.parentNode.replaceChild(xrMagicWindowCanvas, canvas);
     }).catch((err) => {
         console.error("Magic Window : Not supported : " + err);
     });
 }
 
-/*
- * Called when XR session begins
- * Gives the threejs renderer a reference to the xr session
- */
-function xrOnSessionStart(session)
+async function xrEnableMagicWindow(context) 
 {
-    console.log("Session obtained!");
-    console.log(session);
+    try {
+        //Get an XR session with the given context
+        xrSession = await xrDevice.requestSession({outputContext : context});
 
-    session.addEventListener('end', xrOnSessionEnd);
+        //Set near and far settings for session camera
+        xrSession.depthNear = cameraSettings.near;
+        xrSession.depthFar = cameraSettings.far;
 
-    renderer.vr.setSession(session);
-    xrSession = session;
+        //Get frame of reference at eye level
+        xrFrameOfRef = await xrSession.requestFrameOfReference("eye-level");
+
+        renderer.vr.setDevice(xrDevice);
+
+        xrSession.baseLayer = new XRWebGLLayer(xrSession, renderer.context);
+
+        xrSession.requestAnimationFrame(xrUpdate); //Gets a view
+
+    } catch (err) {
+        console.error("Magic Window : Error initializing : " + err);
+    };
 }
 
-/*
- * Clears the session field and event listener
- */
-function xrOnSessionEnd()
-{
-    xrSession.removeEventListener('end', xrOnSessionEnd);
-
-    renderer.vr.setSession(null)
-
-    xrSession = null;
+function xrUpdate(time, frame) {
+    console.log(frame);
 }
+
+//Not sure how to use these yet
+
+// /*
+//  * Called when XR session begins
+//  * Gives the threejs renderer a reference to the xr session
+//  */
+// function xrOnSessionStart(session)
+// {
+//     console.log("Session obtained!");
+//     console.log(session);
+
+//     session.addEventListener('end', xrOnSessionEnd);
+
+//     //renderer.vr.setSession(session);
+//     xrSession = session;
+// }
+
+// /*
+//  * Clears the session field and event listener
+//  */
+// function xrOnSessionEnd()
+// {
+//     xrSession.removeEventListener('end', xrOnSessionEnd);
+
+//     renderer.vr.setSession(null)
+
+//     xrSession = null;
+// }
+
 
 xrValidate();
