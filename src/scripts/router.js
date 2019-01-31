@@ -6,6 +6,8 @@ import { PlanetsScene } from './scenes/planets';
 // update scene when page loaded
 navigateToScene(window.location.pathname);
 
+export let currentScene;
+
 /**
  * update currently displayed scene based on the pathname
  * @param {string} pathname
@@ -13,14 +15,14 @@ navigateToScene(window.location.pathname);
 function navigateToScene(pathname) {
   switch (pathname) {
     case '/':
-      const homeScene = new HomeScene(renderer, camera);
-      requestAnimationFrame(homeScene.animate);
+      currentScene = new HomeScene(renderer, camera);
       break;
     case '/planets':
-      const planetScene = new PlanetsScene(renderer, camera);
-      requestAnimationFrame(planetScene.animate);
+      currentScene = new PlanetsScene(renderer, camera);
       break;
   }
+
+  requestAnimationFrame(currentScene.animate);
 }
 
 /**
