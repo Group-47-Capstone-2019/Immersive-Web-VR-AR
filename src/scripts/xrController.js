@@ -8,10 +8,11 @@ import WebXRPolyfill from 'webxr-polyfill';
 export const polyfill = new WebXRPolyfill();
 
 //XR fields
-let
+export let
     xrDevice,
     xrSession,
-    xrFrameOfRef
+    xrFrameOfRef,
+    xrMagicWindowCanvas
 ;
 
 /*
@@ -22,12 +23,15 @@ function xrValidate()
     //Check that the browser has XR enabled
     if(navigator.xr)
     {
+        //Listens for when a device changes and calls this function once again to validate the new device / setup XR sessions
+        navigator.xr.addEventListener('device-change', xrValidate);
         // See if a device is available.
         navigator.xr.requestDevice().then(device => {
+            //Does this device have immersive XR capability?
             device.supportsSession({immersive : true}).then(() => {
                 xrInit(device);
             }).catch(function() {
-                console.error("XR Device not compatible!");
+                console.error("Not an XR device!");
             });
         }).catch(function() {
             console.error("XR Device not found!\nListening for devices . . .");
@@ -43,13 +47,30 @@ function xrInit(device)
     console.log("Compatible XR device found!");
     console.log(device);
 
-    //TODO: Set up an XR session
+    //TODO: @author TimForsyth put the reference to your VR button setup here
 
-    console.log(renderer.vr);
+    xrValidateMagicWindow(device);
 
     //Give the threejs rendering context access to the xr device
     //renderer.vr.setDevice(device);
-    xrDevice = device;
+}
+
+/**
+ * Checks for magic window compatibility
+ */
+function xrValidateMagicWindow(device) 
+{
+    xrMagicWindowCanvas = document.createElement('canvas');
+    xrMagicWindowCanvas.setAttribute('id', 'vr-port');
+
+    //Set canvas rendering context to xrpresent
+    let xrMagicWindowContext = xrMagicWindowCanvas.getContext('xrpresent');
+
+    device.supportsSession({outputContext : xrMagicWindowContext}).then(() => {
+        console.log("Supports magic window session.");
+    }).catch((err) => {
+        console.error("Magic Window : Not supported : " + err);
+    });
 }
 
 /*
