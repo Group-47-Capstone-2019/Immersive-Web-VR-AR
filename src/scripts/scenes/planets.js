@@ -38,14 +38,11 @@ export class PlanetsScene {
     this.scene.add(ambientLight);
   }
 
-  animate = () => {
+  update = () => {
     const { x } = this.ball.position;
     if (x < -2 || x > 2) {
       this.ballVelocity *= -1;
     }
-
     this.ball.position.setX(x + this.ballVelocity);
-    this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.animate);
   };
 }

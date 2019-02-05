@@ -2,6 +2,7 @@ import { HomeScene } from './scenes/home';
 import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import { PlanetsScene } from './scenes/planets';
+import { frameRenderer } from './animator';
 
 // update scene when page loaded
 navigateToScene(window.location.pathname);
@@ -23,7 +24,7 @@ function navigateToScene(pathname) {
       break;
   }
 
-  requestAnimationFrame(currentScene.animate);
+  frameRenderer();
 }
 
 /**

@@ -102,14 +102,11 @@ export class HomeScene {
     this._boxTest();
   }
 
-  animate = () => {
+  update() {
     let box = this.scene.getObjectByName('testBox001');
     box.rotateX(0.01);
     box.rotateY(0.01);
     box.rotateZ(0.03);
-
-    this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.animate);
   };
 
   _boxTest() {

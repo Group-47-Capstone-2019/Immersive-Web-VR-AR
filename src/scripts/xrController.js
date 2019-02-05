@@ -97,11 +97,6 @@ async function xrEnableMagicWindow(context) {
         //Get frame of reference at eye level
         xrFrameOfRef = await xrSession.requestFrameOfReference('eye-level');
 
-        //TODO: Setup XR Device with three renderer?
-        renderer.vr.setDevice(xrDevice);
-
-        xrSession.baseLayer = new XRWebGLLayer(xrSession, renderer.context);
-
         //Tell the browser that we want to paint one frame of an animation at which time the browser will call the supplied callback function
         //In other words : Interfacing with the session every frame to gain updated information about the device
         xrSession.requestAnimationFrame(xrUpdate);
@@ -110,69 +105,5 @@ async function xrEnableMagicWindow(context) {
         console.error("Magic Window : Error initializing : " + err);
     };
 }
-
-function xrUpdate(time, frame) {
-    renderer.autoClear = false;
-    renderer.clear();
-
-    currentScene.scene.matrixAutoUpdate = false;
-
-    let pose = frame.getDevicePose(xrFrameOfRef);
-    let xrLayer = xrSession.baseLayer;
-
-    renderer.setSize(xrLayer.framebufferWidth, xrLayer.framebufferHeight, false);
-    renderer.context.bindFramebuffer(renderer.context.FRAMEBUFFER, xrLayer.framebuffer);
-
-    for (let view of frame.views) {
-        let viewport = xrLayer.getViewport(view);
-        let viewMatrixArray = pose.getViewMatrix(view);
-        let projectionMatrix = view.projectionMatrix;
-
-        renderer.setViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-
-        let viewMatrix = new THREE.Matrix4();
-        viewMatrix.fromArray(viewMatrixArray);
-
-        camera.projectionMatrix.fromArray(projectionMatrix);
-        camera.matrixWorldInverse.copy(viewMatrix);
-        currentScene.scene.matrix.copy(viewMatrix);
-
-        currentScene.scene.updateMatrixWorld(true);
-        renderer.render(currentScene.scene, camera);
-        renderer.clearDepth();
-    }
-
-    xrSession.requestAnimationFrame(xrUpdate);
-}
-
-//Not sure how to use these yet
-
-// /*
-//  * Called when XR session begins
-//  * Gives the threejs renderer a reference to the xr session
-//  */
-// function xrOnSessionStart(session)
-// {
-//     console.log("Session obtained!");
-//     console.log(session);
-
-//     session.addEventListener('end', xrOnSessionEnd);
-
-//     //renderer.vr.setSession(session);
-//     xrSession = session;
-// }
-
-// /*
-//  * Clears the session field and event listener
-//  */
-// function xrOnSessionEnd()
-// {
-//     xrSession.removeEventListener('end', xrOnSessionEnd);
-
-//     renderer.vr.setSession(null)
-
-//     xrSession = null;
-// }
-
 
 xrValidate();
