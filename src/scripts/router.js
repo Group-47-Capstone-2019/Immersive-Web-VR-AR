@@ -6,7 +6,8 @@ import { PlanetsScene } from './scenes/planets';
 // update scene when page loaded
 navigateToScene(window.location.pathname);
 
-export let currentScene;
+//Current room (Scene class) that application is rendering
+export var room;
 
 /**
  * update currently displayed scene based on the pathname
@@ -15,10 +16,10 @@ export let currentScene;
 function navigateToScene(pathname) {
   switch (pathname) {
     case '/':
-      currentScene = new HomeScene(renderer, camera);
+      room = new HomeScene(renderer, camera);
       break;
     case '/planets':
-      currentScene = new PlanetsScene(renderer, camera);
+      room = new PlanetsScene(renderer, camera);
       break;
   }
 
