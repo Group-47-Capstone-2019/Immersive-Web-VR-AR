@@ -1,7 +1,5 @@
-import * as THREE from 'three';
-import { currentScene } from './router';
 import { canvas } from './renderer/canvas';
-import { camera, cameraSettings } from './renderer/camera';
+import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
 
 import WebXRPolyfill from 'webxr-polyfill';
@@ -52,9 +50,6 @@ function xrInit(device) {
     //TODO: @author TimForsyth put the reference to your VR button setup here
 
     xrValidateMagicWindow(device);
-
-    //Give the threejs rendering context access to the xr device
-    //renderer.vr.setDevice(device);
 }
 
 /**
@@ -97,10 +92,14 @@ async function xrEnableMagicWindow(context) {
         //Get frame of reference at eye level
         xrFrameOfRef = await xrSession.requestFrameOfReference('eye-level');
 
-        //Tell the browser that we want to paint one frame of an animation at which time the browser will call the supplied callback function
-        //In other words : Interfacing with the session every frame to gain updated information about the device
-        xrSession.requestAnimationFrame(xrUpdate);
+        //Give WebGL an instance of the XR device so setting up the baselayer will work
+        renderer.context.setCompatibleXRDevice(xrDevice);
 
+        //Allows WebGL to provide the bitmaps to be rendered to a device
+        xrSession.baseLayer = new XRWebGLLayer(xrSession, renderer.context);
+
+        //At this point, the session setup is complete
+        //The animator file should begin handling the rest of the XR render setup
     } catch (err) {
         console.error("Magic Window : Error initializing : " + err);
     };
