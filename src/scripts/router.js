@@ -2,25 +2,35 @@ import { HomeScene } from './scenes/home';
 import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import { PlanetsScene } from './scenes/planets';
+import { XrScene } from './scenes/xr-scene';
 
 // update scene when page loaded
 navigateToScene(window.location.pathname);
+
+/**
+ * @type {XrScene}
+ */
+let currentScene;
 
 /**
  * update currently displayed scene based on the pathname
  * @param {string} pathname
  */
 function navigateToScene(pathname) {
+  if (currentScene) {
+    currentScene.isActive = false;
+  }
+
   switch (pathname) {
     case '/':
-      const homeScene = new HomeScene(renderer, camera);
-      requestAnimationFrame(homeScene.animate);
+      currentScene = new HomeScene(renderer, camera);
       break;
     case '/planets':
-      const planetScene = new PlanetsScene(renderer, camera);
-      requestAnimationFrame(planetScene.animate);
+      currentScene = new PlanetsScene(renderer, camera);
       break;
   }
+
+  currentScene.startAnimation();
 }
 
 /**
