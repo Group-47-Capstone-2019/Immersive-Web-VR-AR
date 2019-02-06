@@ -1,38 +1,46 @@
-import { Scene } from 'three';
+import  { Scene } from 'three';
+import  { xrDevice,
+        xrSession,
+        xrFrameOfRef,
+        xrMagicWindowCanvas 
+ } from '../xrController';
 
 export class XrScene {
-  scene = new Scene();
-  isActive = true;
+scene = new Scene();
+isActive = true;
 
-  /**
-   * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.
-   *
-   * @param {THREE.Renderer} renderer
-   * @param {THREE.Camera} camera
-   */
-  constructor(renderer, camera) {
+/**
+ * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.
+ *
+ * @param {THREE.Renderer} renderer
+ * @param {THREE.Camera} camera
+ */
+constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
-  }
+}
 
-  /**
-   * Override this to handle animating objects in your scene.
-   */
-  animate() {}
+/**
+ * Override this to handle animating objects in your scene.
+ */
+animate() {}
 
-  /**
-   * Call this to begin animating your frame.
-   */
-  startAnimation() {
+/**
+ * Call this to begin animating your frame.
+ */
+startAnimation() {
     this._animationCallback();
-  }
+}
 
-  _animationCallback = () => {
+_animationCallback = () => {
     if (this.isActive) {
-      this.animate();
+        this.animate();
 
-      this.renderer.render(this.scene, this.camera);
-      requestAnimationFrame(this._animationCallback);
+        if(!xrSession)
+        {
+            this.renderer.render(this.scene, this.camera);
+            requestAnimationFrame(this._animationCallback);
+        }
     }
-  };
+};
 }
