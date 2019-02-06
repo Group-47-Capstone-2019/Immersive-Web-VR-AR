@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import wallTexture from '../../images/wall.png';
+import { XrScene } from './xr-scene';
 
 const settings = {
   global: {
@@ -17,17 +18,14 @@ const settings = {
   }
 };
 
-export class HomeScene {
-  scene = new THREE.Scene();
-
+export class HomeScene extends XrScene {
   /**
    *
    * @param {THREE.Renderer} renderer
    * @param {THREE.Camera} camera
    */
   constructor(renderer, camera) {
-    this.renderer = renderer;
-    this.camera = camera;
+    super(renderer, camera);
 
     // Basic lighting
     if (settings.global.lights.ambient) {
@@ -102,7 +100,7 @@ export class HomeScene {
     this._boxTest();
   }
 
-  update() {
+  animate() {
     let box = this.scene.getObjectByName('testBox001');
     box.rotateX(0.01);
     box.rotateY(0.01);

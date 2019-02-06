@@ -2,21 +2,18 @@ import {
   SphereGeometry,
   Mesh,
   MeshBasicMaterial,
-  AmbientLight,
-  Scene
+  AmbientLight
 } from 'three';
+import { XrScene } from './xr-scene';
 
-export class PlanetsScene {
-  scene = new Scene();
-
+export class PlanetsScene extends XrScene {
   /**
-   *
+   * 
    * @param {THREE.Renderer} renderer
    * @param {THREE.Camera} camera
    */
   constructor(renderer, camera) {
-    this.renderer = renderer;
-    this.camera = camera;
+    super(renderer, camera);
 
     this.ball = this.createBall();
     this.addLighting();
@@ -38,7 +35,7 @@ export class PlanetsScene {
     this.scene.add(ambientLight);
   }
 
-  update = () => {
+  animate() {
     const { x } = this.ball.position;
     if (x < -2 || x > 2) {
       this.ballVelocity *= -1;

@@ -2,7 +2,7 @@ import { HomeScene } from './scenes/home';
 import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import { PlanetsScene } from './scenes/planets';
-import { frameRenderer } from './animator';
+import { XrScene } from './scenes/xr-scene';
 
 // update scene when page loaded
 navigateToScene(window.location.pathname);
@@ -11,20 +11,29 @@ navigateToScene(window.location.pathname);
 export var room;
 
 /**
+ * @type {XrScene}
+ */
+let currentScene;
+
+/**
  * update currently displayed scene based on the pathname
  * @param {string} pathname
  */
 function navigateToScene(pathname) {
+  if (currentScene) {
+    currentScene.isActive = false;
+  }
+
   switch (pathname) {
     case '/':
-      room = new HomeScene(renderer, camera);
+      currentScene = new HomeScene(renderer, camera);
       break;
     case '/planets':
-      room = new PlanetsScene(renderer, camera);
+      currentScene = new PlanetsScene(renderer, camera);
       break;
   }
 
-  frameRenderer();
+  currentScene.startAnimation();
 }
 
 /**
