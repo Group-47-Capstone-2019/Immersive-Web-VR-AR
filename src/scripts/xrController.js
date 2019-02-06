@@ -32,8 +32,8 @@ async function xrValidate() {
             //Does this device have immersive XR capability?
             await device.supportsSession({ immersive: true });
             xrInit(device);
-        } catch {
-            console.error("XR Device not found!\nListening for devices . . .");
+        } catch (err) {
+            console.error("XR Device not found!" + err + "\nListening for devices . . .");
         }
     }
 }
