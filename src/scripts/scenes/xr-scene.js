@@ -3,6 +3,7 @@ import { Scene } from 'three';
 export class XrScene {
   scene = new Scene();
   isActive = true;
+  state = {};
 
   /**
    * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.

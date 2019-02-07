@@ -1,10 +1,9 @@
 import { navigate } from './router';
 
-const planetsLink = document.getElementById('planets-link');
-planetsLink.onclick = () => navigate('/planets');
-
-const fallingLink = document.getElementById('falling-link');
-fallingLink.onclick = () => navigate('/');
-
-const pendulumsLink = document.getElementById('pendulums-link');
-pendulumsLink.onclick = () => navigate('/');
+window.addEventListener('click', e => {
+	if (e.target.tagName == 'A' ) {
+		e.preventDefault(); // Stop the browser from navigating to that link's location
+		e.stopPropagation();
+		navigate((new URL(e.target.href)).pathname);
+	}
+});
