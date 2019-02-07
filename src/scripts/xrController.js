@@ -4,7 +4,7 @@ import { renderer } from './renderer';
 
 import WebXRPolyfill from 'webxr-polyfill';
 
-new WebXRPolyfill();
+const polyfill = new WebXRPolyfill();
 
 /**
  * XR fields we are using
