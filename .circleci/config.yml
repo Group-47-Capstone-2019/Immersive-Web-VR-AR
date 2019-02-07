@@ -34,11 +34,9 @@ jobs:
   lint:
     docker:
       - image: circleci/node:8.0
+    working_directory: ~/repo
     steps:
       - checkout
-
-      working_directory: ~/repo
-
       - run:
           name: Lint
           command: npm run lint-nofix
