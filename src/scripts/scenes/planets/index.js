@@ -22,16 +22,15 @@ export default class PlanetsScene extends XrScene {
   }
 
   createBalls() {
-    planets.forEach((p) => this.scene.add(p));
+    planets.forEach(p => this.scene.add(p));
   }
 
   addLighting() {
     const ambientLight = new AmbientLight('white', 0.7);
-    this.scene.add(ambientLight);
+    //this.scene.add(ambientLight);
 
-    const pointLight = new PointLight('white', 0.9);
-    const { x, y, z } = this.camera.position;
-    pointLight.position.set(x, y, z);
+    const pointLight = new PointLight('white', 0.9, 1000);
+    pointLight.position.set(1, 2, 3);
     this.scene.add(pointLight);
   }
 }
