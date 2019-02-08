@@ -3,9 +3,6 @@ import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 
-//Current room (Scene class) that application is rendering
-export var room;
-
 /**
  * @type {XrScene}
  */

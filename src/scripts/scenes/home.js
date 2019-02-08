@@ -39,8 +39,8 @@ export default class HomeScene extends XrScene {
       this.scene.add(pointLight);
     }
 
-    //Generate room geometry
-    let roomGeometry = new THREE.BoxGeometry(24, 16, 24);
+    // Generate room geometry
+    const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
 
     let roomMaterials;
 

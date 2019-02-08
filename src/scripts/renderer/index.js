@@ -8,7 +8,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 
 // update renderer and camera size to match new canvas element size
 const onResize = () => {
-  let rCanvas = document.getElementById('vr-port');
+  const rCanvas = document.getElementById('vr-port');
   const { innerWidth, innerHeight } = window;
   rCanvas.width = innerWidth;
   rCanvas.height = innerHeight;
