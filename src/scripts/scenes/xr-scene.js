@@ -44,11 +44,17 @@ export class XrScene {
     this._animationCallback();
   }
 
+  /**
+   * Checks for PointerLockControls support in browser
+   */
     _hasPointerLock() {
         let havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
         return havePointerLock;
     }
 
+    /**
+     * Enables keyboard and mouse controls using WASD/arrow keys and PointerLockControls
+     */
     _enableKeyboardControls() {
         if(!this._hasPointerLock())
             return;
@@ -75,6 +81,9 @@ export class XrScene {
         }, false);
     }
 
+    /**
+     * Called when the pointerlockchange event is fired
+     */
     _pointerLockChanged(){
         if(document.pointerLockElement === document.body ||
             document.mozPointerLockElement === document.body ||
@@ -88,6 +97,10 @@ export class XrScene {
         }
     }
 
+    /**
+     * Called when the keydown event is fired after a key is pressed. Uses the event to identify which key is pressed.
+     * @param {*} event 
+     */
     _onKeyDown(event){
         switch(event.keyCode){
             case Key.Up:
@@ -109,6 +122,10 @@ export class XrScene {
         }
     }
 
+    /**
+     * Called when the keyup event is fired after a key is released. Uses the event to identify the released key.
+     * @param {*} event 
+     */
     _onKeyUp(event){
         switch(event.keyCode){
             case Key.Up:
