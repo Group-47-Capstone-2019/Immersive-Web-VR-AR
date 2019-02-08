@@ -5,7 +5,7 @@ import  { xrSession,
  } from '../xrController';
 import { canvas } from '../renderer/canvas';
 
-export class XrScene {
+export default class XrScene {
     scene = new Scene();
     isActive = true;
 

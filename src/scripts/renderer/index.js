@@ -2,7 +2,7 @@ import { WebGLRenderer } from 'three';
 import { initialWidth, initialHeight, canvas } from './canvas';
 import { updateAspectRatio } from './camera';
 
-export const renderer = new WebGLRenderer({ canvas : canvas });
+export const renderer = new WebGLRenderer({ canvas });
 renderer.setSize(initialWidth, initialHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 
