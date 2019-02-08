@@ -42,6 +42,8 @@ async function xrValidateMagicWindow() {
     xrMagicWindowCanvas = document.createElement('canvas');
     xrMagicWindowCanvas.setAttribute('id', 'vr-port');
     xrMagicWindowCanvas.setAttribute('name', 'magic-window');
+    xrMagicWindowCanvas.width = window.innerWidth;
+    xrMagicWindowCanvas.height = window.innerHeight;
 
     //Set canvas rendering context to xrpresent
     let xrMagicWindowContext = xrMagicWindowCanvas.getContext('xrpresent');

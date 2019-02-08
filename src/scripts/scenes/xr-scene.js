@@ -1,6 +1,7 @@
 import  { Scene, Matrix4, Vector3 } from 'three';
 import  { xrSession,
-          xrRefSpace
+          xrRefSpace,
+          xrMagicWindowCanvas
  } from '../xrController';
 import { canvas } from '../renderer/canvas';
 
@@ -28,6 +29,7 @@ export class XrScene {
      * Call this to begin animating your frame.
      */
     startAnimation() {
+        console.log(this.camera.aspect);
         this._animationCallback();
     }
 
@@ -36,7 +38,7 @@ export class XrScene {
             //Update the objects in the scene that we will be rendering
             this.animate();
             if(!xrSession) {
-                //this.renderer.setViewport(0, 0, canvas.width, canvas.height);
+                this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
                 this.renderer.autoClear = true;
                 this.scene.matrixAutoUpdate = true;
                 this.renderer.render(this.scene, this.camera);
@@ -57,9 +59,9 @@ export class XrScene {
                         let viewport = xrSession.baseLayer.getViewport(view);
                         let viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
-                        this._translateViewMatrix(viewMatrix, new Vector3(0, 0, -10));
+                        this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
 
-                        this.renderer.setViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+                        this.renderer.setViewport(viewport.x, viewport.y, xrMagicWindowCanvas.width, xrMagicWindowCanvas.height);
                         this.camera.matrixWorldInverse.copy(viewMatrix);
                         this.camera.projectionMatrix.fromArray(view.projectionMatrix);
                         this.scene.matrix.copy(viewMatrix);
