@@ -28,6 +28,7 @@ export class XrScene {
     this.controls;
     this.startMessage = document.querySelector('#start');
     this.arrow = document.querySelector('#arrow');
+    this.canvas = document.querySelector('#vr-port');
 
     this._enableKeyboardControls();
   }
@@ -72,7 +73,7 @@ export class XrScene {
         document.addEventListener('keydown', event => {this._onKeyDown(event)}, false);
         document.addEventListener('keyup', event => {this._onKeyUp(event)}, false);
     
-        document.body.addEventListener('click', () => {
+        this.canvas.addEventListener('click', () => {
             document.body.requestPointerLock = document.body.requestPointerLock ||
                 document.body.mozRequestPointerLock ||
                 document.body.webkitRequestPointerLock;
