@@ -29,7 +29,6 @@ export class XrScene {
      * Call this to begin animating your frame.
      */
     startAnimation() {
-        console.log(this.camera.aspect);
         this._animationCallback();
     }
 
