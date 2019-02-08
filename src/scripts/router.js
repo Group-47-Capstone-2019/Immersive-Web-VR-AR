@@ -1,11 +1,7 @@
-import { HomeScene } from './scenes/home';
+import HomeScene from './scenes/home';
 import { renderer } from './renderer';
 import { camera } from './renderer/camera';
-import { PlanetsScene } from './scenes/planets';
-import { XrScene } from './scenes/xr-scene';
-
-// update scene when page loaded
-navigateToScene(window.location.pathname);
+import PlanetsScene from './scenes/planets';
 
 /**
  * @type {XrScene}
@@ -28,6 +24,7 @@ function navigateToScene(pathname) {
     case '/planets':
       currentScene = new PlanetsScene(renderer, camera);
       break;
+    default:
   }
 
   currentScene.startAnimation();
@@ -45,3 +42,6 @@ export function navigate(newPath) {
 window.onpopstate = () => {
   navigateToScene(window.location.pathname);
 };
+
+// update scene when page loaded
+navigateToScene(window.location.pathname);

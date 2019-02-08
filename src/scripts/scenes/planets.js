@@ -1,14 +1,11 @@
 import {
-  SphereGeometry,
-  Mesh,
-  MeshBasicMaterial,
-  AmbientLight
+  SphereGeometry, Mesh, MeshBasicMaterial, AmbientLight
 } from 'three';
-import { XrScene } from './xr-scene';
+import XrScene from './xr-scene';
 
-export class PlanetsScene extends XrScene {
+export default class PlanetsScene extends XrScene {
   /**
-   * 
+   *
    * @param {THREE.Renderer} renderer
    * @param {THREE.Camera} camera
    */
@@ -31,7 +28,7 @@ export class PlanetsScene extends XrScene {
   }
 
   addLighting() {
-    let ambientLight = new AmbientLight('white', 0.7);
+    const ambientLight = new AmbientLight('white', 0.7);
     this.scene.add(ambientLight);
   }
 
@@ -42,5 +39,5 @@ export class PlanetsScene extends XrScene {
     }
 
     this.ball.position.setX(x + this.ballVelocity);
-  };
+  }
 }

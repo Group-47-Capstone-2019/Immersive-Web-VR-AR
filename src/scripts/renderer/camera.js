@@ -19,7 +19,7 @@ export const camera = new PerspectiveCamera(
  * resized
  * @param {number} ratio
  */
-export const updateAspectRatio = ratio => {
+export const updateAspectRatio = (ratio) => {
   camera.aspect = ratio;
   camera.updateProjectionMatrix();
 };

@@ -1,7 +1,8 @@
 import { Scene } from 'three';
 
-export class XrScene {
+export default class XrScene {
   scene = new Scene();
+
   isActive = true;
 
   /**
