@@ -1,8 +1,6 @@
 import  { Scene, Matrix4, Vector3 } from 'three';
-import  { xrDevice,
-        xrSession,
-        xrFrameOfRef,
-        xrMagicWindowCanvas 
+import  { xrSession,
+          xrRefSpace
  } from '../xrController';
 import { canvas } from '../renderer/canvas';
 
@@ -37,9 +35,8 @@ export class XrScene {
         if (this.isActive) {
             //Update the objects in the scene that we will be rendering
             this.animate();
-            if(!xrSession)
-            {
-                this.renderer.setViewport(0, 0, canvas.width, canvas.height);
+            if(!xrSession) {
+                //this.renderer.setViewport(0, 0, canvas.width, canvas.height);
                 this.renderer.autoClear = true;
                 this.scene.matrixAutoUpdate = true;
                 this.renderer.render(this.scene, this.camera);
@@ -48,7 +45,7 @@ export class XrScene {
                 if(!xrFrame)
                     return xrSession.requestAnimationFrame(this._animationCallback);
 
-                let pose = xrFrame.getDevicePose(xrFrameOfRef);
+                let pose = xrFrame.getViewerPose(xrRefSpace);
 
                 if(pose) {
                     this.scene.matrixAutoUpdate = false;
@@ -56,9 +53,9 @@ export class XrScene {
                     this.renderer.clear();
 
                     this.renderer.context.bindFramebuffer(this.renderer.context.FRAMEBUFFER, xrSession.baseLayer.framebuffer);
-                    for(let view of xrFrame.views) {
+                    for(let view of pose.views) {
                         let viewport = xrSession.baseLayer.getViewport(view);
-                        let viewMatrix = new Matrix4().fromArray(pose.getViewMatrix(view));
+                        let viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
                         this._translateViewMatrix(viewMatrix, new Vector3(0, 0, -10));
 
