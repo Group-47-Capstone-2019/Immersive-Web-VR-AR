@@ -10,33 +10,11 @@ import { renderer } from './renderer';
 
 export const XR = {
   session: null,
-  refSpace: null,
+  immersiveRefSpace: null,
+  nonImmersiveRefSpace: null,
   magicWindowCanvas: null,
   mirrorCanvas: null
 };
-
-/**
- * Gets an immersive two eye view xr session when the 'ENTER XR' button has been pressed
- */
-async function xrOnRequestSession() {
-  //Create a mirror canvas for rendering the second eye
-  const xrMirrorCanvas = document.createElement('canvas');
-  const xrMirrorContext = xrMirrorCanvas.getContext('xrpresent');
-  xrMirrorCanvas.setAttribute('id', 'mirror-canvas');
-
-  //Add the mirror canvas to our XR object and the document.
-  XR.mirrorCanvas = xrMirrorCanvas;
-  document.appendChild(xrMirrorCanvas);
-  
-  //Attempt to create an XR session using the mirror canvas and the connected device
-  try {
-    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: xrMirrorContext});
-    xrOnSessionStarted();
-  } catch(err) {
-    console.error(`Error initializing XR session : ${err}`);  
-  }
-
-}
 
 function xrOnSessionEnded(event) {
   // Reset xrState when session ends and remove the mirror canvas
@@ -62,13 +40,45 @@ async function xrOnSessionStarted() {
   XR.session.depthNear = cameraSettings.near;
   XR.session.depthFar = cameraSettings.far;
 
+  // With immersive and non immersive sessions we will be keeping track of
+  // two reference spaces so we will hold two.
   try {
-    XR.refSpace = await XR.session.requestReferenceSpace({
+    const xrRefSpace = await XR.session.requestReferenceSpace({
       type: 'stationary',
       subtype: 'eye-level'
     });
+
+    // Check if the session is immersive or non immersive and set the
+    // respective refSpace.
+    if (XR.session.immersive) {
+      XR.immersiveRefSpace = xrRefSpace;
+    } else {
+      XR.nonImmersiveRefSpace = xrRefSpace;
+    }
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
+  }
+}
+
+/**
+ * Gets an immersive two eye view xr session when the 'ENTER XR' button has been pressed
+ */
+async function xrOnRequestSession() {
+  // Create a mirror canvas for rendering the second eye
+  const xrMirrorCanvas = document.createElement('canvas');
+  const xrMirrorContext = xrMirrorCanvas.getContext('xrpresent');
+  xrMirrorCanvas.setAttribute('id', 'mirror-canvas');
+
+  // Add the mirror canvas to our XR object and the document.
+  XR.mirrorCanvas = xrMirrorCanvas;
+  document.appendChild(xrMirrorCanvas);
+
+  // Attempt to create an XR session using the mirror canvas and the connected device
+  try {
+    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: xrMirrorContext });
+    xrOnSessionStarted();
+  } catch (err) {
+    console.error(`Error initializing XR session : ${err}`);
   }
 }
 
@@ -98,7 +108,7 @@ async function xrValidateMagicWindow() {
  * Waits for an XR device to connect to the session and validates its capabilities
  */
 async function xrValidate() {
-  //TODO: Create new VRButton object here
+  // TODO: Create new VRButton object here
 
   // Check that the browser has XR enabled
   if (navigator.xr) {
@@ -110,7 +120,6 @@ async function xrValidate() {
     try {
       await navigator.xr.supportsSessionMode('immersive-vr');
       // TODO: Enable VR button here since immersive VR is available
-
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
     }
