@@ -42,7 +42,12 @@ export default class XrScene {
         }
         if (!xrFrame) return XR.session.requestAnimationFrame(this._animationCallback);
 
-        const pose = xrFrame.getViewerPose(XR.refSpace);
+        // Get the correct reference space for the session
+        const xrRefSpace = XR.session.immersive
+          ? XR.immersiveRefSpace
+          : XR.nonImmersiveRefSpace;
+
+        const pose = xrFrame.getViewerPose(xrRefSpace);
 
         if (pose) {
           this.scene.matrixAutoUpdate = false;

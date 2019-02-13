@@ -10,25 +10,16 @@ import { renderer } from './renderer';
 
 export const XR = {
   session: null,
-  refSpace: null,
-  magicWindowCanvas: null
+  immersiveRefSpace: null,
+  nonImmersiveRefSpace: null,
+  magicWindowCanvas: null,
+  mirrorCanvas: null
 };
 
-/*
-// Provides the means to interact with an XR Device.
-export let xrSession;
-
-// Provides information about the spatial point from which AR/VR measurements are made.
-export let xrRefSpace;
-
-// Canvas that the webglrenderer pipes into for xr visualization
-export let xrMagicWindowCanvas;
-*/
-
 function xrOnSessionEnded(event) {
-  // Reset xrState when session ends
+  // Reset xrState when session ends and remove the mirror canvas
   if (event.session.immersive) {
-    // TODO: Remove mirror canvas here
+    document.body.removeChild(document.querySelector('#mirror-canvas'));
     XR.session = null;
   }
 }
@@ -49,13 +40,45 @@ async function xrOnSessionStarted() {
   XR.session.depthNear = cameraSettings.near;
   XR.session.depthFar = cameraSettings.far;
 
+  // With immersive and non immersive sessions we will be keeping track of
+  // two reference spaces so we will hold two.
   try {
-    XR.refSpace = await XR.session.requestReferenceSpace({
+    const xrRefSpace = await XR.session.requestReferenceSpace({
       type: 'stationary',
       subtype: 'eye-level'
     });
+
+    // Check if the session is immersive or non immersive and set the
+    // respective refSpace.
+    if (XR.session.immersive) {
+      XR.immersiveRefSpace = xrRefSpace;
+    } else {
+      XR.nonImmersiveRefSpace = xrRefSpace;
+    }
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
+  }
+}
+
+/**
+ * Gets an immersive two eye view xr session when the 'ENTER XR' button has been pressed
+ */
+async function xrOnRequestSession() {
+  // Create a mirror canvas for rendering the second eye
+  const xrMirrorCanvas = document.createElement('canvas');
+  const xrMirrorContext = xrMirrorCanvas.getContext('xrpresent');
+  xrMirrorCanvas.setAttribute('id', 'mirror-canvas');
+
+  // Add the mirror canvas to our XR object and the document.
+  XR.mirrorCanvas = xrMirrorCanvas;
+  document.appendChild(xrMirrorCanvas);
+
+  // Attempt to create an XR session using the mirror canvas and the connected device
+  try {
+    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: xrMirrorContext });
+    xrOnSessionStarted();
+  } catch (err) {
+    console.error(`Error initializing XR session : ${err}`);
   }
 }
 
@@ -85,6 +108,8 @@ async function xrValidateMagicWindow() {
  * Waits for an XR device to connect to the session and validates its capabilities
  */
 async function xrValidate() {
+  // TODO: Create new VRButton object here
+
   // Check that the browser has XR enabled
   if (navigator.xr) {
     // Listens for when a device changes and calls this function once again
@@ -96,6 +121,7 @@ async function xrValidate() {
       await navigator.xr.supportsSessionMode('immersive-vr');
       // TODO: @author TimForsyth add the VR button creation here
       createVRButton();
+      // TODO: Enable VR button here since immersive VR is available
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
     }
@@ -113,46 +139,9 @@ function createVRButton() {
   vrButton.classList.add('vr-toggle');
   vrButton.textContent = 'Enter VR';
   vrButton.addEventListener('click', _ => {
-    toggleVR();
+    xrOnRequestSession();
   });
   document.body.appendChild(vrButton);
-}
-
-async function toggleVR() {
-  if (!renderer.domElement.hidden && XR.session) {
-    return deactivateVR();
-  }
-
-  if (renderer.domElement.hidden && XR.session) {
-    await XR.session.end();
-    XR.session = null;
-  }
-
-  return activateVR();
-}
-
-async function deactivateVR() {
-  if (!navigator.xr) {
-    return;
-  }
-
-  if (!XR.session) {
-    return;
-  }
-
-  await XR.session.end();
-}
-
-async function activateVR() {
-  if (!navigator.xr) {
-    return;
-  }
-
-  try {
-    XR.session = await navigator.xr.requestSession({mode: 'immersive-vr'});
-  } catch (error) {
-    console.log("Error while requesting immersive session: " + error);
-  }
 }
 
 xrValidate();
