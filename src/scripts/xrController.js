@@ -71,13 +71,15 @@ async function xrOnRequestSession() {
 
   // Add the mirror canvas to our XR object and the document.
   XR.mirrorCanvas = xrMirrorCanvas;
-  document.appendChild(xrMirrorCanvas);
+  document.body.appendChild(xrMirrorCanvas);
 
   // Attempt to create an XR session using the mirror canvas and the connected device
   try {
+    alert("Session requested");
     XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: xrMirrorContext });
     xrOnSessionStarted();
   } catch (err) {
+    alert("Error requesting session");
     console.error(`Error initializing XR session : ${err}`);
   }
 }
