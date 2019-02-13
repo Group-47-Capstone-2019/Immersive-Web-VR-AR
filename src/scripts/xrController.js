@@ -11,24 +11,37 @@ import { renderer } from './renderer';
 export const XR = {
   session: null,
   refSpace: null,
-  magicWindowCanvas: null
+  magicWindowCanvas: null,
+  mirrorCanvas: null
 };
 
-/*
-// Provides the means to interact with an XR Device.
-export let xrSession;
+/**
+ * Gets an immersive two eye view xr session when the 'ENTER XR' button has been pressed
+ */
+async function xrOnRequestSession() {
+  //Create a mirror canvas for rendering the second eye
+  const xrMirrorCanvas = document.createElement('canvas');
+  const xrMirrorContext = xrMirrorCanvas.getContext('xrpresent');
+  xrMirrorCanvas.setAttribute('id', 'mirror-canvas');
 
-// Provides information about the spatial point from which AR/VR measurements are made.
-export let xrRefSpace;
+  //Add the mirror canvas to our XR object and the document.
+  XR.mirrorCanvas = xrMirrorCanvas;
+  document.appendChild(xrMirrorCanvas);
+  
+  //Attempt to create an XR session using the mirror canvas and the connected device
+  try {
+    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: xrMirrorContext});
+    xrOnSessionStarted();
+  } catch(err) {
+    console.error(`Error initializing XR session : ${err}`);  
+  }
 
-// Canvas that the webglrenderer pipes into for xr visualization
-export let xrMagicWindowCanvas;
-*/
+}
 
 function xrOnSessionEnded(event) {
-  // Reset xrState when session ends
+  // Reset xrState when session ends and remove the mirror canvas
   if (event.session.immersive) {
-    // TODO: Remove mirror canvas here
+    document.body.removeChild(document.querySelector('#mirror-canvas'));
     XR.session = null;
   }
 }
@@ -85,6 +98,8 @@ async function xrValidateMagicWindow() {
  * Waits for an XR device to connect to the session and validates its capabilities
  */
 async function xrValidate() {
+  //TODO: Create new VRButton object here
+
   // Check that the browser has XR enabled
   if (navigator.xr) {
     // Listens for when a device changes and calls this function once again
@@ -94,7 +109,8 @@ async function xrValidate() {
     // Check if device is capable of an immersive-vr sessions
     try {
       await navigator.xr.supportsSessionMode('immersive-vr');
-      // TODO: @author TimForsyth add the VR button creation here
+      // TODO: Enable VR button here since immersive VR is available
+
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
     }
