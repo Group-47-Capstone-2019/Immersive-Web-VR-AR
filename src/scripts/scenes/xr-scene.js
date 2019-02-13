@@ -43,7 +43,7 @@ export default class XrScene {
         if (!xrFrame) return XR.session.requestAnimationFrame(this._animationCallback);
 
         // Get the correct reference space for the session
-        const xrRefSpace = XR.session.immersive
+        const xrRefSpace = XR.session.mode == "immersive-vr"
           ? XR.immersiveRefSpace
           : XR.nonImmersiveRefSpace;
 
@@ -56,12 +56,12 @@ export default class XrScene {
 
           this.renderer.context.bindFramebuffer(
             this.renderer.context.FRAMEBUFFER,
-            XR.session.baseLayer.framebuffer
+            XR.session.renderState.baseLayer.framebuffer
           );
 
           for (let i = 0; i < pose.views.length; i++) {
             const view = pose.views[i];
-            const viewport = XR.session.baseLayer.getViewport(view);
+            const viewport = XR.session.renderState.baseLayer.getViewport(view);
             const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
             this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));

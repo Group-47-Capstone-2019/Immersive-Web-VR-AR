@@ -18,7 +18,7 @@ export const XR = {
 
 function xrOnSessionEnded(event) {
   // Reset xrState when session ends and remove the mirror canvas
-  if (event.session.immersive) {
+  if (event.session.mode == "immersive-vr") {
     document.body.removeChild(document.querySelector('#mirror-canvas'));
     XR.session = null;
   }
@@ -30,8 +30,6 @@ async function xrOnSessionStarted() {
   // Set rendering canvas to be XR compatible and add a baselayer
   try {
     await renderer.context.makeXRCompatible();
-    /* global XRWebGLLayer:true */
-    XR.session.baseLayer = new XRWebGLLayer(XR.session, renderer.context);
   } catch (err) {
     console.error(`Error creating XR BaseLayer : ${err}`);
   }
@@ -39,6 +37,9 @@ async function xrOnSessionStarted() {
   // Set near and far settings for session camera
   XR.session.depthNear = cameraSettings.near;
   XR.session.depthFar = cameraSettings.far;
+
+  /* global XRWebGLLayer:true */
+  XR.session.updateRenderState({ baseLayer: new XRWebGLLayer(XR.session, renderer.context) });
 
   // With immersive and non immersive sessions we will be keeping track of
   // two reference spaces so we will hold two.
@@ -50,7 +51,7 @@ async function xrOnSessionStarted() {
 
     // Check if the session is immersive or non immersive and set the
     // respective refSpace.
-    if (XR.session.immersive) {
+    if (XR.session.mode == "immersive-vr") {
       XR.immersiveRefSpace = xrRefSpace;
     } else {
       XR.nonImmersiveRefSpace = xrRefSpace;
