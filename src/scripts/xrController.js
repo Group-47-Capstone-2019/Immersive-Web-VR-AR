@@ -95,12 +95,63 @@ async function xrValidate() {
     try {
       await navigator.xr.supportsSessionMode('immersive-vr');
       // TODO: @author TimForsyth add the VR button creation here
+      createVRButton();
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
     }
 
     // Check to see if an non-immersive xr session is supported
     xrValidateMagicWindow();
+  }
+}
+
+/*
+* Creates a button that renders each eye for VR
+*/
+function createVRButton() {
+  let vrButton = document.createElement('button');
+  vrButton.classList.add('vr-toggle');
+  vrButton.textContent = 'Enter VR';
+  vrButton.addEventListener('click', _ => {
+    toggleVR();
+  });
+  document.body.appendChild(vrButton);
+}
+
+async function toggleVR() {
+  if (!renderer.domElement.hidden && XR.session) {
+    return deactivateVR();
+  }
+
+  if (renderer.domElement.hidden && XR.session) {
+    await XR.session.end();
+    XR.session = null;
+  }
+
+  return activateVR();
+}
+
+async function deactivateVR() {
+  if (!navigator.xr) {
+    return;
+  }
+
+  if (!XR.session) {
+    return;
+  }
+
+  await XR.session.end();
+}
+
+async function activateVR() {
+  if (!navigator.xr) {
+    return;
+  }
+
+  try {
+    XR.session = await navigator.xr.requestSession({mode: 'immersive-vr'});
+  } catch (error) {
+    console.log("Error while requesting immersive session: " + error);
   }
 }
 
