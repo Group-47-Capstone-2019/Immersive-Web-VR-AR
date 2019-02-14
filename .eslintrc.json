@@ -7,7 +7,8 @@
     "no-plusplus": "off",
     "no-underscore-dangle": "off",
     "import/prefer-default-export": "warn",
-    "class-methods-use-this": "warn"
+    "class-methods-use-this": "warn",
+    "no-restricted-syntax": "warn"
   },
   "env": {
     "browser": true
