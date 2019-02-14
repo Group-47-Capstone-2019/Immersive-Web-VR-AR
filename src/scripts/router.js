@@ -10,12 +10,12 @@ let currentScene;
 const SavedStates = {};
 
 const Routes = {
-	get '/' () {
-		return new HomeScene(renderer, camera);
-	},
-	get '/planets' () {
-		return new PlanetsScene(renderer, camera);
-	},
+  get '/'() {
+    return new HomeScene(renderer, camera);
+  },
+  get '/planets'() {
+    return new PlanetsScene(renderer, camera);
+  }
 };
 
 /**
@@ -31,8 +31,8 @@ function navigateToScene(pathname, oldPath) {
 
   currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/'];
   if (pathname in SavedStates) {
-	  // Reapply any state that was saved previously.
-	  currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
+    // Reapply any state that was saved previously.
+    currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
   }
 
   currentScene.startAnimation();
