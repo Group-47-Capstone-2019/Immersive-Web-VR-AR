@@ -2,15 +2,16 @@ import { WebGLRenderer } from 'three';
 import { initialWidth, initialHeight, canvas } from './canvas';
 import { updateAspectRatio } from './camera';
 
-export const renderer = new WebGLRenderer({ canvas: canvas });
+export const renderer = new WebGLRenderer({ canvas });
 renderer.setSize(initialWidth, initialHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 
 // update renderer and camera size to match new canvas element size
 const onResize = () => {
+  const rCanvas = document.getElementById('vr-port');
   const { innerWidth, innerHeight } = window;
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  rCanvas.width = innerWidth;
+  rCanvas.height = innerHeight;
   renderer.setSize(innerWidth, innerHeight);
   updateAspectRatio(innerWidth / innerHeight);
 };

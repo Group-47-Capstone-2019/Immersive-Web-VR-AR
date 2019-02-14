@@ -1,8 +1,7 @@
-import { HomeScene } from './scenes/home';
+import HomeScene from './scenes/home';
 import { renderer } from './renderer';
 import { camera } from './renderer/camera';
-import { PlanetsScene } from './scenes/planets';
-import { XrScene } from './scenes/xr-scene';
+import PlanetsScene from './scenes/planets';
 
 /**
  * @type {XrScene}
