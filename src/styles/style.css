@@ -1,5 +1,28 @@
 @import url('https://fonts.googleapis.com/css?family=Merriweather|Roboto');
 
+#joystickControls {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 150px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.562);
+  border-radius: 75px;
+}
+
+#joystick {
+  display: block;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  left: 25px;
+  bottom: 25px;
+  background: rgba(141, 140, 140, 0.562);
+  border-radius: 75px;
+  pointer-events: all;
+}
+
 #vr-port {
   height: 100vh;
   width: 100vw;
