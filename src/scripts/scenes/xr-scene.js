@@ -1,5 +1,6 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
+import { showTouchControls, userPosition, updateTouchPosition } from '../touch-controls';
 
 export default class XrScene {
     scene = new Scene();
@@ -51,15 +52,20 @@ export default class XrScene {
 
           this.renderer.context.bindFramebuffer(
             this.renderer.context.FRAMEBUFFER,
-            XR.session.baseLayer.framebuffer
+            XR.session.renderState.baseLayer.framebuffer
           );
 
           for (let i = 0; i < pose.views.length; i++) {
             const view = pose.views[i];
-            const viewport = XR.session.baseLayer.getViewport(view);
+            const viewport = XR.session.renderState.baseLayer.getViewport(view);
             const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
-            this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
+            if(XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
+              updateTouchPosition(viewMatrix);
+              this._translateViewMatrix(viewMatrix, userPosition);
+            } else {
+              this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
+            }
 
             this.renderer.setViewport(
               viewport.x,
@@ -77,6 +83,8 @@ export default class XrScene {
             this.renderer.clearDepth();
           }
         }
+
+        showTouchControls();
 
         return XR.session.requestAnimationFrame(this._animationCallback);
       }

@@ -49,6 +49,8 @@ async function xrOnSessionStarted() {
   XR.session.depthNear = cameraSettings.near;
   XR.session.depthFar = cameraSettings.far;
 
+  XR.session.updateRenderState({ baseLayer: new XRWebGLLayer(XR.session, renderer.context) });
+
   try {
     XR.refSpace = await XR.session.requestReferenceSpace({
       type: 'stationary',
