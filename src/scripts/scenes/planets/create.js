@@ -61,11 +61,12 @@ export function createPlanets() {
     const y = randBetween(4, 10);
     const z = randBetween(4, 10);
 
-    const velocity = new Vector3(
-      randBetween(0, 0.3),
-      randBetween(0, 0.3),
-      randBetween(0, 0.3)
-    );
+    // const velocity = new Vector3(
+    //   randBetween(0, 0.3),
+    //   randBetween(0, 0.3),
+    //   randBetween(0, 0.3)
+    // );
+    const velocity = new Vector3(0, 0, 0);
 
     return {
       velocity,

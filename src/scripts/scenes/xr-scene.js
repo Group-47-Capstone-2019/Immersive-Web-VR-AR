@@ -14,7 +14,7 @@ const Key = {
 
 export default class XrScene {
   scene = new THREE.Scene();
-
+  clock = new THREE.Clock();
   isActive = true;
 
   /**
@@ -35,8 +35,9 @@ export default class XrScene {
 
   /**
    * Override this to handle animating objects in your scene.
+   * @param {number} delta time since last scene update
    */
-  animate() {}
+  animate(delta) {}
 
   /**
    * Call this to begin animating your frame.
@@ -201,7 +202,8 @@ export default class XrScene {
 
   _animationCallback = () => {
     if (this.isActive) {
-      this.animate();
+      const delta = this.clock.getDelta();
+      this.animate(delta);
 
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this._animationCallback);
