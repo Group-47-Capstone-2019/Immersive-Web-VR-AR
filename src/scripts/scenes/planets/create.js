@@ -1,4 +1,4 @@
-import { SphereGeometry, Mesh, MeshBasicMaterial, SmoothShading, MeshLambertMaterial } from 'three';
+import { SphereGeometry, Mesh, MeshLambertMaterial, Vector3 } from 'three';
 
 function randomColor() {
   return '#000000'.replace(/0/g, () => (~~(Math.random() * 16)).toString(16));
@@ -12,7 +12,7 @@ function randomColor() {
  * @param {number} y
  * @param {number} z
  */
-export function createPlanet(size, x, y, z) {
+export function createPlanetMesh(size, x, y, z) {
   const geometry = new SphereGeometry(size, 20, 20);
   const mat = new MeshLambertMaterial({ color: randomColor() });
 
@@ -23,5 +23,64 @@ export function createPlanet(size, x, y, z) {
   return ball;
 }
 
-const sizes = [0.5, 0.75, 1, 0.5, 3, 2, 1, 0.5];
-export const planets = sizes.map((s, i) => createPlanet(s, 10, 0, i * 7 - 30));
+/**
+ * returns a random number between the two values
+ *
+ * @param {number} low
+ * @param {number} high
+ */
+const randBetweenPos = (low, high) => Math.random() * (high - low) + low;
+
+/**
+ * return random number (posive or negative) whose absolute value
+ * lies between the given values.
+ *
+ * @param {number} low
+ * @param {number} high
+ */
+const randBetween = (low, high) =>
+  randBetweenPos(low, high) * (Math.random() > 0.5 ? -1 : 1);
+
+/**
+ * @typedef Planet
+ * @property {number} x
+ * @property {number} y
+ * @property {number} z
+ * @property {number} mass
+ * @property {Mesh} mesh
+ */
+
+/**
+ * build planets, with mesh and randomized position
+ *
+ * @returns {Planet[]} created planets
+ */
+export function createPlanets() {
+  const sizes = [0.5, 0.75, 1, 0.5, 3, 2, 1, 0.5];
+  return sizes.map(mass => {
+    const x = randBetween(4, 10);
+    const y = randBetween(4, 10);
+    const z = randBetween(4, 10);
+
+    const velocity = new Vector3(
+      randBetween(0, 0.3),
+      randBetween(0, 0.3),
+      randBetween(0, 0.3)
+    );
+
+    return {
+      velocity,
+      mass,
+      mesh: createPlanetMesh(mass, x, y, z)
+    };
+  });
+}
+
+/**
+ * update `planet`'s z coord in place to ensure the planet's 
+ * velocity is equal to it's escape velocity
+ *
+ * @param {Planet} planet
+ * @param {Planet[]} allPlanets
+ */
+export function safeInitialVelocity(planet, allPlanets) {}
