@@ -43,10 +43,9 @@ const randBetween = (low, high) =>
 
 /**
  * @typedef Planet
- * @property {number} x
- * @property {number} y
- * @property {number} z
+ * @property {Vector3} velocity
  * @property {number} mass
+ * @property {number} radius
  * @property {Mesh} mesh
  */
 
@@ -57,7 +56,7 @@ const randBetween = (low, high) =>
  */
 export function createPlanets() {
   const sizes = [0.5, 0.75, 1, 0.5, 3, 2, 1, 0.5];
-  return sizes.map(mass => {
+  return sizes.map(radius => {
     const x = randBetween(4, 10);
     const y = randBetween(4, 10);
     const z = randBetween(4, 10);
@@ -70,14 +69,15 @@ export function createPlanets() {
 
     return {
       velocity,
-      mass,
-      mesh: createPlanetMesh(mass, x, y, z)
+      radius,
+      mass: Math.PI * (4 / 3) * radius ** 3,
+      mesh: createPlanetMesh(radius, x, y, z)
     };
   });
 }
 
 /**
- * update `planet`'s z coord in place to ensure the planet's 
+ * update `planet`'s z coord in place to ensure the planet's
  * velocity is equal to it's escape velocity
  *
  * @param {Planet} planet

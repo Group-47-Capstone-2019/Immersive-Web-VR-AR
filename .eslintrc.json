@@ -7,7 +7,8 @@
     "no-plusplus": "off",
     "no-underscore-dangle": "off",
     "import/prefer-default-export": "warn",
-    "class-methods-use-this": "warn"
+    "class-methods-use-this": "warn",
+    "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 2 }]
   },
   "env": {
     "browser": true
