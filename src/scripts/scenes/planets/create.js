@@ -55,7 +55,7 @@ const randBetween = (low, high) =>
  * @returns {Planet[]} created planets
  */
 export function createPlanets() {
-  const sizes = [0.5, 0.75, 1, 0.5, 3, 2, 1, 0.5];
+  const sizes = [0.5, 0.75, 1, 0.5, 1, .75, 1, 0.5];
   return sizes.map(radius => {
     const x = randBetween(4, 10);
     const y = randBetween(4, 10);
