@@ -60,7 +60,9 @@ async function xrOnSessionStarted() {
       XR.nonImmersiveRefSpace = xrRefSpace;
     }
 
-    //TODO: Request animation frame
+    //Fire a restart xr animation event
+    window.dispatchEvent(new Event('xrAnimate'));
+
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
   }

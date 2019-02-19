@@ -1,10 +1,12 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
+import { timingSafeEqual } from 'crypto';
 
 export default class XrScene {
     scene = new Scene();
 
     isActive = true;
+    frame = null;
 
     /**
      * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.
@@ -15,6 +17,9 @@ export default class XrScene {
     constructor(renderer, camera) {
       this.renderer = renderer;
       this.camera = camera;
+
+      //Make sure that animation callback is called on an xrAnimate event
+      window.addEventListener('xrAnimate', this._restartAnimation);
     }
 
     /**
@@ -29,6 +34,11 @@ export default class XrScene {
       this._animationCallback();
     }
 
+    _restartAnimation = () => {
+      if(this.frame) window.cancelAnimationFrame(this.frame);
+      this._animationCallback();
+    }
+
     _animationCallback = (timestamp, xrFrame) => {
       if (this.isActive) {
         // Update the objects in the scene that we will be rendering
@@ -38,9 +48,9 @@ export default class XrScene {
           this.renderer.autoClear = true;
           this.scene.matrixAutoUpdate = true;
           this.renderer.render(this.scene, this.camera);
-          return requestAnimationFrame(this._animationCallback);
+          return (this.frame = requestAnimationFrame(this._animationCallback));
         }
-        if (!xrFrame) return XR.session.requestAnimationFrame(this._animationCallback);
+        if (!xrFrame) return (this.frame = XR.session.requestAnimationFrame(this._animationCallback));
 
         // Get the correct reference space for the session
         const xrRefSpace = XR.session.mode == "immersive-vr"
@@ -88,9 +98,9 @@ export default class XrScene {
             this.renderer.clearDepth();
           }
         }
-        return XR.session.requestAnimationFrame(this._animationCallback);
+        return (this.frame = XR.session.requestAnimationFrame(this._animationCallback));
       }
-      return null;
+      return (this.frame = null);
     };
 
     _translateViewMatrix(viewMatrix, position) {
