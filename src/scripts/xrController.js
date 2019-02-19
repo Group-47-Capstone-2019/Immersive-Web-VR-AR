@@ -16,18 +16,6 @@ export const XR = {
   mirrorCanvas: null
 };
 
-function xrOnSessionEnded(event) {
-  XR.session = null;
-
-  // Reset xrState when session ends and remove the mirror canvas
-  if (event.session.mode == "immersive-vr") {
-    document.body.removeChild(document.getElementById('mirror-canvas'));
-    xrValidateMagicWindow();
-  } else {
-    xrOnRequestSession();
-  }
-}
-
 async function xrOnSessionStarted() {
   XR.session.addEventListener('end', xrOnSessionEnded);
 
@@ -54,15 +42,14 @@ async function xrOnSessionStarted() {
     });
     // Check if the session is immersive or non immersive and set the
     // respective refSpace.
-    if (XR.session.mode == "immersive-vr") {
+    if (XR.session.mode === 'immersive-vr') {
       XR.immersiveRefSpace = xrRefSpace;
     } else {
       XR.nonImmersiveRefSpace = xrRefSpace;
     }
 
-    //Fire a restart xr animation event
+    // Fire a restart xr animation event
     window.dispatchEvent(new Event('xrAnimate'));
-
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
   }
@@ -90,12 +77,29 @@ async function xrOnRequestSession() {
   }
 }
 
+/*
+* Creates a button that renders each eye for VR
+*/
+function createVRButton() {
+  const vrButton = document.createElement('button');
+  vrButton.classList.add('vr-toggle');
+  vrButton.textContent = 'Enter VR';
+  vrButton.addEventListener('click', () => {
+    if (XR.session) {
+      XR.session.end();
+    } else {
+      xrOnRequestSession();
+    }
+  });
+  document.body.appendChild(vrButton);
+}
+
 /**
  * Checks for magic window compatibility
  */
 async function xrValidateMagicWindow() {
-  //Ensure that there isn't already a magic window
-  if(!XR.magicWindowCanvas) {
+  // Ensure that there isn't already a magic window
+  if (!XR.magicWindowCanvas) {
     XR.magicWindowCanvas = document.createElement('canvas');
     XR.magicWindowCanvas.setAttribute('id', 'vr-port');
     XR.magicWindowCanvas.setAttribute('name', 'magic-window');
@@ -112,6 +116,18 @@ async function xrValidateMagicWindow() {
     xrOnSessionStarted();
   } catch (err) {
     console.error(`Error initializing XR session : ${err}`);
+  }
+}
+
+function xrOnSessionEnded(event) {
+  XR.session = null;
+
+  // Reset xrState when session ends and remove the mirror canvas
+  if (event.session.mode === 'immersive-vr') {
+    document.body.removeChild(document.getElementById('mirror-canvas'));
+    xrValidateMagicWindow();
+  } else {
+    xrOnRequestSession();
   }
 }
 
@@ -140,23 +156,6 @@ async function xrValidate() {
     // Check to see if an non-immersive xr session is supported
     xrValidateMagicWindow();
   }
-}
-
-/*
-* Creates a button that renders each eye for VR
-*/
-function createVRButton() {
-  let vrButton = document.createElement('button');
-  vrButton.classList.add('vr-toggle');
-  vrButton.textContent = 'Enter VR';
-  vrButton.addEventListener('click', _ => {
-    if(XR.session) {
-      XR.session.end();
-    } else {
-      xrOnRequestSession();
-    }
-  });
-  document.body.appendChild(vrButton);
 }
 
 xrValidate();

@@ -1,11 +1,11 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
-import { timingSafeEqual } from 'crypto';
 
 export default class XrScene {
     scene = new Scene();
 
     isActive = true;
+
     frame = null;
 
     /**
@@ -18,7 +18,7 @@ export default class XrScene {
       this.renderer = renderer;
       this.camera = camera;
 
-      //Make sure that animation callback is called on an xrAnimate event
+      // Make sure that animation callback is called on an xrAnimate event
       window.addEventListener('xrAnimate', this._restartAnimation);
     }
 
@@ -35,7 +35,7 @@ export default class XrScene {
     }
 
     _restartAnimation = () => {
-      if(this.frame) window.cancelAnimationFrame(this.frame);
+      if (this.frame) window.cancelAnimationFrame(this.frame);
       this._animationCallback();
     }
 
@@ -48,12 +48,16 @@ export default class XrScene {
           this.renderer.autoClear = true;
           this.scene.matrixAutoUpdate = true;
           this.renderer.render(this.scene, this.camera);
-          return (this.frame = requestAnimationFrame(this._animationCallback));
+          this.frame = requestAnimationFrame(this._animationCallback);
+          return this.frame;
         }
-        if (!xrFrame) return (this.frame = XR.session.requestAnimationFrame(this._animationCallback));
+        if (!xrFrame) {
+          this.frame = XR.session.requestAnimationFrame(this._animationCallback);
+          return this.frame;
+        }
 
         // Get the correct reference space for the session
-        const xrRefSpace = XR.session.mode == "immersive-vr"
+        const xrRefSpace = XR.session.mode === 'immersive-vr'
           ? XR.immersiveRefSpace
           : XR.nonImmersiveRefSpace;
 
@@ -65,8 +69,8 @@ export default class XrScene {
           this.renderer.clear();
 
           this.renderer.setSize(
-            XR.session.renderState.baseLayer.framebufferWidth, 
-            XR.session.renderState.baseLayer.framebufferHeight, 
+            XR.session.renderState.baseLayer.framebufferWidth,
+            XR.session.renderState.baseLayer.framebufferHeight,
             false
           );
 
@@ -98,9 +102,11 @@ export default class XrScene {
             this.renderer.clearDepth();
           }
         }
-        return (this.frame = XR.session.requestAnimationFrame(this._animationCallback));
+        this.frame = XR.session.requestAnimationFrame(this._animationCallback);
+        return this.frame;
       }
-      return (this.frame = null);
+      this.frame = null;
+      return this.frame;
     };
 
     _translateViewMatrix(viewMatrix, position) {
