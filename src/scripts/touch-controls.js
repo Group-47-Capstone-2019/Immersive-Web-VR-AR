@@ -23,7 +23,7 @@ export let userPosition = new THREE.Vector3();
 
 export function hideTouchControls() {
     let touchControls = document.querySelector('#joystick-controls');
-    
+    joystick.style.visibility = 'hidden';
     touchControls.style.display = 'none';
     if (window.PointerEvent) {
         joystick.removeEventListener('pointerdown', handlePointerDown());
@@ -38,7 +38,7 @@ export function hideTouchControls() {
 
 export function showTouchControls() {
     let touchControls = document.querySelector('#joystick-controls');
-    
+    joystick.style.visibility = 'visible';
     touchControls.style.display = 'inline';
     if (window.PointerEvent) {
         joystick.addEventListener('pointerdown', (ev) => { handlePointerDown(ev) });
