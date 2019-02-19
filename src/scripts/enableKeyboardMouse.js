@@ -27,8 +27,7 @@ let startMessage = document.querySelector('#start');
 let arrow = document.querySelector('#arrow');
 let canvas = document.querySelector('#vr-port');
 export let controls;
-
-addMouseKeyboardEventListeners();
+export let keyboard = false;
 
   /**
    * Checks for PointerLockControls support in browser
@@ -42,6 +41,7 @@ export function addMouseKeyboardEventListeners(){
     if(!hasPointerLock()) 
         return;
 
+    keyboard = true;
     controls = new THREE.PointerLockControls(camera);
     controls.getObject().position.y = 1;
 
@@ -168,6 +168,18 @@ export function updatePosition() {
 
     controls_yaw.translateX(velocity.x * delta);
     controls_yaw.translateZ(velocity.z * delta);
+
+    // Temporary boundaries
+
+    if (controls_yaw.position.z > 11)
+        controls_yaw.position.z = 11;
+    if (controls_yaw.position.z < -11)
+        controls_yaw.position.z = -11;
+
+    if (controls_yaw.position.x > 11)
+        controls_yaw.position.x = 11;
+    if (controls_yaw.position.x < -11)
+        controls_yaw.position.x = -11;
 
     prevTime = time;
   }

@@ -1,6 +1,7 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
 import { showTouchControls, userPosition, updateTouchPosition } from '../touch-controls';
+import { keyboard, controls, updatePosition } from '../enableKeyboardMouse';
 
 export default class XrScene {
     scene = new Scene();
@@ -16,8 +17,10 @@ export default class XrScene {
     constructor(renderer, camera) {
       this.renderer = renderer;
       this.camera = camera;
-    }
 
+      this._checkForKeyboardMouse();
+    }
+    
     /**
      * Override this to handle animating objects in your scene.
      */
@@ -34,6 +37,9 @@ export default class XrScene {
       if (this.isActive) {
         // Update the objects in the scene that we will be rendering
         this.animate();
+        if(controls && controls.enabled) {
+          updatePosition();
+        }
         if (!XR.session) {
           this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
           this.renderer.autoClear = true;
@@ -91,6 +97,14 @@ export default class XrScene {
 
       return null;
     };
+
+    _checkForKeyboardMouse() {
+      console.log("Checking");
+      if(keyboard) {
+        console.log("Enabling");
+        this.scene.add(controls.getObject());
+      }
+    }
 
     _translateViewMatrix(viewMatrix, position) {
       // Save initial position for later

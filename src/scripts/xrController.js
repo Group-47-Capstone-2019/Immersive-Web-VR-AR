@@ -1,6 +1,7 @@
 import { canvas } from './renderer/canvas';
 import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
+import { addMouseKeyboardEventListeners } from './enableKeyboardMouse';
 
 /**
  * XR fields we are using
@@ -99,6 +100,8 @@ async function xrValidate() {
       // TODO: @author TimForsyth add the VR button creation here
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
+      console.log('Instead, enable keyboard/mouse.');
+      addMouseKeyboardEventListeners();
     }
 
     // Check to see if an non-immersive xr session is supported
