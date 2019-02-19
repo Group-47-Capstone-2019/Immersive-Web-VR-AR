@@ -1,7 +1,4 @@
 import {
-  SphereGeometry,
-  Mesh,
-  MeshBasicMaterial,
   AmbientLight,
   PointLight
 } from 'three';
@@ -30,7 +27,7 @@ export default class PlanetsScene extends XrScene {
     const pointLight = new PointLight('white', 0.8, 1000);
     pointLight.position.set(5, 5, 5);
     this.scene.add(pointLight);
-  } 
+  }
 
   /**
    * animation function - called each frame

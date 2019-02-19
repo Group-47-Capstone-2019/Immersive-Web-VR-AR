@@ -1,7 +1,9 @@
-import { SphereGeometry, Mesh, MeshLambertMaterial, Vector3 } from 'three';
+import {
+  SphereGeometry, Mesh, MeshLambertMaterial, Vector3
+} from 'three';
 
 function randomColor() {
-  return '#000000'.replace(/0/g, () => (~~(Math.random() * 16)).toString(16));
+  return '#000000'.replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
 }
 
 /**
@@ -38,8 +40,7 @@ const randBetweenPos = (low, high) => Math.random() * (high - low) + low;
  * @param {number} low
  * @param {number} high
  */
-const randBetween = (low, high) =>
-  randBetweenPos(low, high) * (Math.random() > 0.5 ? -1 : 1);
+const randBetween = (low, high) => randBetweenPos(low, high) * (Math.random() > 0.5 ? -1 : 1);
 
 /**
  * @typedef Planet
@@ -55,17 +56,12 @@ const randBetween = (low, high) =>
  * @returns {Planet[]} created planets
  */
 export function createPlanets() {
-  const sizes = [0.5, 0.75, 1, 0.5, 1, .75, 1, 0.5];
-  return sizes.map(radius => {
+  const sizes = [0.5, 0.75, 1, 0.5, 1, 0.75, 1, 0.5];
+  return sizes.map((radius) => {
     const x = randBetween(4, 10);
     const y = randBetween(4, 10);
     const z = randBetween(4, 10);
 
-    // const velocity = new Vector3(
-    //   randBetween(0, 0.3),
-    //   randBetween(0, 0.3),
-    //   randBetween(0, 0.3)
-    // );
     const velocity = new Vector3(0, 0, 0);
 
     return {
@@ -78,7 +74,7 @@ export function createPlanets() {
 }
 
 /**
- * update `planet`'s z coord in place to ensure the planet's
+ * update `planet`'s z velocity in place to ensure the planet's
  * velocity is equal to it's escape velocity
  *
  * @param {Planet} planet

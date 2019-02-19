@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 import { Planet } from './create';
 
-export const G = .05;//6.673e-11;
+export const G = 0.05;// 6.673e-11;
 
 /**
  * returns force of gravity on p1 and p2 from the other
@@ -45,7 +45,8 @@ function movePlanet(p1, pos1, pos2, mass2, time) {
     .divideScalar(p1.mass); // acceleration
 
   // update pos
-  const d1 = new Vector3().copy(p1.velocity).multiplyScalar(time);
+  const d1 = new Vector3().copy(p1.velocity)
+    .multiplyScalar(time);
 
   const d2 = new Vector3()
     .copy(accelerationVec)
@@ -64,9 +65,7 @@ function movePlanet(p1, pos1, pos2, mass2, time) {
  * @param {number} time
  */
 export function movePlanets(allPlanets, time) {
-  const oldPlanetPositions = allPlanets.map(p =>
-    new Vector3().copy(p.mesh.position)
-  );
+  const oldPlanetPositions = allPlanets.map(p => new Vector3().copy(p.mesh.position));
 
   // loop through all pairs of planets
   for (let i = 0; i < allPlanets.length; i++) {
