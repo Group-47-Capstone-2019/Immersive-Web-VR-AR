@@ -1,7 +1,7 @@
 import { canvas } from './renderer/canvas';
 import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
-import { addMouseKeyboardEventListeners } from './enableKeyboardMouse';
+import { addMouseKeyboardEventListeners } from './controls/keyboard-controls';
 
 /**
  * XR fields we are using

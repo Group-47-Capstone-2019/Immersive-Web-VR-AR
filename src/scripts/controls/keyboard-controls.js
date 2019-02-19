@@ -1,5 +1,6 @@
-import THREE from './three';
-import { camera } from './renderer/camera';
+import THREE from '../three';
+import { camera } from '../renderer/camera';
+import { Direction } from './control-utils';
 
 const Key = {
     W: 87,
@@ -10,14 +11,6 @@ const Key = {
     Down: 40,
     Left: 37,
     Right: 39
-}
-
-const Direction = {
-    Stopped: 0,
-    Left: 1,
-    Right: 2,
-    Forward: 4,
-    Backward: 8
 }
 
 let prevTime = performance.now();
@@ -152,7 +145,7 @@ export function updatePosition() {
 
     // Decrease the velocity.
     velocity.x -= velocity.x * 10.0 * delta;
-		velocity.z -= velocity.z * 10.0 * delta;
+	velocity.z -= velocity.z * 10.0 * delta;
 
     let controls_yaw = controls.getObject();
 

@@ -1,12 +1,5 @@
 import * as THREE from 'three';
-
-const Direction = {
-    Stopped: 0,
-    Left: 1,
-    Right: 2,
-    Forward: 4,
-    Backward: 8
-}
+import { Direction } from './control-utils'
 
 let touchscreen = {
     joystickOriginX: 0,

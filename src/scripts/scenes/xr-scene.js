@@ -1,7 +1,7 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
-import { showTouchControls, userPosition, updateTouchPosition } from '../touch-controls';
-import { keyboard, controls, updatePosition } from '../enableKeyboardMouse';
+import { showTouchControls, userPosition, updateTouchPosition } from '../controls/touch-controls';
+import { keyboard, controls, updatePosition } from '../controls/keyboard-controls';
 
 export default class XrScene {
     scene = new Scene();
