@@ -14,15 +14,16 @@ let touchscreen = {
     currentTouchId: null,
     currentPointerId: null,
     movingDirection: Direction.Stopped,
-    prevTime: performance.now(),
-    velocity: new THREE.Vector3(),
+    prevTime: performance.now()
 }
+
+let joystick = document.querySelector('#joystick');
 
 export let userPosition = new THREE.Vector3();
 
 export function hideTouchControls() {
     let touchControls = document.querySelector('#joystick-controls');
-    let joystick = document.querySelector('#joystick');
+    
     touchControls.style.display = 'none';
     if (window.PointerEvent) {
         joystick.removeEventListener('pointerdown', handlePointerDown());
@@ -37,34 +38,42 @@ export function hideTouchControls() {
 
 export function showTouchControls() {
     let touchControls = document.querySelector('#joystick-controls');
-    let joystick = document.querySelector('#joystick');
+    
     touchControls.style.display = 'inline';
     if (window.PointerEvent) {
         joystick.addEventListener('pointerdown', (ev) => { handlePointerDown(ev) });
         joystick.addEventListener('pointermove', (ev) => { handlePointerMove(ev) });
-        joystick.addEventListener('pointerup', handleTouchEnd());
+        joystick.addEventListener('pointerup', (ev) => {handleTouchEnd(ev)});
     } else {
         joystick.addEventListener('touchstart', (ev) => { handleTouchStart(ev) });
         joystick.addEventListener('touchmove', (ev) => { handleTouchMove(ev) });
-        joystick.addEventListener('touchend', handleTouchEnd());
+        joystick.addEventListener('touchend', (ev) => {handleTouchEnd(ev)});
     }
+    
 }
 
 export function handlePointerDown(ev) {
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    console.log("Pointer point touched");
     touchscreen.joystickOriginX = ev.x;
     touchscreen.joystickOriginY = ev.y;
     touchscreen.currentPointerId = ev.pointerId;
 }
 
 export function handleTouchStart(ev) {
-    let touch	= event.changedTouches[0];
+    let touch	= ev.changedTouches[0];
     touchscreen.currentTouchId	= touch.identifier;
     touchscreen.joystickOriginX = touch.pageX;
     touchscreen.joystickOriginY = touch.pageY;
+    console.log("Touch point touched");
     ev.preventDefault();
 }
 
 export function handlePointerMove(ev) {
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    console.log("Moving pointer point");
     if(touchscreen.currentPointerId === null)
         return;
     let deltaX = ev.x - touchscreen.joystickOriginX;
@@ -73,11 +82,16 @@ export function handlePointerMove(ev) {
 }
 
 export function handleTouchMove(ev) {
-    if( touchscreen.currentTouchId === null)
+    console.log("Moving touch point");
+    if( touchscreen.currentTouchId === null){
+    //    console.log("Oops, null");
         return;
+    }
     let touchList	= ev.changedTouches;
     for(let i = 0; i < touchList.length; i++) {
+      //  console.log("Checking");
         if(touchList[i].identifier == touchscreen.currentTouchId) {
+       //     console.log("Moving");
             var touch	= touchList[i];
             let deltaX = touch.pageX - touchscreen.joystickOriginX;
             let deltaY = touch.pageY - touchscreen.joystickOriginY;
@@ -88,7 +102,6 @@ export function handleTouchMove(ev) {
 }
 
 export function computeDirection(deltaX, deltaY) {
-    let joystick = document.querySelector("#joystick");
     if ((deltaX <= 70 && deltaX >= -70) && (deltaY <= 70 && deltaY >= -70))
         joystick.style.transform = 'translate(' + deltaX + 'px,' + deltaY + 'px)';
     let rotation = Math.atan2(deltaY, deltaX);
@@ -103,8 +116,10 @@ export function computeDirection(deltaX, deltaY) {
         touchscreen.movingDirection = Direction.Left;
 }
 
-export function handleTouchEnd() {
-    let joystick = document.querySelector("#joystick");
+export function handleTouchEnd(e) {
+    console.log("end");
+    e.preventDefault();
+    e.stopImmediatePropagation();
     touchscreen.joystickOriginX = 0;
     touchscreen.joystickOriginY = 0;
     touchscreen.currentTouchId	= null;
@@ -119,20 +134,13 @@ export function updateTouchPosition(viewMatrix) {
     let time = performance.now();
     let delta = (time - touchscreen.prevTime) / 1000;
 
-    // Decrease the velocity.
-    touchscreen.velocity.x -= touchscreen.velocity.x * 10.0 * delta;
-    touchscreen.velocity.z -= touchscreen.velocity.z * 10.0 * delta;
-
     let invertedRotation = rotation.inverse();
-    // Extract the yaw rotation only because x and z axis rotations are
-    // not needed to translate the user position. The following code
-    // renormalize on the Y axis.
     let norm = Math.sqrt(invertedRotation.w * invertedRotation.w + invertedRotation.y * invertedRotation.y);
     let invertedYawRotation = new THREE.Quaternion(0, invertedRotation.y / norm, 0, invertedRotation.w / norm);
 
     let delta_z = 0;
     let delta_x = 0;
-    let movingDistance = 70.0 * delta * delta;
+    let movingDistance = 250.0 * delta * delta;
     if ((touchscreen.movingDirection & Direction.Forward) === Direction.Forward)
         delta_z = movingDistance;
     if ((touchscreen.movingDirection & Direction.Backward) === Direction.Backward)
@@ -142,10 +150,7 @@ export function updateTouchPosition(viewMatrix) {
     if ((touchscreen.movingDirection & Direction.Right) === Direction.Right)
         delta_x = -movingDistance;
 
-    // Move back to view coordinates.
     let deltaPosition = new THREE.Vector3(delta_x, 0, delta_z);
-    // This will make sure that the translation from the keypad is always
-    // done in the right direction regardless the rotation.
     deltaPosition.applyQuaternion(invertedYawRotation);
 
     userPosition.add(deltaPosition);
