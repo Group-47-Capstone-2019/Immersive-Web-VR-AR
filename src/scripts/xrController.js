@@ -17,10 +17,14 @@ export const XR = {
 };
 
 function xrOnSessionEnded(event) {
+  XR.session = null;
+
   // Reset xrState when session ends and remove the mirror canvas
   if (event.session.mode == "immersive-vr") {
-    document.body.removeChild(document.querySelector('#mirror-canvas'));
-    XR.session = null;
+    document.body.removeChild(document.getElementById('mirror-canvas'));
+    xrValidateMagicWindow();
+  } else {
+    xrOnRequestSession();
   }
 }
 
@@ -31,7 +35,7 @@ async function xrOnSessionStarted() {
   try {
     await renderer.context.makeXRCompatible();
   } catch (err) {
-    console.error(`Error creating XR BaseLayer : ${err}`);
+    console.error(`Error making rendering context XR compatible : ${err}`);
   }
 
   // Set near and far settings for session camera
@@ -48,7 +52,6 @@ async function xrOnSessionStarted() {
       type: 'stationary',
       subtype: 'eye-level'
     });
-
     // Check if the session is immersive or non immersive and set the
     // respective refSpace.
     if (XR.session.mode == "immersive-vr") {
@@ -56,6 +59,8 @@ async function xrOnSessionStarted() {
     } else {
       XR.nonImmersiveRefSpace = xrRefSpace;
     }
+
+    //TODO: Request animation frame
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
   }
@@ -87,9 +92,13 @@ async function xrOnRequestSession() {
  * Checks for magic window compatibility
  */
 async function xrValidateMagicWindow() {
-  XR.magicWindowCanvas = document.createElement('canvas');
-  XR.magicWindowCanvas.setAttribute('id', 'vr-port');
-  XR.magicWindowCanvas.setAttribute('name', 'magic-window');
+  //Ensure that there isn't already a magic window
+  if(!XR.magicWindowCanvas) {
+    XR.magicWindowCanvas = document.createElement('canvas');
+    XR.magicWindowCanvas.setAttribute('id', 'vr-port');
+    XR.magicWindowCanvas.setAttribute('name', 'magic-window');
+    canvas.parentNode.replaceChild(XR.magicWindowCanvas, canvas);
+  }
   XR.magicWindowCanvas.width = window.innerWidth;
   XR.magicWindowCanvas.height = window.innerHeight;
 
@@ -98,7 +107,6 @@ async function xrValidateMagicWindow() {
 
   try {
     XR.session = await navigator.xr.requestSession({ outputContext: xrMagicWindowContext });
-    canvas.parentNode.replaceChild(XR.magicWindowCanvas, canvas);
     xrOnSessionStarted();
   } catch (err) {
     console.error(`Error initializing XR session : ${err}`);
@@ -140,7 +148,11 @@ function createVRButton() {
   vrButton.classList.add('vr-toggle');
   vrButton.textContent = 'Enter VR';
   vrButton.addEventListener('click', _ => {
-    xrOnRequestSession();
+    if(XR.session) {
+      XR.session.end();
+    } else {
+      xrOnRequestSession();
+    }
   });
   document.body.appendChild(vrButton);
 }
