@@ -34,7 +34,7 @@ export default class XrScene {
         // Update the objects in the scene that we will be rendering
         this.animate();
         if (!XR.session) {
-          this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+          this.renderer.context.viewport(0, 0, window.innerWidth, window.innerHeight);
           this.renderer.autoClear = true;
           this.scene.matrixAutoUpdate = true;
           this.renderer.render(this.scene, this.camera);
@@ -54,6 +54,12 @@ export default class XrScene {
           this.renderer.autoClear = false;
           this.renderer.clear();
 
+          this.renderer.setSize(
+            XR.session.renderState.baseLayer.framebufferWidth, 
+            XR.session.renderState.baseLayer.framebufferHeight, 
+            false
+          );
+
           this.renderer.context.bindFramebuffer(
             this.renderer.context.FRAMEBUFFER,
             XR.session.renderState.baseLayer.framebuffer
@@ -66,11 +72,11 @@ export default class XrScene {
 
             this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
 
-            this.renderer.setViewport(
+            this.renderer.context.viewport(
               viewport.x,
               viewport.y,
-              XR.magicWindowCanvas.width,
-              XR.magicWindowCanvas.height
+              viewport.width,
+              viewport.height
             );
 
             this.camera.matrixWorldInverse.copy(viewMatrix);
@@ -82,10 +88,8 @@ export default class XrScene {
             this.renderer.clearDepth();
           }
         }
-
         return XR.session.requestAnimationFrame(this._animationCallback);
       }
-
       return null;
     };
 
