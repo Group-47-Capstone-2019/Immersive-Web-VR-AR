@@ -10,13 +10,11 @@ const startMessage = document.querySelector('#start');
 const arrow = document.querySelector('#arrow');
 
 export function hideStartMessage() {
-  console.log("attempting to hide start message");
   startMessage.style.display = 'none';
   arrow.style.display = 'none';
 }
 
 export function showStartMessage() {
-  console.log("attempting to show start message");
   startMessage.style.display = 'flex';
   arrow.style.display = 'flex';
 }

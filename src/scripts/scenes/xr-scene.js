@@ -35,8 +35,9 @@ export default class XrScene {
 
     _animationCallback = (timestamp, xrFrame) => {
       if (this.isActive) {
-        // Update the objects in the scene that we will be rendering
+        // Update the objects in the scene that we will be rendering.
         this.animate();
+        // Update the user position if keyboard and mouse controls are enabled.
         if (controls && controls.enabled) {
           updatePosition();
         }
@@ -66,6 +67,7 @@ export default class XrScene {
             const viewport = XR.session.renderState.baseLayer.getViewport(view);
             const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
+            // Update user position if touch controls are in use with magic window.
             if (XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
               updateTouchPosition(viewMatrix);
               this._translateViewMatrix(viewMatrix, userPosition);

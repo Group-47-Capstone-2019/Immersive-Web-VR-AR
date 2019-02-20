@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { Direction } from './control-utils';
 
-const touchscreen = {
+/* eslint-disable prefer-const */
+
+let touchscreen = {
   joystickOriginX: 0,
   joystickOriginY: 0,
   currentTouchId: null,
@@ -15,11 +17,20 @@ const touchControls = document.querySelector('#joystick-controls');
 
 export let userPosition = new THREE.Vector3();
 
+/* eslint-enable prefer-const */
+
+/**
+ * Computes which direction the joystick is moving in order to move the
+ * user in the appropriate direction.
+ * @param {*} deltaX
+ * @param {*} deltaY
+ */
 export function computeDirection(deltaX, deltaY) {
-  if ((deltaX <= 70 && deltaX >= -70) && (deltaY <= 70 && deltaY >= -70))
+  if ((deltaX <= 70 && deltaX >= -70) && (deltaY <= 70 && deltaY >= -70)) { 
     joystick.style.transform = 'translate(' + deltaX + 'px,' + deltaY + 'px)';
-  let rotation = Math.atan2(deltaY, deltaX);
-  let angle45Degree = Math.PI / 4;
+  }
+  const rotation = Math.atan2(deltaY, deltaX);
+  const angle45Degree = Math.PI / 4;
   if (rotation > angle45Degree && rotation < angle45Degree * 3) {
     touchscreen.movingDirection = Direction.Backward;
   }
@@ -34,6 +45,11 @@ export function computeDirection(deltaX, deltaY) {
   }
 }
 
+/**
+ * Called after the pointerdown event is fired.
+ * Stores where on the screen is touched.
+ * @param {*} ev
+ */
 export function handlePointerDown(ev) {
   ev.preventDefault();
   ev.stopImmediatePropagation();
@@ -42,30 +58,49 @@ export function handlePointerDown(ev) {
   touchscreen.currentPointerId = ev.pointerId;
 }
 
+/**
+ * Called after the touchstart event is fired.
+ * Stores where on the screen is touched.
+ * @param {*} ev
+ */
 export function handleTouchStart(ev) {
-  let touch	= ev.changedTouches[0];
-  touchscreen.currentTouchId	= touch.identifier;
+  const touch	= ev.changedTouches[0];
+  touchscreen.currentTouchId = touch.identifier;
   touchscreen.joystickOriginX = touch.pageX;
   touchscreen.joystickOriginY = touch.pageY;
   ev.preventDefault();
 }
 
+/**
+ * Called after the pointermove event is fired.
+ * Computes the difference/delta of the positioning of the touch
+ * point. Calls computeDirection in order to compute the direction
+ * to move.
+ * @param {*} ev
+ */
 export function handlePointerMove(ev) {
   ev.preventDefault();
   ev.stopImmediatePropagation();
   if (touchscreen.currentPointerId === null) {
     return;
   }
-  let deltaX = ev.x - touchscreen.joystickOriginX;
-  let deltaY = ev.y - touchscreen.joystickOriginY;
+  const deltaX = ev.x - touchscreen.joystickOriginX;
+  const deltaY = ev.y - touchscreen.joystickOriginY;
   computeDirection(deltaX, deltaY);
 }
 
+/**
+ * Called after the touchmove event is fired.
+ * Computes the difference/delta of the positioning of the touch
+ * point. Calls computeDirection in order to compute the direction
+ * to move.
+ * @param {*} ev
+ */
 export function handleTouchMove(ev) {
-  if ( touchscreen.currentTouchId === null) {
+  if (touchscreen.currentTouchId === null) {
     return;
   }
-  let touchList	= ev.changedTouches;
+  const touchList = ev.changedTouches;
   for (let i = 0; i < touchList.length; i++) {
     if (touchList[i].identifier === touchscreen.currentTouchId) {
       const touch = touchList[i];
@@ -77,17 +112,27 @@ export function handleTouchMove(ev) {
   }
 }
 
+/**
+ * Called when the touchend event is fired.
+ * Resets the joystick back to default.
+ * @param {*} e
+ */
 export function handleTouchEnd(e) {
   e.preventDefault();
   e.stopImmediatePropagation();
   touchscreen.joystickOriginX = 0;
   touchscreen.joystickOriginY = 0;
-  touchscreen.currentTouchId	= null;
+  touchscreen.currentTouchId = null;
   touchscreen.currentPointerId = null;
   touchscreen.movingDirection = Direction.Stopped;
   joystick.style.transform = 'translate(0px, 0px)';
 }
 
+/**
+ * Displays the joystick and adds the necessary event listeners.
+ * We opt to use the pointer event listeners if supported, otherwise
+ * the touch event listeners are used.
+ */
 export function showTouchControls() {
   joystick.style.visibility = 'visible';
   touchControls.style.display = 'inline';
@@ -102,6 +147,9 @@ export function showTouchControls() {
   }
 }
 
+/**
+ * Hides the joystick and removes the event listeners.
+ */
 export function hideTouchControls() {
   joystick.style.visibility = 'hidden';
   touchControls.style.display = 'none';
@@ -116,32 +164,46 @@ export function hideTouchControls() {
   }
 }
 
+/**
+ * Called from within the animationCallback function of the scene.
+ * Updates the user position based on the movingDirection.
+ * @param {*} viewMatrix
+ */
 export function updateTouchPosition(viewMatrix) {
   const rotation = new THREE.Quaternion();
   viewMatrix.decompose(new THREE.Vector3(), rotation, new THREE.Vector3());
   const time = performance.now();
   const delta = (time - touchscreen.prevTime) / 1000;
 
-  const invertedRotation = rotation.inverse();
-  const norm = Math.sqrt(invertedRotation.w * invertedRotation.w + invertedRotation.y * invertedRotation.y);
-  const invertedYawRotation = new THREE.Quaternion(0, invertedRotation.y / norm, 0, invertedRotation.w / norm);
+  const invRotation = rotation.inverse();
+  const norm = Math.sqrt(invRotation.w * invRotation.w + invRotation.y * invRotation.y);
+  const invYawRotation = new THREE.Quaternion(0, invRotation.y / norm, 0, invRotation.w / norm);
 
-  let delta_x = 0;
-  let delta_z = 0;
+  let deltaX = 0;
+  let deltaZ = 0;
 
   const movingDistance = 10.0 * delta;
 
-  if ((touchscreen.movingDirection & Direction.Forward) === Direction.Forward)
-      delta_z = movingDistance;
-  if ((touchscreen.movingDirection & Direction.Backward) === Direction.Backward)
-      delta_z = -movingDistance;
-  if ((touchscreen.movingDirection & Direction.Left) === Direction.Left)
-      delta_x = movingDistance;
-  if ((touchscreen.movingDirection & Direction.Right) === Direction.Right)
-      delta_x = -movingDistance;
+  if ((touchscreen.movingDirection & Direction.Forward) === Direction.Forward) {
+    deltaZ = movingDistance;
+  }
+  if ((touchscreen.movingDirection & Direction.Backward) === Direction.Backward) {
+    deltaZ = -movingDistance;
+  }
+  if ((touchscreen.movingDirection & Direction.Left) === Direction.Left) {
+    deltaX = movingDistance;
+  }
+  if ((touchscreen.movingDirection & Direction.Right) === Direction.Right) {
+    deltaX = -movingDistance;
+  }
 
-  let deltaPosition = new THREE.Vector3(delta_x, 0, delta_z);
-  deltaPosition.applyQuaternion(invertedYawRotation);
+  /* eslint-disable prefer-const */
+
+  let deltaPosition = new THREE.Vector3(deltaX, 0, deltaZ);
+
+  /* eslint-enable prefer-const */
+
+  deltaPosition.applyQuaternion(invYawRotation);
 
   userPosition.add(deltaPosition);
 

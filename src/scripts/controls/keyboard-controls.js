@@ -13,10 +13,14 @@ const Key = {
   Right: 39
 };
 
+/* eslint-disable prefer-const */
+
 let prevTime = performance.now();
 let velocity = new THREE.Vector3();
 let movingDirection = Direction.Stopped;
 const canvas = document.querySelector('#vr-port');
+
+/* eslint-enable prefer-const */
 
 export let controls;
 export let keyboard = false;
@@ -35,9 +39,9 @@ export function hasPointerLock() {
  * disables the PointerLockControls.
  */
 export function pointerLockChanged() {
-  if (document.pointerLockElement === document.body ||
-    document.mozPointerLockElement === document.body ||
-    document.webkitPointerLockElement === document.body) {
+  if (document.pointerLockElement === document.body 
+    || document.mozPointerLockElement === document.body
+    || document.webkitPointerLockElement === document.body) {
     controls.enabled = true;
     hideStartMessage();
   }
@@ -48,7 +52,7 @@ export function pointerLockChanged() {
 }
 
 /**
- * Called when the keydown event is fired after a key is pressed. 
+ * Called when the keydown event is fired after a key is pressed.
  * Uses the event to identify which key is pressed.
  * The OR operation (|) is used to keep track of which keys
  * are currently being pressed. With the numbers chosen to indicate directions,
@@ -79,16 +83,16 @@ export function onKeyDown(event) {
 }
 
 /**
- * Called when the keyup event is fired after a key is released. 
+ * Called when the keyup event is fired after a key is released.
  * Uses the event to identify the released key.
  * The AND operation (&) is used to keep track of which keys
  * are currently being pressed. Paired with the NOT (~), or bit-inverse
  * of the directions, this essentially acts as subtracting the direction
  * of the key from the total movingDirection variable.
- * @param {*} event 
+ * @param {*} event
  */
 export function onKeyUp(event) {
-  switch(event.keyCode) {
+  switch (event.keyCode) {
     case Key.Up:
     case Key.W:
       movingDirection &= ~Direction.Forward;
@@ -105,6 +109,8 @@ export function onKeyUp(event) {
     case Key.D:
       movingDirection &= ~Direction.Right;
       break;
+    default:
+      break;
   }
 }
 
@@ -115,7 +121,7 @@ export function onKeyUp(event) {
  * for movement with WASD/arrow keys.
  */
 export function addMouseKeyboardEventListeners() {
-  if (!hasPointerLock()) { 
+  if (!hasPointerLock()) {
     return;
   }
 
@@ -126,14 +132,15 @@ export function addMouseKeyboardEventListeners() {
   document.addEventListener('pointerlockchange', () => { pointerLockChanged(); }, false);
   document.addEventListener('mozpointerlockchange', () => { pointerLockChanged(); }, false);
   document.addEventListener('webkitpointerlockchange', () => { pointerLockChanged(); }, false);
-  document.addEventListener('keydown', event => { onKeyDown(event); }, false);
-  document.addEventListener('keyup', event => { onKeyUp(event); }, false);
-  
+  document.addEventListener('keydown', (event) => { onKeyDown(event); }, false);
+  document.addEventListener('keyup', (event) => { onKeyUp(event); }, false);
+
   canvas.addEventListener('click', () => {
     document.body.requestPointerLock = document.body.requestPointerLock
       || document.body.mozRequestPointerLock
       || document.body.webkitRequestPointerLock;
-    document.body.requestPointerLock(); }, false);
+    document.body.requestPointerLock();
+  }, false);
 }
 
 /**
@@ -147,16 +154,20 @@ export function addMouseKeyboardEventListeners() {
  * are pressed down at the same time.
  */
 export function updatePosition() {
-  let time = performance.now();
-  let delta = (time - prevTime) / 1000;
+  const time = performance.now();
+  const delta = (time - prevTime) / 1000;
 
   // Decrease the velocity to avoid a rigid stop, creating more realistic movement.
   velocity.x -= velocity.x * 10.0 * delta;
   velocity.z -= velocity.z * 10.0 * delta;
 
-  let controls_yaw = controls.getObject();
+  /* eslint-disable prefer-const */
 
-  let movingDistance = 100.0 * delta;
+  let controlsYaw = controls.getObject();
+
+  /* eslint-enable prefer-const */
+
+  const movingDistance = 100.0 * delta;
 
   if ((movingDirection & Direction.Forward) === Direction.Forward) {
     velocity.z -= movingDistance;
@@ -171,23 +182,23 @@ export function updatePosition() {
     velocity.x += movingDistance;
   }
 
-  controls_yaw.translateX(velocity.x * delta);
-  controls_yaw.translateZ(velocity.z * delta);
+  controlsYaw.translateX(velocity.x * delta);
+  controlsYaw.translateZ(velocity.z * delta);
 
   // Temporary boundaries
 
-  if (controls_yaw.position.z > 11) {
-    controls_yaw.position.z = 11;
+  if (controlsYaw.position.z > 11) {
+    controlsYaw.position.z = 11;
   }
-  if (controls_yaw.position.z < -11) {
-    controls_yaw.position.z = -11;
+  if (controlsYaw.position.z < -11) {
+    controlsYaw.position.z = -11;
   }
 
-  if (controls_yaw.position.x > 11) {
-    controls_yaw.position.x = 11;
+  if (controlsYaw.position.x > 11) {
+    controlsYaw.position.x = 11;
   }
-  if (controls_yaw.position.x < -11) {
-    controls_yaw.position.x = -11;
+  if (controlsYaw.position.x < -11) {
+    controlsYaw.position.x = -11;
   }
 
   prevTime = time;

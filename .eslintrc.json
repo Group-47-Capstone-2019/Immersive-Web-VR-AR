@@ -6,7 +6,7 @@
     "no-console": "off",
     "no-plusplus": "off",
     "no-underscore-dangle": "off",
-    "no-mutable-exports": "warn",
+    "import/no-mutable-exports": "warn",
     "no-bitwise": "warn",
     "import/prefer-default-export": "warn",
     "class-methods-use-this": "warn"
