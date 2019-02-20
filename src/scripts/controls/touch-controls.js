@@ -69,7 +69,7 @@ export function handlePointerDown(ev) {
  * @param {*} ev
  */
 export function handleTouchStart(ev) {
-  const touch	= ev.changedTouches[0];
+  const touch = ev.changedTouches[0];
   touchscreen.currentTouchId = touch.identifier;
   touchscreen.joystickOriginX = touch.pageX;
   touchscreen.joystickOriginY = touch.pageY;
