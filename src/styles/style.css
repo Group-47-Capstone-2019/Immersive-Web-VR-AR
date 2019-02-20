@@ -12,7 +12,7 @@
 }
 
 #joystick {
-  display: block;
+  display: inline-block;
   visibility: hidden;
   position: absolute;
   width: 100px;
