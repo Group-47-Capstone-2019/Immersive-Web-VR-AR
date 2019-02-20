@@ -1,6 +1,6 @@
 import THREE from '../three';
 import { camera } from '../renderer/camera';
-import { Direction } from './control-utils';
+import { Direction, updateMovingDistance } from './control-utils';
 
 const Key = {
     W: 87,
@@ -150,14 +150,17 @@ export function updatePosition() {
     let controls_yaw = controls.getObject();
 
     let movingDistance = 100.0 * delta;
-    if ((movingDirection & Direction.Forward) === Direction.Forward)
+
+    updateMovingDistance(velocity, movingDistance, movingDirection, -1);
+
+    /*if ((movingDirection & Direction.Forward) === Direction.Forward)
       velocity.z -= movingDistance;
     if ((movingDirection & Direction.Backward) === Direction.Backward)
       velocity.z += movingDistance;
     if ((movingDirection & Direction.Left) === Direction.Left)
       velocity.x -= movingDistance;
     if ((movingDirection & Direction.Right) === Direction.Right)
-      velocity.x += movingDistance;
+      velocity.x += movingDistance;*/
 
     controls_yaw.translateX(velocity.x * delta);
     controls_yaw.translateZ(velocity.z * delta);

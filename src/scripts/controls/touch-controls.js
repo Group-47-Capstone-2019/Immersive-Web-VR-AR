@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Direction } from './control-utils'
+import { Direction, updateMovingDistance } from './control-utils'
 
 let touchscreen = {
     joystickOriginX: 0,
@@ -131,19 +131,24 @@ export function updateTouchPosition(viewMatrix) {
     let norm = Math.sqrt(invertedRotation.w * invertedRotation.w + invertedRotation.y * invertedRotation.y);
     let invertedYawRotation = new THREE.Quaternion(0, invertedRotation.y / norm, 0, invertedRotation.w / norm);
 
-    let delta_z = 0;
-    let delta_x = 0;
-    let movingDistance = 250.0 * delta * delta;
-    if ((touchscreen.movingDirection & Direction.Forward) === Direction.Forward)
-        delta_z = movingDistance;
-    if ((touchscreen.movingDirection & Direction.Backward) === Direction.Backward)
-        delta_z = -movingDistance;
-    if ((touchscreen.movingDirection & Direction.Left) === Direction.Left)
-        delta_x = movingDistance;
-    if ((touchscreen.movingDirection & Direction.Right) === Direction.Right)
-        delta_x = -movingDistance;
+    let deltaXZ = {
+        x: 0,
+        z: 0
+    }
 
-    let deltaPosition = new THREE.Vector3(delta_x, 0, delta_z);
+    let movingDistance = 250.0 * delta * delta;
+
+    updateMovingDistance(deltaXZ, movingDistance, touchscreen.movingDirection, 1);
+    /*if ((touchscreen.movingDirection & Direction.Forward) === Direction.Forward)
+        deltaXZ.z = movingDistance;
+    if ((touchscreen.movingDirection & Direction.Backward) === Direction.Backward)
+        deltaXZ.z = -movingDistance;
+    if ((touchscreen.movingDirection & Direction.Left) === Direction.Left)
+        deltaXZ.x = movingDistance;
+    if ((touchscreen.movingDirection & Direction.Right) === Direction.Right)
+        deltaXZ.x = -movingDistance;*/
+
+    let deltaPosition = new THREE.Vector3(deltaXZ.x, 0, deltaXZ.z);
     deltaPosition.applyQuaternion(invertedYawRotation);
 
     userPosition.add(deltaPosition);

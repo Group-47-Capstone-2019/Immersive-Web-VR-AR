@@ -6,13 +6,13 @@ export const Direction = {
     Backward: 8
 }
 
-/*export function(obj, movingDistance) {
+export function updateMovingDistance(obj, movingDistance, movingDirection, sign) {
     if ((movingDirection & Direction.Forward) === Direction.Forward)
-      obj.z -= movingDistance;
+      obj.z += movingDistance * sign;
     if ((movingDirection & Direction.Backward) === Direction.Backward)
-      obj.z += movingDistance;
+      obj.z -= movingDistance * sign;
     if ((movingDirection & Direction.Left) === Direction.Left)
-      obj.x -= movingDistance;
+      obj.x += movingDistance * sign;
     if ((movingDirection & Direction.Right) === Direction.Right)
-      obj.x += movingDistance;
-}*/
+      obj.x -= movingDistance * sign;
+}
