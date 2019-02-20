@@ -1,6 +1,6 @@
 import THREE from '../three';
 import { camera } from '../renderer/camera';
-import { Direction, updateMovingDistance } from './control-utils';
+import { Direction, showStartMessage, hideStartMessage } from './control-utils';
 
 const Key = {
   W: 87,
@@ -11,53 +11,31 @@ const Key = {
   Down: 40,
   Left: 37,
   Right: 39
-}
+};
 
 let prevTime = performance.now();
 let velocity = new THREE.Vector3();
 let movingDirection = Direction.Stopped;
-let startMessage = document.querySelector('#start');
-let arrow = document.querySelector('#arrow');
-let canvas = document.querySelector('#vr-port');
+const canvas = document.querySelector('#vr-port');
+
 export let controls;
 export let keyboard = false;
 
-  /**
-   * Checks for PointerLockControls support in browser
-   */
+/**
+ * Checks for PointerLockControls support in browser.
+ */
 export function hasPointerLock() {
-  let havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+  const havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
   return havePointerLock;
 }
 
-export function addMouseKeyboardEventListeners(){
-  if(!hasPointerLock()) 
-    return;
-
-  keyboard = true;
-  controls = new THREE.PointerLockControls(camera);
-  controls.getObject().position.y = 1;
-
-  document.addEventListener('pointerlockchange', () => {pointerLockChanged()}, false);
-  document.addEventListener('mozpointerlockchange', () => {pointerLockChanged()}, false);
-  document.addEventListener('webkitpointerlockchange', () => {pointerLockChanged()}, false);
-  document.addEventListener('keydown', event => {onKeyDown(event)}, false);
-  document.addEventListener('keyup', event => {onKeyUp(event)}, false);
-  
-  canvas.addEventListener('click', () => {
-    document.body.requestPointerLock = document.body.requestPointerLock ||
-      document.body.mozRequestPointerLock ||
-      document.body.webkitRequestPointerLock;
-    document.body.requestPointerLock();
-    console.log("Here");
-  }, false);
-}
-
-    /**
-     * Called when the pointerlockchange event is fired
-     */
-export function pointerLockChanged(){
-  if(document.pointerLockElement === document.body ||
+/**
+ * Called when the pointerlockchange event is fired.
+ * Either hides or shows the start message and enables or
+ * disables the PointerLockControls.
+ */
+export function pointerLockChanged() {
+  if (document.pointerLockElement === document.body ||
     document.mozPointerLockElement === document.body ||
     document.webkitPointerLockElement === document.body) {
     controls.enabled = true;
@@ -69,81 +47,110 @@ export function pointerLockChanged(){
   }
 }
 
-    /**
-     * Called when the keydown event is fired after a key is pressed. Uses the event to identify which key is pressed.
-     * @param {*} event 
-     */
-export function onKeyDown(event){
-  switch(event.keyCode){
+/**
+ * Called when the keydown event is fired after a key is pressed. 
+ * Uses the event to identify which key is pressed.
+ * The OR operation (|) is used to keep track of which keys
+ * are currently being pressed. With the numbers chosen to indicate directions,
+ * this is essentially the same as adding them together.
+ * @param {*} event 
+ */
+export function onKeyDown(event) {
+  switch (event.keyCode) {
     case Key.Up:
     case Key.W:
-      console.log("W or Up pressed.");
       movingDirection |= Direction.Forward;
       break;
     case Key.Left:
     case Key.A:
-      console.log("A or Left pressed.");
       movingDirection |= Direction.Left;
       break;
     case Key.Down:
     case Key.S:
-      console.log("S or Down pressed.");
       movingDirection |= Direction.Backward;
       break;
     case Key.Right:
     case Key.D:
-      console.log("D or Right pressed.");
       movingDirection |= Direction.Right;
+      break;
+    default:
       break;
   }
 }
 
-    /**
-     * Called when the keyup event is fired after a key is released. Uses the event to identify the released key.
-     * @param {*} event 
-     */
-export function onKeyUp(event){
-  switch(event.keyCode){
+/**
+ * Called when the keyup event is fired after a key is released. 
+ * Uses the event to identify the released key.
+ * The AND operation (&) is used to keep track of which keys
+ * are currently being pressed. Paired with the NOT (~), or bit-inverse
+ * of the directions, this essentially acts as subtracting the direction
+ * of the key from the total movingDirection variable.
+ * @param {*} event 
+ */
+export function onKeyUp(event) {
+  switch(event.keyCode) {
     case Key.Up:
     case Key.W:
-      console.log("W or Up released.");
       movingDirection &= ~Direction.Forward;
       break;
     case Key.Left:
     case Key.A:
-      console.log("A or Left released.");
       movingDirection &= ~Direction.Left;
       break;
     case Key.Down:
     case Key.S:
-      console.log("S or Down released.");
       movingDirection &= ~Direction.Backward;
       break;
     case Key.Right:
     case Key.D:
-      console.log("D or Right released.");
       movingDirection &= ~Direction.Right;
       break;
   }
 }
-    
-export function hideStartMessage() {
-  console.log("attempting to hide start message");
-  startMessage.style.display = 'none';
-  arrow.style.display = 'none';
+
+/**
+ * Enables the necessary event listeners for the keyboard and mouse
+ * controls. The multiple different pointerlockchange event listeners
+ * are to support several browsers. The keydown and keyup events are
+ * for movement with WASD/arrow keys.
+ */
+export function addMouseKeyboardEventListeners() {
+  if (!hasPointerLock()) { 
+    return;
+  }
+
+  keyboard = true;
+  controls = new THREE.PointerLockControls(camera);
+  controls.getObject().position.y = 1;
+
+  document.addEventListener('pointerlockchange', () => { pointerLockChanged(); }, false);
+  document.addEventListener('mozpointerlockchange', () => { pointerLockChanged(); }, false);
+  document.addEventListener('webkitpointerlockchange', () => { pointerLockChanged(); }, false);
+  document.addEventListener('keydown', event => { onKeyDown(event); }, false);
+  document.addEventListener('keyup', event => { onKeyUp(event); }, false);
+  
+  canvas.addEventListener('click', () => {
+    document.body.requestPointerLock = document.body.requestPointerLock
+      || document.body.mozRequestPointerLock
+      || document.body.webkitRequestPointerLock;
+    document.body.requestPointerLock(); }, false);
 }
 
-export function showStartMessage() {
-  console.log("attempting to show start message");
-  startMessage.style.display = 'flex';
-  arrow.style.display = 'flex';
-}
-
+/**
+ * This is called inside of the animationCallback function of the scene and is what updates
+ * the position of the camera to simulate movement. The AND operation (&) is used,
+ * except in a different way. Here, the AND operation is makes it easy for us know
+ * which keys are currently being pressed due to the numbers we chose. As long as
+ * the button is pressed and the direction value has been OR'd into the movingDirection,
+ * then ANDing it with the direction value will result in the direction value, otherwise
+ * it wont. This allows us to create 45 degree movement when 2 keys, such as the W and A key,
+ * are pressed down at the same time.
+ */
 export function updatePosition() {
   let time = performance.now();
   let delta = (time - prevTime) / 1000;
 
-  // Decrease the velocity.
+  // Decrease the velocity to avoid a rigid stop, creating more realistic movement.
   velocity.x -= velocity.x * 10.0 * delta;
   velocity.z -= velocity.z * 10.0 * delta;
 
@@ -151,31 +158,37 @@ export function updatePosition() {
 
   let movingDistance = 100.0 * delta;
 
-  updateMovingDistance(velocity, movingDistance, movingDirection, -1);
-
-  /*if ((movingDirection & Direction.Forward) === Direction.Forward)
+  if ((movingDirection & Direction.Forward) === Direction.Forward) {
     velocity.z -= movingDistance;
-  if ((movingDirection & Direction.Backward) === Direction.Backward)
+  }
+  if ((movingDirection & Direction.Backward) === Direction.Backward) {
     velocity.z += movingDistance;
-  if ((movingDirection & Direction.Left) === Direction.Left)
+  }
+  if ((movingDirection & Direction.Left) === Direction.Left) {
     velocity.x -= movingDistance;
-  if ((movingDirection & Direction.Right) === Direction.Right)
-    velocity.x += movingDistance;*/
+  }
+  if ((movingDirection & Direction.Right) === Direction.Right) {
+    velocity.x += movingDistance;
+  }
 
   controls_yaw.translateX(velocity.x * delta);
   controls_yaw.translateZ(velocity.z * delta);
 
   // Temporary boundaries
 
-  if (controls_yaw.position.z > 11)
+  if (controls_yaw.position.z > 11) {
     controls_yaw.position.z = 11;
-  if (controls_yaw.position.z < -11)
+  }
+  if (controls_yaw.position.z < -11) {
     controls_yaw.position.z = -11;
+  }
 
-  if (controls_yaw.position.x > 11)
+  if (controls_yaw.position.x > 11) {
     controls_yaw.position.x = 11;
-  if (controls_yaw.position.x < -11)
+  }
+  if (controls_yaw.position.x < -11) {
     controls_yaw.position.x = -11;
+  }
 
   prevTime = time;
 }

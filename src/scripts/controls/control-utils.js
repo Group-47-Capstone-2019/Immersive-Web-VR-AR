@@ -6,13 +6,17 @@ export const Direction = {
   Backward: 8
 };
 
-export function updateMovingDistance(obj, movingDistance, movingDirection, sign) {
-  if ((movingDirection & Direction.Forward) === Direction.Forward)
-    obj.z += movingDistance * sign;
-  if ((movingDirection & Direction.Backward) === Direction.Backward)
-    obj.z -= movingDistance * sign;
-  if ((movingDirection & Direction.Left) === Direction.Left)
-    obj.x += movingDistance * sign;
-  if ((movingDirection & Direction.Right) === Direction.Right)
-    obj.x -= movingDistance * sign;
+const startMessage = document.querySelector('#start');
+const arrow = document.querySelector('#arrow');
+
+export function hideStartMessage() {
+  console.log("attempting to hide start message");
+  startMessage.style.display = 'none';
+  arrow.style.display = 'none';
+}
+
+export function showStartMessage() {
+  console.log("attempting to show start message");
+  startMessage.style.display = 'flex';
+  arrow.style.display = 'flex';
 }

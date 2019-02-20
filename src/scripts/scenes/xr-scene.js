@@ -20,7 +20,7 @@ export default class XrScene {
 
       this._checkForKeyboardMouse();
     }
-    
+
     /**
      * Override this to handle animating objects in your scene.
      */
@@ -37,7 +37,7 @@ export default class XrScene {
       if (this.isActive) {
         // Update the objects in the scene that we will be rendering
         this.animate();
-        if(controls && controls.enabled) {
+        if (controls && controls.enabled) {
           updatePosition();
         }
         if (!XR.session) {
@@ -66,7 +66,7 @@ export default class XrScene {
             const viewport = XR.session.renderState.baseLayer.getViewport(view);
             const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
-            if(XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
+            if (XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
               updateTouchPosition(viewMatrix);
               this._translateViewMatrix(viewMatrix, userPosition);
             } else {
@@ -99,9 +99,7 @@ export default class XrScene {
     };
 
     _checkForKeyboardMouse() {
-      console.log("Checking");
-      if(keyboard) {
-        console.log("Enabling");
+      if (keyboard) {
         this.scene.add(controls.getObject());
       }
     }
