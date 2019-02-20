@@ -26,11 +26,14 @@ export let userPosition = new THREE.Vector3();
  * @param {*} deltaY
  */
 export function computeDirection(deltaX, deltaY) {
-  if ((deltaX <= 70 && deltaX >= -70) && (deltaY <= 70 && deltaY >= -70)) { 
-    joystick.style.transform = 'translate(' + deltaX + 'px,' + deltaY + 'px)';
+  if ((deltaX <= 70 && deltaX >= -70) && (deltaY <= 70 && deltaY >= -70)) {
+    joystick.style.transform = `translate(${deltaX}px,${deltaY}px)`;
   }
   const rotation = Math.atan2(deltaY, deltaX);
   const angle45Degree = Math.PI / 4;
+
+  /* eslint-disable brace-style */
+
   if (rotation > angle45Degree && rotation < angle45Degree * 3) {
     touchscreen.movingDirection = Direction.Backward;
   }
@@ -43,6 +46,8 @@ export function computeDirection(deltaX, deltaY) {
   else if (rotation <= -angle45Degree * 3 || rotation >= angle45Degree * 3) {
     touchscreen.movingDirection = Direction.Left;
   }
+
+  /* eslint-enable brace-style */
 }
 
 /**

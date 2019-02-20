@@ -39,7 +39,9 @@ export function hasPointerLock() {
  * disables the PointerLockControls.
  */
 export function pointerLockChanged() {
-  if (document.pointerLockElement === document.body 
+  /* eslint-disable brace-style */
+
+  if (document.pointerLockElement === document.body
     || document.mozPointerLockElement === document.body
     || document.webkitPointerLockElement === document.body) {
     controls.enabled = true;
@@ -49,6 +51,8 @@ export function pointerLockChanged() {
     showStartMessage();
     controls.enabled = false;
   }
+
+  /* eslint-enable brace-style */
 }
 
 /**
@@ -57,7 +61,7 @@ export function pointerLockChanged() {
  * The OR operation (|) is used to keep track of which keys
  * are currently being pressed. With the numbers chosen to indicate directions,
  * this is essentially the same as adding them together.
- * @param {*} event 
+ * @param {*} event
  */
 export function onKeyDown(event) {
   switch (event.keyCode) {
