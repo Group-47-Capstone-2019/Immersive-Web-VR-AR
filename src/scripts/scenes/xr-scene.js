@@ -2,11 +2,11 @@ import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
 
 export default class XrScene {
-  state = {};
-
   scene = new Scene();
 
   isActive = true;
+
+  frame = null;
 
   /**
    * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.
@@ -17,6 +17,9 @@ export default class XrScene {
   constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
+
+    // Make sure that animation callback is called on an xrAnimate event
+    window.addEventListener('xrAnimate', this._restartAnimation);
   }
 
   /**
@@ -31,43 +34,63 @@ export default class XrScene {
     this._animationCallback();
   }
 
+  _restartAnimation = () => {
+    if (this.frame) window.cancelAnimationFrame(this.frame);
+    this._animationCallback();
+  }
+
   _animationCallback = (timestamp, xrFrame) => {
     if (this.isActive) {
       // Update the objects in the scene that we will be rendering
       this.animate();
       if (!XR.session) {
-        this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+        this.renderer.context.viewport(0, 0, window.innerWidth, window.innerHeight);
         this.renderer.autoClear = true;
         this.scene.matrixAutoUpdate = true;
         this.renderer.render(this.scene, this.camera);
-        return requestAnimationFrame(this._animationCallback);
+        this.frame = requestAnimationFrame(this._animationCallback);
+        return this.frame;
       }
-      if (!xrFrame) return XR.session.requestAnimationFrame(this._animationCallback);
+      if (!xrFrame) {
+        this.frame = XR.session.requestAnimationFrame(this._animationCallback);
+        return this.frame;
+      }
 
-      const pose = xrFrame.getViewerPose(XR.refSpace);
+      // Get the correct reference space for the session
+      const xrRefSpace = XR.session.mode === 'immersive-vr'
+        ? XR.immersiveRefSpace
+        : XR.nonImmersiveRefSpace;
+
+      const pose = xrFrame.getViewerPose(xrRefSpace);
 
       if (pose) {
         this.scene.matrixAutoUpdate = false;
         this.renderer.autoClear = false;
         this.renderer.clear();
 
+        this.renderer.setSize(
+          XR.session.renderState.baseLayer.framebufferWidth,
+          XR.session.renderState.baseLayer.framebufferHeight,
+          false
+        );
+
         this.renderer.context.bindFramebuffer(
           this.renderer.context.FRAMEBUFFER,
-          XR.session.baseLayer.framebuffer
+          XR.session.renderState.baseLayer.framebuffer
         );
 
         for (let i = 0; i < pose.views.length; i++) {
           const view = pose.views[i];
-          const viewport = XR.session.baseLayer.getViewport(view);
+          const viewport = XR.session.renderState.baseLayer.getViewport(view);
           const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
           this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
 
-          this.renderer.setViewport(
+          this.renderer.context.viewport(
             viewport.x,
             viewport.y,
-            XR.magicWindowCanvas.width,
-            XR.magicWindowCanvas.height
+            viewport.width,
+            viewport.height
           );
 
           this.camera.matrixWorldInverse.copy(viewMatrix);
@@ -79,11 +102,11 @@ export default class XrScene {
           this.renderer.clearDepth();
         }
       }
-
-      return XR.session.requestAnimationFrame(this._animationCallback);
+      this.frame = XR.session.requestAnimationFrame(this._animationCallback);
+      return this.frame;
     }
-
-    return null;
+    this.frame = null;
+    return this.frame;
   };
 
   _translateViewMatrix(viewMatrix, position) {

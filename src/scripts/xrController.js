@@ -10,26 +10,38 @@ import { renderer } from './renderer';
 
 export const XR = {
   session: null,
-  refSpace: null,
-  magicWindowCanvas: null
+  immersiveRefSpace: null,
+  nonImmersiveRefSpace: null,
+  magicWindowCanvas: null,
+  mirrorCanvas: null
 };
 
 /*
-// Provides the means to interact with an XR Device.
-export let xrSession;
-
-// Provides information about the spatial point from which AR/VR measurements are made.
-export let xrRefSpace;
-
-// Canvas that the webglrenderer pipes into for xr visualization
-export let xrMagicWindowCanvas;
+* Creates a button that renders each eye for VR
 */
+function createVRButton() {
+  const vrButton = document.createElement('button');
+  vrButton.classList.add('vr-toggle');
+  vrButton.textContent = 'Enter VR';
+  vrButton.addEventListener('click', () => {
+    if (XR.session) {
+      XR.session.end();
+    } else {
+      xrOnRequestSession();
+    }
+  });
+  document.body.appendChild(vrButton);
+}
 
 function xrOnSessionEnded(event) {
-  // Reset xrState when session ends
-  if (event.session.immersive) {
-    // TODO: Remove mirror canvas here
-    XR.session = null;
+  XR.session = null;
+
+  // Reset xrState when session ends and remove the mirror canvas
+  if (event.session.mode === 'immersive-vr') {
+    document.body.removeChild(document.getElementById('mirror-canvas'));
+    xrValidateMagicWindow();
+  } else {
+    xrOnRequestSession();
   }
 }
 
@@ -39,23 +51,58 @@ async function xrOnSessionStarted() {
   // Set rendering canvas to be XR compatible and add a baselayer
   try {
     await renderer.context.makeXRCompatible();
-    /* global XRWebGLLayer:true */
-    XR.session.baseLayer = new XRWebGLLayer(XR.session, renderer.context);
   } catch (err) {
-    console.error(`Error creating XR BaseLayer : ${err}`);
+    console.error(`Error making rendering context XR compatible : ${err}`);
   }
 
   // Set near and far settings for session camera
   XR.session.depthNear = cameraSettings.near;
   XR.session.depthFar = cameraSettings.far;
 
+  /* global XRWebGLLayer:true */
+  XR.session.updateRenderState({ baseLayer: new XRWebGLLayer(XR.session, renderer.context) });
+
+  // With immersive and non immersive sessions we will be keeping track of
+  // two reference spaces so we will hold two.
   try {
-    XR.refSpace = await XR.session.requestReferenceSpace({
+    const xrRefSpace = await XR.session.requestReferenceSpace({
       type: 'stationary',
       subtype: 'eye-level'
     });
+    // Check if the session is immersive or non immersive and set the
+    // respective refSpace.
+    if (XR.session.mode === 'immersive-vr') {
+      XR.immersiveRefSpace = xrRefSpace;
+    } else {
+      XR.nonImmersiveRefSpace = xrRefSpace;
+    }
+
+    // Fire a restart xr animation event
+    window.dispatchEvent(new Event('xrAnimate'));
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
+  }
+}
+
+/**
+ * Gets an immersive two eye view xr session when the 'ENTER XR' button has been pressed
+ */
+async function xrOnRequestSession() {
+  // Create a mirror canvas for rendering the second eye
+  const xrMirrorCanvas = document.createElement('canvas');
+  const xrMirrorContext = xrMirrorCanvas.getContext('xrpresent');
+  xrMirrorCanvas.setAttribute('id', 'mirror-canvas');
+
+  // Add the mirror canvas to our XR object and the document.
+  XR.mirrorCanvas = xrMirrorCanvas;
+  document.body.appendChild(xrMirrorCanvas);
+
+  // Attempt to create an XR session using the mirror canvas and the connected device
+  try {
+    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: xrMirrorContext });
+    xrOnSessionStarted();
+  } catch (err) {
+    console.error(`Error initializing XR session : ${err}`);
   }
 }
 
@@ -63,9 +110,13 @@ async function xrOnSessionStarted() {
  * Checks for magic window compatibility
  */
 async function xrValidateMagicWindow() {
-  XR.magicWindowCanvas = document.createElement('canvas');
-  XR.magicWindowCanvas.setAttribute('id', 'vr-port');
-  XR.magicWindowCanvas.setAttribute('name', 'magic-window');
+  // Ensure that there isn't already a magic window
+  if (!XR.magicWindowCanvas) {
+    XR.magicWindowCanvas = document.createElement('canvas');
+    XR.magicWindowCanvas.setAttribute('id', 'vr-port');
+    XR.magicWindowCanvas.setAttribute('name', 'magic-window');
+    canvas.parentNode.insertBefore(XR.magicWindowCanvas, canvas);
+  }
   XR.magicWindowCanvas.width = window.innerWidth;
   XR.magicWindowCanvas.height = window.innerHeight;
 
@@ -74,10 +125,11 @@ async function xrValidateMagicWindow() {
 
   try {
     XR.session = await navigator.xr.requestSession({ outputContext: xrMagicWindowContext });
-    canvas.parentNode.replaceChild(XR.magicWindowCanvas, canvas);
+    canvas.style.display = 'none';
     xrOnSessionStarted();
-  } catch (err) {
-    console.error(`Error initializing XR session : ${err}`);
+  } catch (reason) {
+    XR.magicWindowCanvas.style.display = 'none';
+    console.log(`Device unable to support magic window session : ${reason}`);
   }
 }
 
@@ -85,6 +137,8 @@ async function xrValidateMagicWindow() {
  * Waits for an XR device to connect to the session and validates its capabilities
  */
 async function xrValidate() {
+  // TODO: Create new VRButton object here
+
   // Check that the browser has XR enabled
   if (navigator.xr) {
     // Listens for when a device changes and calls this function once again
@@ -95,12 +149,19 @@ async function xrValidate() {
     try {
       await navigator.xr.supportsSessionMode('immersive-vr');
       // TODO: @author TimForsyth add the VR button creation here
+      createVRButton();
+      // TODO: Enable VR button here since immersive VR is available
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
     }
 
     // Check to see if an non-immersive xr session is supported
-    xrValidateMagicWindow();
+    try {
+      await navigator.xr.supportsSessionMode('inline');
+      xrValidateMagicWindow();
+    } catch (reason) {
+      console.log(`Device unable to support inline session : ${reason || ''}`);
+    }
   }
 }
 
