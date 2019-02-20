@@ -16,6 +16,35 @@ export const XR = {
   mirrorCanvas: null
 };
 
+/*
+* Creates a button that renders each eye for VR
+*/
+function createVRButton() {
+  const vrButton = document.createElement('button');
+  vrButton.classList.add('vr-toggle');
+  vrButton.textContent = 'Enter VR';
+  vrButton.addEventListener('click', () => {
+    if (XR.session) {
+      XR.session.end();
+    } else {
+      xrOnRequestSession();
+    }
+  });
+  document.body.appendChild(vrButton);
+}
+
+function xrOnSessionEnded(event) {
+  XR.session = null;
+
+  // Reset xrState when session ends and remove the mirror canvas
+  if (event.session.mode === 'immersive-vr') {
+    document.body.removeChild(document.getElementById('mirror-canvas'));
+    xrValidateMagicWindow();
+  } else {
+    xrOnRequestSession();
+  }
+}
+
 async function xrOnSessionStarted() {
   XR.session.addEventListener('end', xrOnSessionEnded);
 
@@ -77,23 +106,6 @@ async function xrOnRequestSession() {
   }
 }
 
-/*
-* Creates a button that renders each eye for VR
-*/
-function createVRButton() {
-  const vrButton = document.createElement('button');
-  vrButton.classList.add('vr-toggle');
-  vrButton.textContent = 'Enter VR';
-  vrButton.addEventListener('click', () => {
-    if (XR.session) {
-      XR.session.end();
-    } else {
-      xrOnRequestSession();
-    }
-  });
-  document.body.appendChild(vrButton);
-}
-
 /**
  * Checks for magic window compatibility
  */
@@ -103,7 +115,7 @@ async function xrValidateMagicWindow() {
     XR.magicWindowCanvas = document.createElement('canvas');
     XR.magicWindowCanvas.setAttribute('id', 'vr-port');
     XR.magicWindowCanvas.setAttribute('name', 'magic-window');
-    canvas.parentNode.replaceChild(XR.magicWindowCanvas, canvas);
+    canvas.parentNode.insertBefore(XR.magicWindowCanvas, canvas);
   }
   XR.magicWindowCanvas.width = window.innerWidth;
   XR.magicWindowCanvas.height = window.innerHeight;
@@ -113,21 +125,11 @@ async function xrValidateMagicWindow() {
 
   try {
     XR.session = await navigator.xr.requestSession({ outputContext: xrMagicWindowContext });
+    canvas.style.display = 'none';
     xrOnSessionStarted();
-  } catch (err) {
-    console.error(`Error initializing XR session : ${err}`);
-  }
-}
-
-function xrOnSessionEnded(event) {
-  XR.session = null;
-
-  // Reset xrState when session ends and remove the mirror canvas
-  if (event.session.mode === 'immersive-vr') {
-    document.body.removeChild(document.getElementById('mirror-canvas'));
-    xrValidateMagicWindow();
-  } else {
-    xrOnRequestSession();
+  } catch (reason) {
+    XR.magicWindowCanvas.style.display = 'none';
+    console.log(`Device unable to support magic window session : ${reason}`);
   }
 }
 
@@ -154,7 +156,12 @@ async function xrValidate() {
     }
 
     // Check to see if an non-immersive xr session is supported
-    xrValidateMagicWindow();
+    try {
+      await navigator.xr.supportsSessionMode('inline');
+      xrValidateMagicWindow();
+    } catch (reason) {
+      console.log(`Device unable to support inline session : ${reason || ''}`);
+    }
   }
 }
 
