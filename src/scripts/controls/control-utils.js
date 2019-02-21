@@ -68,6 +68,7 @@ export function onFullScreenChange() {
     hideStartMessage();
     fsButton.style.visibility = 'hidden';
   } else {
+    showStartMessage();
     fsButton.style.visibility = 'visible';
   }
 }

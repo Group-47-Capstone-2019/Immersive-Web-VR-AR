@@ -162,7 +162,6 @@ export function showTouchControls() {
  * Hides the joystick and removes the event listeners.
  */
 export function hideTouchControls() {
-  showStartMessage();
   joystick.style.visibility = 'hidden';
   touchControls.style.display = 'none';
   if (window.PointerEvent) {
