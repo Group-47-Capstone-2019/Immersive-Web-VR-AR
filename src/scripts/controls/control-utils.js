@@ -18,3 +18,74 @@ export function showStartMessage() {
   startMessage.style.display = 'flex';
   arrow.style.display = 'flex';
 }
+
+export function hasWebkitFullScreen() {
+  return 'webkitCancelFullScreen' in document	? true : false;
+}
+
+export function hasMozFullScreen() {
+  return 'mozCancelFullScreen' in document ? true : false;
+}
+
+export function requestFullScreen() {
+  if (hasWebkitFullScreen()) {
+    document.body.webkitRequestFullScreen();
+  } else if (hasMozFullScreen()) {
+    document.body.mozRequestFullScreen();
+  } else {
+    console.assert(false);
+  }
+}
+
+export function fullScreenAvailable() {
+  return hasWebkitFullScreen() || hasMozFullScreen();
+}
+
+export function isFullScreenActive() {
+  if (hasWebkitFullScreen()) {
+    return document.webkitIsFullScreen;
+  } else if (hasMozFullScreen()) {
+    return document.mozFullScreen;
+  } else {
+    console.assert(false);
+  }
+}
+
+export function cancelFullScreen() {
+  if (hasWebkitFullScreen()) {
+    document.webkitCancelFullScreen();
+  } else if (hasMozFullScreen()) {
+    document.mozCancelFullScreen();
+  } else {
+    console.assert(false);
+  }
+}
+
+export function onFullScreenChange() {
+  const fsButton = document.getElementById('fs-toggle');
+
+  if (!isFullScreenActive()) {
+    hideStartMessage();
+    fsButton.style.visibility = 'hidden';
+  } else {
+    fsButton.style.visibility = 'visible';
+  }
+}
+
+export function createFullScreenButton() {
+  const fsButton = document.createElement('button');
+  fsButton.classList.add('fullscreen-toggle');
+  fsButton.id = 'fs-toggle';
+  fsButton.textContent = '+';
+  fsButton.addEventListener('click', () => {
+    if (fullScreenAvailable() && !isFullScreenActive()) {
+      if (hasWebkitFullScreen()) {
+        document.addEventListener('webkitfullscreenchange', onFullScreenChange());
+      } else if (hasMozFullScreen()) {
+        document.addEventListener('mozfullscreenchange', onFullScreenChange());
+      }
+      requestFullScreen();
+    }
+  });
+  document.body.appendChild(fsButton);
+}
