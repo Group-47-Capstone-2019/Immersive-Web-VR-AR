@@ -1,7 +1,8 @@
+/* eslint-disable no-unused-vars */
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
-import XrScene from './xr-scene';
 import { worker } from 'cluster';
+import XrScene from './xr-scene';
 
 export default class FallingScene extends XrScene {
   /**
@@ -14,7 +15,7 @@ export default class FallingScene extends XrScene {
 
     // set the camera position.
     this.camera.position.set(0, 5, 0);
-    
+
     // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
     const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
@@ -57,7 +58,13 @@ export default class FallingScene extends XrScene {
     const radius = 1;
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -15, 0);
-    const sphereBody = new CANNON.Body({ mass: 1, position: new CANNON.Vec3(1, 0, 0), shape: new CANNON.Sphere(radius) });
+    const sphereBody = new CANNON.Body(
+      {
+        mass: 1,
+        position: new CANNON.Vec3(1, 0, 0),
+        shape: new CANNON.Sphere(radius)
+      }
+    );
     sphereBody.position.set(0, 5, -5);
 
     // Creating Ground.
@@ -69,23 +76,22 @@ export default class FallingScene extends XrScene {
 
     this.world.add(sphereBody);
     const body = sphereBody;
-    return body; 
-
+    return body;
   }
-  
+
   addAmbientLight() {
     const ambientLight = new THREE.AmbientLight('white', 0.7);
     this.scene.add(ambientLight);
-    
+
     const pointLight = new THREE.PointLight(0xffffff, 0.8);
     pointLight.position.set(0, 0, 0);
     this.scene.add(pointLight);
-}
+  }
 
   animate() {
     this.updatePhysics();
     this.ball.position.copy(this.body.position);
-    this.ball.quaternion.copy(this.body.quaternion); 
+    this.ball.quaternion.copy(this.body.quaternion);
   // this.ball.rotation.y += 0.01;
   // this.ball.rotation.x += 0.02;
   }
