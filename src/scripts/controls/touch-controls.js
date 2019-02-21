@@ -145,7 +145,6 @@ export function showTouchControls() {
   } catch (err) {
     console.log("Error: " + err);
   }
-  hideStartMessage();
   joystick.style.visibility = 'visible';
   touchControls.style.display = 'inline';
   if (window.PointerEvent) {
