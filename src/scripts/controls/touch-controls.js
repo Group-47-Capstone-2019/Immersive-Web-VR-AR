@@ -142,7 +142,7 @@ export function showTouchControls() {
   try {
     createFullScreenButton();
   } catch (err) {
-    console.log(`Error: ${reason || ''}`);
+    console.log(`Error: ${err || ''}`);
   }
   joystick.style.visibility = 'visible';
   touchControls.style.display = 'inline';

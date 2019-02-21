@@ -46,10 +46,9 @@ export function isFullScreenActive() {
     return document.webkitIsFullScreen;
   } else if (hasMozFullScreen()) {
     return document.mozFullScreen;
-  } else {
-    console.assert(false);
-    return false;
   }
+  console.assert(false);
+  return false;
 }
 
 export function cancelFullScreen() {

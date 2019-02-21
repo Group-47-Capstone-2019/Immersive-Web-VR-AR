@@ -139,7 +139,6 @@ export default class XrScene {
       position.y,
       position.z
     );
-    
     const tempViewMatrix = new Matrix4().copy(viewMatrix);
 
     tempViewMatrix.setPosition(new Vector3());

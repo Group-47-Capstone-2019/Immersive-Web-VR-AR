@@ -1,6 +1,8 @@
+/* eslint-disable */
 import THREE from '../three';
 import { camera } from '../renderer/camera';
 import { Direction, showStartMessage, hideStartMessage, tryFullScreen } from './control-utils';
+/* eslint-enable */
 
 const Key = {
   W: 87,
