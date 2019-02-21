@@ -1,6 +1,6 @@
 import THREE from '../three';
 import { camera } from '../renderer/camera';
-import { Direction, showStartMessage, hideStartMessage, requestFullScreen, fullScreenAvailable, isFullScreenActive } from './control-utils';
+import { Direction, showStartMessage, hideStartMessage, tryFullScreen } from './control-utils';
 
 const Key = {
   W: 87,
@@ -144,9 +144,7 @@ export function addMouseKeyboardEventListeners() {
       || document.body.mozRequestPointerLock
       || document.body.webkitRequestPointerLock;
     document.body.requestPointerLock();
-    if (fullScreenAvailable() && !isFullScreenActive()) {
-      requestFullScreen();
-    }
+    tryFullScreen();
   }, false);
 }
 

@@ -88,7 +88,6 @@ export default class XrScene {
         );
 
         for (let i = 0; i < pose.views.length; i++) {
-          
           const view = pose.views[i];
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
           const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
@@ -111,7 +110,7 @@ export default class XrScene {
           this.camera.matrixWorldInverse.copy(viewMatrix);
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
           this.scene.matrix.copy(viewMatrix);
-          
+
           this.scene.updateMatrixWorld(true);
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
@@ -129,7 +128,7 @@ export default class XrScene {
 
   _checkForKeyboardMouse() {
     if (keyboard) {
-        this.scene.add(controls.getObject());
+      this.scene.add(controls.getObject());
     }
   }
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Direction, hideStartMessage, showStartMessage, createFullScreenButton } from './control-utils';
+import { Direction, createFullScreenButton } from './control-utils';
 
 /* eslint-disable prefer-const */
 
@@ -84,7 +84,6 @@ export function handleTouchStart(ev) {
  * @param {*} ev
  */
 export function handlePointerMove(ev) {
-  console.log("Move");
   ev.preventDefault();
   ev.stopImmediatePropagation();
   if (touchscreen.currentPointerId === null) {
@@ -143,7 +142,7 @@ export function showTouchControls() {
   try {
     createFullScreenButton();
   } catch (err) {
-    console.log("Error: " + err);
+    console.log(`Error: ${reason || ''}`);
   }
   joystick.style.visibility = 'visible';
   touchControls.style.display = 'inline';

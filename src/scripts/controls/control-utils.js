@@ -20,11 +20,11 @@ export function showStartMessage() {
 }
 
 export function hasWebkitFullScreen() {
-  return 'webkitCancelFullScreen' in document	? true : false;
+  return 'webkitCancelFullScreen' in document;
 }
 
 export function hasMozFullScreen() {
-  return 'mozCancelFullScreen' in document ? true : false;
+  return 'mozCancelFullScreen' in document;
 }
 
 export function requestFullScreen() {
@@ -48,6 +48,7 @@ export function isFullScreenActive() {
     return document.mozFullScreen;
   } else {
     console.assert(false);
+    return false;
   }
 }
 
@@ -58,6 +59,12 @@ export function cancelFullScreen() {
     document.mozCancelFullScreen();
   } else {
     console.assert(false);
+  }
+}
+
+export function tryFullScreen() {
+  if (fullScreenAvailable() && !isFullScreenActive()) {
+    requestFullScreen();
   }
 }
 
