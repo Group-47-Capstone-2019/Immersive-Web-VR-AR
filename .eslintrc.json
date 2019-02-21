@@ -9,7 +9,9 @@
     "import/no-mutable-exports": "warn",
     "no-bitwise": "warn",
     "import/prefer-default-export": "warn",
-    "class-methods-use-this": "warn"
+    "class-methods-use-this": "warn",
+    "no-use-before-define": ["warn", { "functions": true, "classes": true }],
+    "no-restricted-syntax": "warn"
   },
   "env": {
     "browser": true

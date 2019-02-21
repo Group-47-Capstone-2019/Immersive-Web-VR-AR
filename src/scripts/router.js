@@ -7,24 +7,32 @@ import PlanetsScene from './scenes/planets';
  * @type {XrScene}
  */
 let currentScene;
+const SavedStates = {};
+
+const Routes = {
+  get '/'() {
+    return new HomeScene(renderer, camera);
+  },
+  get '/planets'() {
+    return new PlanetsScene(renderer, camera);
+  }
+};
 
 /**
  * update currently displayed scene based on the pathname
  * @param {string} pathname
  */
-function navigateToScene(pathname) {
+function navigateToScene(pathname, oldPath) {
   if (currentScene) {
     currentScene.isActive = false;
+    // Save the state from the previous scene
+    SavedStates[oldPath] = currentScene.state;
   }
 
-  switch (pathname) {
-    case '/':
-      currentScene = new HomeScene(renderer, camera);
-      break;
-    case '/planets':
-      currentScene = new PlanetsScene(renderer, camera);
-      break;
-    default:
+  currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/'];
+  if (pathname in SavedStates) {
+    // Reapply any state that was saved previously.
+    currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
   }
 
   currentScene.startAnimation();
@@ -35,8 +43,9 @@ function navigateToScene(pathname) {
  * @param {string} newPath
  */
 export function navigate(newPath) {
+  const oldPath = window.location.pathname;
   window.history.pushState({}, newPath, window.location.origin + newPath);
-  navigateToScene(newPath);
+  navigateToScene(newPath, oldPath);
 }
 
 window.onpopstate = () => {
