@@ -44,7 +44,7 @@ export function fullScreenAvailable() {
 export function isFullScreenActive() {
   if (hasWebkitFullScreen()) {
     return document.webkitIsFullScreen;
-  } 
+  }
   if (hasMozFullScreen()) {
     return document.mozFullScreen;
   }
