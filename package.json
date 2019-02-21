@@ -22,8 +22,9 @@
   },
   "homepage": "https://github.com/Group-47-Capstone-2019/Immersive-Web-VR-AR#readme",
   "dependencies": {
-    "three": "^0.100.0",
-    "babel-polyfill": "^6.26.0"
+    "babel-polyfill": "^6.26.0",
+    "cannon": "^0.6.2",
+    "three": "^0.100.0"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",

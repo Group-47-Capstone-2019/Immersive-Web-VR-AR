@@ -1,8 +1,11 @@
 import { Scene, Matrix4, Vector3 } from 'three';
+import { World } from 'cannon';
 import { XR } from '../xrController';
 
 export default class XrScene {
   scene = new Scene();
+
+  world = new World();
 
   isActive = true;
 
@@ -18,14 +21,25 @@ export default class XrScene {
     this.renderer = renderer;
     this.camera = camera;
 
-    // Make sure that animation callback is called on an xrAnimate event
+    // Make sure that animation callback is called on an xrAnimate event.
     window.addEventListener('xrAnimate', this._restartAnimation);
   }
 
   /**
    * Override this to handle animating objects in your scene.
    */
-  animate() {}
+  animate() { 
+  this.updatePhysics();
+
+  }
+
+  /**
+   * Step the physics world.
+   */
+  updatePhysics() {
+    const timeStep = 1 / 60;
+    this.world.step(timeStep);
+  }
 
   /**
    * Call this to begin animating your frame.
@@ -41,7 +55,7 @@ export default class XrScene {
 
   _animationCallback = (timestamp, xrFrame) => {
     if (this.isActive) {
-      // Update the objects in the scene that we will be rendering
+      // Update the objects in the scene that we will be rendering.
       this.animate();
       if (!XR.session) {
         this.renderer.context.viewport(0, 0, window.innerWidth, window.innerHeight);
@@ -56,7 +70,7 @@ export default class XrScene {
         return this.frame;
       }
 
-      // Get the correct reference space for the session
+      // Get the correct reference space for the session.
       const xrRefSpace = XR.session.mode === 'immersive-vr'
         ? XR.immersiveRefSpace
         : XR.nonImmersiveRefSpace;
