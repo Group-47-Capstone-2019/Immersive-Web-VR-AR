@@ -10,6 +10,8 @@ export default class XrScene {
 
   frame = null;
 
+  state = {};
+
   /**
    * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.
    *
