@@ -6,6 +6,8 @@
     "no-console": "off",
     "no-plusplus": "off",
     "no-underscore-dangle": "off",
+    "import/no-mutable-exports": "warn",
+    "no-bitwise": "warn",
     "import/prefer-default-export": "warn",
     "class-methods-use-this": "warn",
     "no-use-before-define": ["warn", { "functions": true, "classes": true }],
