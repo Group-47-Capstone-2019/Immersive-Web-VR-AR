@@ -167,6 +167,8 @@ async function xrValidate() {
       console.log('Instead, enable keyboard/mouse.');
       addMouseKeyboardEventListeners();
     }
+  } else {
+    addMouseKeyboardEventListeners();
   }
 }
 
