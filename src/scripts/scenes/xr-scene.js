@@ -1,6 +1,6 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
-import {canvas} from '../renderer/canvas';
+import { canvas } from '../renderer/canvas';
 
 export default class XrScene {
   scene = new Scene();
