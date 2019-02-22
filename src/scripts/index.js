@@ -1,3 +1,3 @@
 import 'babel-polyfill';
-import './links';
 import './xrController';
+import './links';

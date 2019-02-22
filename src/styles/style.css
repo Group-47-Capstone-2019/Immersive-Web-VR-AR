@@ -1,7 +1,49 @@
 @import url('https://fonts.googleapis.com/css?family=Merriweather|Roboto');
 
+#joystickControls {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 150px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.562);
+  border-radius: 75px;
+}
+
+#joystick {
+  display: inline-block;
+  visibility: hidden;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  left: 25px;
+  bottom: 25px;
+  background: rgba(141, 140, 140, 0.562);
+  border-radius: 75px;
+  pointer-events: all;
+  touch-action: none;
+  user-select: none;
+}
+
+.fullscreen-toggle {
+  position: absolute;
+  visibility: visible;
+  top: 5%;
+  right: 5%;
+  background-color: white;
+  height: 30px;
+  width: 30px;
+  padding: 3px 5px;
+  border-radius: 2px;
+  border: solid 1px black;
+  font-size: 20px;
+  font-weight: bold;
+}
+
 .vr-toggle {
   position: absolute;
+  visibility: visible;
   bottom: 20%;
   left: 50%;
   background-color: white;
@@ -37,6 +79,10 @@ header::after {
   text-shadow: black 0 0 10px;
 }
 
+#start {
+  display: flex;
+}
+
 @keyframes arrow-anim {
   0% {
     bottom: 20px;
@@ -46,17 +92,18 @@ header::after {
   }
 }
 
-header::after {
+#arrow {
   animation: arrow-anim 1s infinite alternate ease-out;
   font-weight: bold;
   left: 50%;
   position: absolute;
   display: block;
   font-size: 36px;
-  content: '￬';
   padding: 10px;
+  color: white;
   transform: translateX(-50%);
   z-index: 2;
+  display: flex;
 }
 
 body {

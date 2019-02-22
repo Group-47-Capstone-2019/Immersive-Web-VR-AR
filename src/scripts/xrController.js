@@ -1,6 +1,8 @@
 import { canvas } from './renderer/canvas';
 import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
+import { addMouseKeyboardEventListeners } from './controls/keyboard-controls';
+import { showTouchControls } from './controls/touch-controls';
 
 /**
  * XR fields we are using
@@ -158,10 +160,15 @@ async function xrValidate() {
     // Check to see if an non-immersive xr session is supported
     try {
       await navigator.xr.supportsSessionMode('inline');
+      showTouchControls();
       xrValidateMagicWindow();
     } catch (reason) {
       console.log(`Device unable to support inline session : ${reason || ''}`);
+      console.log('Instead, enable keyboard/mouse.');
+      addMouseKeyboardEventListeners();
     }
+  } else {
+    addMouseKeyboardEventListeners();
   }
 }
 
