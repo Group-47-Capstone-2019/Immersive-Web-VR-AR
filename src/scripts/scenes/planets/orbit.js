@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import { Planet } from './create';
+import { Planet } from './create'; // eslint-disable-line
 
 export const G = 0.05;// 6.673e-11;
 
@@ -50,7 +50,7 @@ function movePlanet(p1, pos1, pos2, mass2, time) {
 
   const d2 = new Vector3()
     .copy(accelerationVec)
-    .multiplyScalar(0.5 * Math.pow(time, 2));
+    .multiplyScalar(0.5 * (time ** 2));
 
   p1.mesh.position.add(d1).add(d2);
 

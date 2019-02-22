@@ -67,7 +67,7 @@ export function createPlanets() {
     return {
       velocity,
       radius,
-      mass: Math.PI * (4 / 3) * radius ** 3,
+      mass: Math.PI * (4 / 3) * (radius ** 3),
       mesh: createPlanetMesh(radius, x, y, z)
     };
   });
@@ -80,4 +80,4 @@ export function createPlanets() {
  * @param {Planet} planet
  * @param {Planet[]} allPlanets
  */
-export function safeInitialVelocity(planet, allPlanets) {}
+// export function safeInitialVelocity(planet, allPlanets) {}
