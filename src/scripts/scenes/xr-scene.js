@@ -1,5 +1,6 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
+import {canvas} from '../renderer/canvas';
 
 export default class XrScene {
   scene = new Scene();
@@ -44,7 +45,7 @@ export default class XrScene {
       // Update the objects in the scene that we will be rendering
       this.animate();
       if (!XR.session) {
-        this.renderer.context.viewport(0, 0, window.innerWidth, window.innerHeight);
+        this.renderer.context.viewport(0, 0, canvas.width, canvas.height);
         this.renderer.autoClear = true;
         this.scene.matrixAutoUpdate = true;
         this.renderer.render(this.scene, this.camera);
