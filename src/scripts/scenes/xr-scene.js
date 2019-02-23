@@ -29,7 +29,7 @@ export default class XrScene {
    * Override this to handle animating objects in your scene.
    */
   animate() {
-    this.updatePhysics();
+
   }
 
   /**

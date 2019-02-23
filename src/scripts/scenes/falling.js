@@ -13,16 +13,12 @@ export default class FallingScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
 
-    // set the camera position.
-    this.camera.position.set(0, 5, 0);
-
     // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
     const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
     const room = new THREE.Mesh(roomGeometry, roomMaterials);
     room.receiveShadow = true;
     room.castShadow = true;
-    room.position.set(0, 8, 0);
     this.scene.fog = new THREE.Fog(0x000000, 0, 24);
     this.scene.add(room);
     this.createPlane();
@@ -40,6 +36,7 @@ export default class FallingScene extends XrScene {
     const mesh2 = new THREE.Mesh(geometry2, material2);
     mesh2.castShadow = true;
     mesh2.receiveShadow = true;
+    mesh2.position.set(0, -8, 0);
     this.scene.add(mesh2);
   }
 
@@ -72,8 +69,9 @@ export default class FallingScene extends XrScene {
     const groundBody = new CANNON.Body({ mass: 0 });
     groundBody.addShape(groundShape);
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+    groundBody.position.set(0, -8, 0);
     this.world.addBody(groundBody);
-
+    
     this.world.add(sphereBody);
     const body = sphereBody;
     return body;
@@ -92,7 +90,5 @@ export default class FallingScene extends XrScene {
     this.updatePhysics();
     this.ball.position.copy(this.body.position);
     this.ball.quaternion.copy(this.body.quaternion);
-  // this.ball.rotation.y += 0.01;
-  // this.ball.rotation.x += 0.02;
   }
 }
