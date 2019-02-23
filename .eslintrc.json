@@ -6,9 +6,13 @@
     "no-console": "off",
     "no-plusplus": "off",
     "no-underscore-dangle": "off",
+    "import/no-mutable-exports": "warn",
+    "no-bitwise": "warn",
     "import/prefer-default-export": "warn",
     "class-methods-use-this": "warn",
-    "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 2 }]
+    "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 2 }],
+    "no-use-before-define": ["warn", { "functions": true, "classes": true }],
+    "no-restricted-syntax": "warn"
   },
   "env": {
     "browser": true
