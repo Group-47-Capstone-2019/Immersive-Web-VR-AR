@@ -71,7 +71,6 @@ export default class FallingScene extends XrScene {
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
     groundBody.position.set(0, -8, 0);
     this.world.addBody(groundBody);
-    
     this.world.add(sphereBody);
     const body = sphereBody;
     return body;
