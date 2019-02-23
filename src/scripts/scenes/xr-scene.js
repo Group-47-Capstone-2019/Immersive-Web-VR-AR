@@ -1,12 +1,20 @@
-import { Scene, Matrix4, Vector3 } from 'three';
+import {
+  Scene, Matrix4, Vector3, Clock
+} from 'three';
 import { XR } from '../xrController';
 import { canvas } from '../renderer/canvas';
 import { userPosition, updateTouchPosition } from '../controls/touch-controls';
-import { keyboard, controls, updatePosition } from '../controls/keyboard-controls';
+import {
+  keyboard,
+  controls,
+  updatePosition
+} from '../controls/keyboard-controls';
 
 export default class XrScene {
   scene = new Scene();
-  clock = new THREE.Clock();
+
+  clock = new Clock();
+
   isActive = true;
 
   frame = null;
@@ -33,7 +41,9 @@ export default class XrScene {
    * Override this to handle animating objects in your scene.
    * @param {number} delta time since last scene update
    */
-  animate(delta) {}
+  animate(delta) {
+    return delta;
+  }
 
   /**
    * Call this to begin animating your frame.
@@ -45,7 +55,7 @@ export default class XrScene {
   _restartAnimation = () => {
     if (this.frame) window.cancelAnimationFrame(this.frame);
     this._animationCallback();
-  }
+  };
 
   _animationCallback = (timestamp, xrFrame) => {
     if (this.isActive) {
@@ -139,18 +149,18 @@ export default class XrScene {
 
   _translateViewMatrix(viewMatrix, position) {
     // Save initial position for later
-    const tempPosition = new Vector3(
-      position.x,
-      position.y,
-      position.z
-    );
+    const tempPosition = new Vector3(position.x, position.y, position.z);
     const tempViewMatrix = new Matrix4().copy(viewMatrix);
 
     tempViewMatrix.setPosition(new Vector3());
     tempPosition.applyMatrix4(tempViewMatrix);
 
     const translationInView = new Matrix4();
-    translationInView.makeTranslation(tempPosition.x, tempPosition.y, tempPosition.z);
+    translationInView.makeTranslation(
+      tempPosition.x,
+      tempPosition.y,
+      tempPosition.z
+    );
 
     viewMatrix.premultiply(translationInView);
   }
