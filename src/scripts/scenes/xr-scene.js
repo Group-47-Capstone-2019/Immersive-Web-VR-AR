@@ -1,15 +1,30 @@
-import { Scene, Matrix4, Vector3 } from 'three';
+import {
+  Scene, Matrix4, Vector3, Clock
+} from 'three';
 import { World } from 'cannon';
+
 import { XR } from '../xrController';
+import { canvas } from '../renderer/canvas';
+import { userPosition, updateTouchPosition } from '../controls/touch-controls';
+import {
+  keyboard,
+  controls,
+  updatePosition
+} from '../controls/keyboard-controls';
 
 export default class XrScene {
   scene = new Scene();
 
   world = new World();
 
+  clock = new Clock();
+
+
   isActive = true;
 
   frame = null;
+
+  state = {};
 
   /**
    * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.
@@ -23,13 +38,16 @@ export default class XrScene {
 
     // Make sure that animation callback is called on an xrAnimate event.
     window.addEventListener('xrAnimate', this._restartAnimation);
+
+    this._checkForKeyboardMouse();
   }
 
   /**
    * Override this to handle animating objects in your scene.
+   * @param {number} delta time since last scene update
    */
-  animate() {
-
+  animate(delta) {
+    return delta;
   }
 
   /**
@@ -50,14 +68,20 @@ export default class XrScene {
   _restartAnimation = () => {
     if (this.frame) window.cancelAnimationFrame(this.frame);
     this._animationCallback();
-  }
+  };
 
   _animationCallback = (timestamp, xrFrame) => {
     if (this.isActive) {
-      // Update the objects in the scene that we will be rendering.
-      this.animate();
+      // Update the objects in the scene that we will be rendering
+      const delta = this.clock.getDelta();
+      this.animate(delta);
+      // Update the user position if keyboard and mouse controls are enabled.
+      if (controls && controls.enabled) {
+        updatePosition();
+      }
+
       if (!XR.session) {
-        this.renderer.context.viewport(0, 0, window.innerWidth, window.innerHeight);
+        this.renderer.context.viewport(0, 0, canvas.width, canvas.height);
         this.renderer.autoClear = true;
         this.scene.matrixAutoUpdate = true;
         this.renderer.render(this.scene, this.camera);
@@ -97,14 +121,20 @@ export default class XrScene {
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
           const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
 
-          this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
-
           this.renderer.context.viewport(
             viewport.x,
             viewport.y,
             viewport.width,
             viewport.height
           );
+
+          // Update user position if touch controls are in use with magic window.
+          if (XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
+            updateTouchPosition(viewMatrix);
+            this._translateViewMatrix(viewMatrix, userPosition);
+          } else {
+            this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
+          }
 
           this.camera.matrixWorldInverse.copy(viewMatrix);
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
@@ -114,7 +144,10 @@ export default class XrScene {
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
         }
+
+        return XR.session.requestAnimationFrame(this._animationCallback);
       }
+
       this.frame = XR.session.requestAnimationFrame(this._animationCallback);
       return this.frame;
     }
@@ -122,21 +155,26 @@ export default class XrScene {
     return this.frame;
   };
 
+  _checkForKeyboardMouse() {
+    if (keyboard) {
+      this.scene.add(controls.getObject());
+    }
+  }
+
   _translateViewMatrix(viewMatrix, position) {
     // Save initial position for later
-    const tempPosition = new Vector3(
-      position.x,
-      position.y,
-      position.z
-    );
-
+    const tempPosition = new Vector3(position.x, position.y, position.z);
     const tempViewMatrix = new Matrix4().copy(viewMatrix);
 
     tempViewMatrix.setPosition(new Vector3());
     tempPosition.applyMatrix4(tempViewMatrix);
 
     const translationInView = new Matrix4();
-    translationInView.makeTranslation(tempPosition.x, tempPosition.y, tempPosition.z);
+    translationInView.makeTranslation(
+      tempPosition.x,
+      tempPosition.y,
+      tempPosition.z
+    );
 
     viewMatrix.premultiply(translationInView);
   }
