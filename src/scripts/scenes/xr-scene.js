@@ -1,5 +1,6 @@
 import { Scene, Matrix4, Vector3 } from 'three';
 import { XR } from '../xrController';
+import { canvas } from '../renderer/canvas';
 import { userPosition, updateTouchPosition } from '../controls/touch-controls';
 import { keyboard, controls, updatePosition } from '../controls/keyboard-controls';
 
@@ -54,7 +55,7 @@ export default class XrScene {
         updatePosition();
       }
       if (!XR.session) {
-        this.renderer.context.viewport(0, 0, window.innerWidth, window.innerHeight);
+        this.renderer.context.viewport(0, 0, canvas.width, canvas.height);
         this.renderer.autoClear = true;
         this.scene.matrixAutoUpdate = true;
         this.renderer.render(this.scene, this.camera);
