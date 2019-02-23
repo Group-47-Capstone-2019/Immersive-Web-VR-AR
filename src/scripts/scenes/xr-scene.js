@@ -1,6 +1,8 @@
 import {
   Scene, Matrix4, Vector3, Clock
 } from 'three';
+import { World } from 'cannon';
+
 import { XR } from '../xrController';
 import { canvas } from '../renderer/canvas';
 import { userPosition, updateTouchPosition } from '../controls/touch-controls';
@@ -13,7 +15,10 @@ import {
 export default class XrScene {
   scene = new Scene();
 
+  world = new World();
+
   clock = new Clock();
+
 
   isActive = true;
 
@@ -31,7 +36,7 @@ export default class XrScene {
     this.renderer = renderer;
     this.camera = camera;
 
-    // Make sure that animation callback is called on an xrAnimate event
+    // Make sure that animation callback is called on an xrAnimate event.
     window.addEventListener('xrAnimate', this._restartAnimation);
 
     this._checkForKeyboardMouse();
@@ -43,6 +48,14 @@ export default class XrScene {
    */
   animate(delta) {
     return delta;
+  }
+
+  /**
+   * Step the physics world.
+   */
+  updatePhysics() {
+    const timeStep = 1 / 60;
+    this.world.step(timeStep);
   }
 
   /**
@@ -66,6 +79,7 @@ export default class XrScene {
       if (controls && controls.enabled) {
         updatePosition();
       }
+
       if (!XR.session) {
         this.renderer.context.viewport(0, 0, canvas.width, canvas.height);
         this.renderer.autoClear = true;
@@ -79,7 +93,7 @@ export default class XrScene {
         return this.frame;
       }
 
-      // Get the correct reference space for the session
+      // Get the correct reference space for the session.
       const xrRefSpace = XR.session.mode === 'immersive-vr'
         ? XR.immersiveRefSpace
         : XR.nonImmersiveRefSpace;
