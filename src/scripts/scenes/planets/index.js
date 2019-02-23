@@ -1,6 +1,7 @@
 import {
   AmbientLight,
-  PointLight
+  PointLight,
+  Color
 } from 'three';
 import XrScene from '../xr-scene';
 import { createPlanets } from './create';
@@ -15,6 +16,7 @@ export default class PlanetsScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
 
+    this.scene.background = new Color('black');
     this.planets = createPlanets();
     this.planets.forEach(p => this.scene.add(p.mesh));
     this.addLighting();
