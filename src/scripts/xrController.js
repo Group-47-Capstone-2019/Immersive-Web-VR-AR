@@ -24,6 +24,7 @@ export const XR = {
 function createVRButton() {
   const vrButton = document.createElement('button');
   vrButton.classList.add('vr-toggle');
+  vrButton.id = 'vr-toggle';
   vrButton.textContent = 'Enter VR';
   vrButton.addEventListener('click', () => {
     if (XR.session) {
