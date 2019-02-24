@@ -34,10 +34,10 @@ export function computeDirection(deltaX, deltaY) {
     velocity.x = 70;
   }
   if (deltaY > 70) {
-    velocity.z = -70
+    velocity.z = -70;
   }
   if (deltaY < -70) {
-    velocity.z = 70
+    velocity.z = 70;
   }
   if ((deltaX <= 70 && deltaX >= -70) && (deltaY <= 70 && deltaY >= -70)) {
     joystick.style.transform = `translate(${deltaX}px,${deltaY}px)`;
@@ -51,8 +51,7 @@ export function computeDirection(deltaX, deltaY) {
     joystick.style.transform = `translate(70px,${deltaY}px)`;
   } else if ((deltaY <= 70 && deltaY >= -70) && (deltaX < -70)) {
     joystick.style.transform = `translate(-70px,${deltaY}px)`;
-  } 
-   
+  }
 }
 
 /**
@@ -199,8 +198,8 @@ export function updateTouchPosition(viewMatrix) {
   velocity.x -= velocity.x * 10.0 * delta;
   velocity.z -= velocity.z * 10.0 * delta;
 
-  let deltaX = velocity.x * delta * 0.2;
-  let deltaZ = velocity.z * delta * 0.2;
+  const deltaX = velocity.x * delta * 0.2;
+  const deltaZ = velocity.z * delta * 0.2;
 
   /* eslint-disable prefer-const */
 
