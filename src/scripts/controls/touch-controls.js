@@ -15,6 +15,7 @@ let touchscreen = {
 const joystick = document.querySelector('#joystick');
 const touchControls = document.querySelector('#joystick-controls');
 
+let velocity = new THREE.Vector3();
 export let userPosition = new THREE.Vector3();
 
 /* eslint-enable prefer-const */
@@ -26,28 +27,31 @@ export let userPosition = new THREE.Vector3();
  * @param {*} deltaY
  */
 export function computeDirection(deltaX, deltaY) {
+  if (deltaX > 70) {
+    velocity.x = -70;
+  }
+  if (deltaX < -70) {
+    velocity.x = 70;
+  }
+  if (deltaY > 70) {
+    velocity.z = -70;
+  }
+  if (deltaY < -70) {
+    velocity.z = 70;
+  }
   if ((deltaX <= 70 && deltaX >= -70) && (deltaY <= 70 && deltaY >= -70)) {
     joystick.style.transform = `translate(${deltaX}px,${deltaY}px)`;
+    velocity.x = -deltaX;
+    velocity.z = -deltaY;
+  } else if ((deltaX <= 70 && deltaX >= -70) && (deltaY > 70)) {
+    joystick.style.transform = `translate(${deltaX}px,70px)`;
+  } else if ((deltaX <= 70 && deltaX >= -70) && (deltaY < -70)) {
+    joystick.style.transform = `translate(${deltaX}px,-70px)`;
+  } else if ((deltaY <= 70 && deltaY >= -70) && (deltaX > 70)) {
+    joystick.style.transform = `translate(70px,${deltaY}px)`;
+  } else if ((deltaY <= 70 && deltaY >= -70) && (deltaX < -70)) {
+    joystick.style.transform = `translate(-70px,${deltaY}px)`;
   }
-  const rotation = Math.atan2(deltaY, deltaX);
-  const angle45Degree = Math.PI / 4;
-
-  /* eslint-disable brace-style */
-
-  if (rotation > angle45Degree && rotation < angle45Degree * 3) {
-    touchscreen.movingDirection = Direction.Backward;
-  }
-  else if (rotation < -angle45Degree && rotation > -angle45Degree * 3) {
-    touchscreen.movingDirection = Direction.Forward;
-  }
-  else if (rotation >= 0 && rotation <= angle45Degree) {
-    touchscreen.movingDirection = Direction.Right;
-  }
-  else if (rotation <= -angle45Degree * 3 || rotation >= angle45Degree * 3) {
-    touchscreen.movingDirection = Direction.Left;
-  }
-
-  /* eslint-enable brace-style */
 }
 
 /**
@@ -125,6 +129,8 @@ export function handleTouchMove(ev) {
 export function handleTouchEnd(e) {
   e.preventDefault();
   e.stopImmediatePropagation();
+  velocity.x = 0;
+  velocity.z = 0;
   touchscreen.joystickOriginX = 0;
   touchscreen.joystickOriginY = 0;
   touchscreen.currentTouchId = null;
@@ -189,23 +195,11 @@ export function updateTouchPosition(viewMatrix) {
   const norm = Math.sqrt(invRotation.w * invRotation.w + invRotation.y * invRotation.y);
   const invYawRotation = new THREE.Quaternion(0, invRotation.y / norm, 0, invRotation.w / norm);
 
-  let deltaX = 0;
-  let deltaZ = 0;
+  velocity.x -= velocity.x * 10.0 * delta;
+  velocity.z -= velocity.z * 10.0 * delta;
 
-  const movingDistance = 10.0 * delta;
-
-  if ((touchscreen.movingDirection & Direction.Forward) === Direction.Forward) {
-    deltaZ = movingDistance;
-  }
-  if ((touchscreen.movingDirection & Direction.Backward) === Direction.Backward) {
-    deltaZ = -movingDistance;
-  }
-  if ((touchscreen.movingDirection & Direction.Left) === Direction.Left) {
-    deltaX = movingDistance;
-  }
-  if ((touchscreen.movingDirection & Direction.Right) === Direction.Right) {
-    deltaX = -movingDistance;
-  }
+  const deltaX = velocity.x * delta * 0.2;
+  const deltaZ = velocity.z * delta * 0.2;
 
   /* eslint-disable prefer-const */
 

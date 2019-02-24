@@ -43,10 +43,10 @@ export function fullScreenAvailable() {
 
 export function isFullScreenActive() {
   if (hasWebkitFullScreen()) {
-    return document.webkitIsFullScreen;
+    return document.webkitFullscreenElement;
   }
   if (hasMozFullScreen()) {
-    return document.mozFullScreen;
+    return document.mozFullScreenElement;
   }
   console.assert(false);
   return false;
@@ -68,16 +68,20 @@ export function tryFullScreen() {
   }
 }
 
-export function onFullScreenChange() {
+export function onFullScreen() {
   const fsButton = document.getElementById('fs-toggle');
+  const vrButton = document.getElementById('vr-toggle');
+  hideStartMessage();
+  fsButton.style.visibility = 'hidden';
+  vrButton.style.visibility = 'hidden';
+}
 
-  if (!isFullScreenActive()) {
-    hideStartMessage();
-    fsButton.style.visibility = 'hidden';
-  } else {
-    showStartMessage();
-    fsButton.style.visibility = 'visible';
-  }
+export function onFullScreenExit() {
+  const fsButton = document.getElementById('fs-toggle');
+  const vrButton = document.getElementById('vr-toggle');
+  showStartMessage();
+  fsButton.style.visibility = 'visible';
+  vrButton.style.visibility = 'visible';
 }
 
 export function createFullScreenButton() {
@@ -87,11 +91,17 @@ export function createFullScreenButton() {
   fsButton.textContent = '+';
   fsButton.addEventListener('click', () => {
     if (fullScreenAvailable() && !isFullScreenActive()) {
-      if (hasWebkitFullScreen()) {
-        document.addEventListener('webkitfullscreenchange', onFullScreenChange());
-      } else if (hasMozFullScreen()) {
-        document.addEventListener('mozfullscreenchange', onFullScreenChange());
-      }
+      window.addEventListener('resize', () => {
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        if (((windowWidth / screenWidth) >= 0.95) && ((windowHeight / screenHeight) >= 0.95)) {
+          onFullScreen();
+        } else {
+          onFullScreenExit();
+        }
+      });
       requestFullScreen();
     }
   });
