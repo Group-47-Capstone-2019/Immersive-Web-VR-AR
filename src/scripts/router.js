@@ -31,6 +31,7 @@ function navigateToScene(pathname, oldPath) {
     currentScene.isActive = false;
     // Save the state from the previous scene
     SavedStates[oldPath] = currentScene.state;
+    currentScene.removeEventListeners();
   }
 
   currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/'];
