@@ -26,6 +26,8 @@ export default class XrScene {
 
   state = {};
 
+  eventListeners = [];
+
   /**
    * Initialize the scene. Sets this.scene, this.renderer, and this.camera for you.
    *
@@ -37,7 +39,7 @@ export default class XrScene {
     this.camera = camera;
 
     // Make sure that animation callback is called on an xrAnimate event.
-    window.addEventListener('xrAnimate', this._restartAnimation);
+    this._addEventListener(window, 'xrAnimate', this._restartAnimation);
 
     this._checkForKeyboardMouse();
   }
@@ -177,5 +179,38 @@ export default class XrScene {
     );
 
     viewMatrix.premultiply(translationInView);
+  }
+
+  /**
+     * Initializes all event listeners associated with this room
+     */
+  _initEventListeners() {}
+
+  /**
+     *
+     * @param {HTMLElement} target
+     * @param {String} type
+     * @param {Function} listener
+     */
+  _addEventListener(target, type, listener) {
+    target.addEventListener(type, listener);
+    this.eventListeners.push({
+      target,
+      type,
+      listener
+    });
+  }
+
+  /**
+     * Removes all event listeners associated with this room
+     */
+  removeEventListeners() {
+    for (let i = 0; i < this.eventListeners.length; i++) {
+      const eventListener = this.eventListeners[i];
+      eventListener.target.removeEventListener(
+        eventListener.type,
+        eventListener.listener
+      );
+    }
   }
 }
