@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { worker } from 'cluster';
 import XrScene from './xr-scene';
+import { controls } from '../controls/keyboard-controls';
 
 export default class FallingScene extends XrScene {
   /**
@@ -16,53 +17,80 @@ export default class FallingScene extends XrScene {
     // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
     const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
-    const room = new THREE.Mesh(roomGeometry, roomMaterials);
-    room.receiveShadow = true;
-    room.castShadow = true;
-    this.scene.fog = new THREE.Fog(0x000000, 0, 24);
-    this.scene.add(room);
-    this.createPlane();
+    this.room = new THREE.Mesh(roomGeometry, roomMaterials);
+    this.room.receiveShadow = true;
+    this.room.castShadow = true;
+    //this.scene.fog = new THREE.Fog(0x000000, 0, 24);
+    this.scene.add(this.room);
+    this.camera = camera;
+    this.balls = [];
+    this.ballMeshes = [];
+    this.ballShape = new CANNON.Sphere(0.5);
+    this.ballGeo = new THREE.SphereGeometry(this.ballShape.radius, 32, 32);
 
-    this.ball = this.createBall();
+    //this.ball = this.createBall();
     this.addAmbientLight();
-    this.body = this.initCannon();
+    this.initCannon();
+    window.addEventListener('click', (e) => {this.spawnBall(e);});
   }
 
-  createPlane() {
-    // Generate plane ground using geometry and materials.
-    const geometry2 = new THREE.PlaneGeometry(25, 25, 25, 25);
-    geometry2.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
-    const material2 = new THREE.MeshLambertMaterial({ color: 0xFFFFFF, wireframe: true });
-    const mesh2 = new THREE.Mesh(geometry2, material2);
-    mesh2.castShadow = true;
-    mesh2.receiveShadow = true;
-    mesh2.position.set(0, -8, 0);
-    this.scene.add(mesh2);
+  spawnBall(e) {
+    if(controls.enabled == true) {
+      let controlsYaw = controls.getObject();
+      let direction = new THREE.Vector3(0, 0, -1);
+      let speed = 20;
+      direction.applyQuaternion(controlsYaw.quaternion);
+      let x = controlsYaw.position.x;
+      x += direction.x;
+      let y = controlsYaw.position.y;
+      y += direction.y;
+      let z = controlsYaw.position.z;
+      z += direction.z;
+      let ballBody = new CANNON.Body({mass: 1});
+      ballBody.addShape(this.ballShape);
+      let material = new THREE.MeshLambertMaterial({color: 'orange'});
+      let ballMesh = new THREE.Mesh(this.ballGeo, material);
+      ballMesh.castShadow = true;
+      ballMesh.receiveShadow = true;
+      this.world.addBody(ballBody);
+      this.scene.add(ballMesh);
+      
+      this.balls.push(ballBody);
+      this.ballMeshes.push(ballMesh);
+
+      ballBody.velocity.x = direction.x * speed;
+      ballBody.velocity.y = direction.y * speed;
+      ballBody.velocity.z = direction.z * speed;
+      
+      ballBody.position.set(x,y,z);
+      ballMesh.position.set(x,y,z);
+    }
   }
 
-  createBall() {
-    // Create Sphere.
-    const geometry = new THREE.SphereGeometry(1);
-    const mataterial = new THREE.MeshBasicMaterial({ color: 'orange', wireframe: true });
-    const ball = new THREE.Mesh(geometry, mataterial);
-    ball.position.set(0, 5, -5);
-    this.scene.add(ball);
-    return ball;
-  }
+  // createBall() {
+  //   // Create Sphere.
+  //   const geometry = new THREE.SphereGeometry(1, 50, 50);
+  //   const material = new THREE.MeshStandardMaterial({ color: 'orange' });
+  //   const ball = new THREE.Mesh(geometry, material);
+  //   ball.position.set(3, 5, -5);
+  //   this.scene.add(ball);
+  //   return ball;
+  // }
 
   initCannon() {
-    // Creating World.
-    const radius = 1;
+    //const radius = 1;
     this.world.broadphase = new CANNON.NaiveBroadphase();
-    this.world.gravity.set(0, -15, 0);
-    const sphereBody = new CANNON.Body(
-      {
-        mass: 1,
-        position: new CANNON.Vec3(1, 0, 0),
-        shape: new CANNON.Sphere(radius)
-      }
-    );
-    sphereBody.position.set(0, 5, -5);
+    this.world.gravity.set(0, -9.8, 0);
+    
+    // const sphereBody = new CANNON.Body(
+    //   {
+    //     mass: 1,
+    //     shape: new CANNON.Sphere(radius)
+    //   }
+    // );
+    // sphereBody.position.set(0, 1, -5);
+    // this.ballBody = sphereBody;
+    // this.world.add(sphereBody);
 
     // Creating Ground.
     const groundShape = new CANNON.Plane();
@@ -71,9 +99,29 @@ export default class FallingScene extends XrScene {
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
     groundBody.position.set(0, -8, 0);
     this.world.addBody(groundBody);
-    this.world.add(sphereBody);
-    const body = sphereBody;
-    return body;
+
+    const wallFrontBody = new CANNON.Body({mass: 0});
+    wallFrontBody.addShape(groundShape);
+    wallFrontBody.position.set(-12, 0, -12);
+    this.world.addBody(wallFrontBody);
+
+    const wallBackBody = new CANNON.Body({mass: 0});
+    wallBackBody.addShape(groundShape);
+    wallBackBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI );
+    wallBackBody.position.set(12, 0, 12);
+    this.world.addBody(wallBackBody);
+
+    const wallRightBody = new CANNON.Body({mass: 0});
+    wallRightBody.addShape(groundShape);
+    wallRightBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
+    wallRightBody.position.set(12, 0, -12);
+    this.world.addBody(wallRightBody);
+
+    const wallLeftBody = new CANNON.Body({mass: 0});
+    wallLeftBody.addShape(groundShape);
+    wallLeftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
+    wallLeftBody.position.set(-12, 0, 12);
+    this.world.addBody(wallLeftBody);
   }
 
   addAmbientLight() {
@@ -87,7 +135,14 @@ export default class FallingScene extends XrScene {
 
   animate() {
     this.updatePhysics();
-    this.ball.position.copy(this.body.position);
-    this.ball.quaternion.copy(this.body.quaternion);
+
+    // Update position of meshes
+    for(var i = 0; i < this.balls.length; i++) {
+      this.ballMeshes[i].position.copy(this.balls[i].position);
+      this.ballMeshes[i].quaternion.copy(this.balls[i].quaternion);
+    }
+
+    // this.ball.position.copy(this.ballBody.position);
+    // this.ball.quaternion.copy(this.ballBody.quaternion);
   }
 }
