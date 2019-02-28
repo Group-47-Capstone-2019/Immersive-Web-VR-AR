@@ -45,7 +45,7 @@ function navigateToScene(pathname, oldPath) {
       // Reapply any state that was saved previously.
       currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
     }
-  
+
     currentScene.startAnimation();
   }
 }
