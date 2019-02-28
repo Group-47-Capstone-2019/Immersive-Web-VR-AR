@@ -55,9 +55,8 @@ export default class XrScene {
   /**
    * Step the physics world.
    */
-  updatePhysics() {
-    const timeStep = 1 / 60;
-    this.world.step(timeStep);
+  updatePhysics(delta) {
+    this.world.step(delta);
   }
 
   /**

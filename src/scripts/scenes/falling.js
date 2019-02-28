@@ -31,11 +31,34 @@ export default class FallingScene extends XrScene {
     //this.ball = this.createBall();
     this.addAmbientLight();
     this.initCannon();
-    window.addEventListener('click', (e) => {this.spawnBall(e);});
+    this._addEventListener(window, 'click', this.spawnBall);
+    this._addEventListener(window, 'keydown', this.onKeyDown);
   }
 
-  spawnBall(e) {
+  onKeyDown = () => {
+    switch (event.keyCode) {
+      case 71:
+        this.toggleGravity();
+        break;
+      default:
+        break;
+    }
+  }
+
+  toggleGravity = () => {
+    console.log("Toggling gravity.");
+    if (this.world.gravity.y === -9.8) {
+      console.log("Gravity off");
+      this.world.gravity.y = 0;
+    } else {
+      console.log("Gravity on");
+      this.world.gravity.y = -9.8;
+    }
+  }
+
+  spawnBall = () => {
     if(controls.enabled == true) {
+      console.log("Spawn ball");
       let controlsYaw = controls.getObject();
       let direction = new THREE.Vector3(0, 0, -1);
       let speed = 20;
@@ -93,12 +116,18 @@ export default class FallingScene extends XrScene {
     // this.world.add(sphereBody);
 
     // Creating Ground.
-    const groundShape = new CANNON.Plane();
+    const groundShape = new CANNON.Box(new CANNON.Vec3(24, 24, 0.001));
     const groundBody = new CANNON.Body({ mass: 0 });
     groundBody.addShape(groundShape);
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
     groundBody.position.set(0, -8, 0);
     this.world.addBody(groundBody);
+
+    const roofBody = new CANNON.Body({ mass: 0 });
+    roofBody.addShape(groundShape);
+    roofBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+    roofBody.position.set(0, 8, 0);
+    this.world.addBody(roofBody);
 
     const wallFrontBody = new CANNON.Body({mass: 0});
     wallFrontBody.addShape(groundShape);
@@ -107,7 +136,6 @@ export default class FallingScene extends XrScene {
 
     const wallBackBody = new CANNON.Body({mass: 0});
     wallBackBody.addShape(groundShape);
-    wallBackBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI );
     wallBackBody.position.set(12, 0, 12);
     this.world.addBody(wallBackBody);
 
@@ -119,7 +147,7 @@ export default class FallingScene extends XrScene {
 
     const wallLeftBody = new CANNON.Body({mass: 0});
     wallLeftBody.addShape(groundShape);
-    wallLeftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
+    wallLeftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
     wallLeftBody.position.set(-12, 0, 12);
     this.world.addBody(wallLeftBody);
   }
@@ -133,8 +161,8 @@ export default class FallingScene extends XrScene {
     this.scene.add(pointLight);
   }
 
-  animate() {
-    this.updatePhysics();
+  animate(delta) {
+    this.updatePhysics(delta);
 
     // Update position of meshes
     for(var i = 0; i < this.balls.length; i++) {
