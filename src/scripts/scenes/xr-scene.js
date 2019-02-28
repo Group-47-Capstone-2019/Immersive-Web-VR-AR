@@ -147,6 +147,8 @@ export default class XrScene {
           this.renderer.clearDepth();
         }
 
+        this._updateInputSources(xrFrame, xrRefSpace);
+
         return XR.session.requestAnimationFrame(this._animationCallback);
       }
 
@@ -156,6 +158,31 @@ export default class XrScene {
     this.frame = null;
     return this.frame;
   };
+
+  _updateInputSources(xrFrame, xrRefSpace) {
+    const inputSources = XR.session.getInputSources();
+
+    for (let i = 0; i < inputSources.length; i++) {
+      const inputSource = inputSources[i];
+      const inputPose = xrFrame.getInputPose(inputSource, xrRefSpace);
+
+      if (inputPose) {
+        const isTrackedPointer = inputSource.targetRayMode === 'tracked-pointer';
+
+        if (isTrackedPointer && inputPose.gripTransform.matrix) {
+          // TODO: Render controller
+        }
+
+        // Raycasting
+        if (inputPose.targetRay) {
+          if (isTrackedPointer) {
+            // TODO: Render ray from controller here
+          }
+          // TODO: Ray selection here / Cursor here
+        }
+      }
+    }
+  }
 
   _checkForKeyboardMouse() {
     if (keyboard) {
