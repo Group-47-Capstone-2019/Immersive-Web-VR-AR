@@ -6,19 +6,6 @@ export const Direction = {
   Backward: 8
 };
 
-const startMessage = document.querySelector('#start');
-const arrow = document.querySelector('#arrow');
-
-export function hideStartMessage() {
-  startMessage.style.display = 'none';
-  arrow.style.display = 'none';
-}
-
-export function showStartMessage() {
-  startMessage.style.display = 'flex';
-  arrow.style.display = 'flex';
-}
-
 export function hasWebkitFullScreen() {
   return 'webkitCancelFullScreen' in document;
 }
@@ -71,7 +58,6 @@ export function tryFullScreen() {
 export function onFullScreen() {
   const fsButton = document.getElementById('fs-toggle');
   const vrButton = document.getElementById('vr-toggle');
-  hideStartMessage();
   fsButton.style.visibility = 'hidden';
   vrButton.style.visibility = 'hidden';
 }
@@ -79,7 +65,6 @@ export function onFullScreen() {
 export function onFullScreenExit() {
   const fsButton = document.getElementById('fs-toggle');
   const vrButton = document.getElementById('vr-toggle');
-  showStartMessage();
   fsButton.style.visibility = 'visible';
   vrButton.style.visibility = 'visible';
 }
