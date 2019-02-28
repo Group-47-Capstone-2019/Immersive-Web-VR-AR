@@ -32,10 +32,10 @@ export default class FallingScene extends XrScene {
     this.addAmbientLight();
     this.initCannon();
     this._addEventListener(window, 'click', this.spawnBall);
-    this._addEventListener(window, 'keydown', this.onKeyDown);
+    this._addEventListener(window, 'keyup', this.onKeyUp);
   }
 
-  onKeyDown = () => {
+  onKeyUp = () => {
     switch (event.keyCode) {
       case 71:
         this.toggleGravity();
