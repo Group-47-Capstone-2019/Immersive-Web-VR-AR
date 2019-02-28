@@ -8,43 +8,49 @@
     <title>WebXR Physics</title>
   </head>
   <body>
-    <header><h1><div id = "start">Web XR Physics Demo</div></h1>
-      <div id = "arrow">￬</div>
-    </header>
+    <main>
+      <div id="welcome-container">
+        <h1 class="centered">WebXR Physics</h1>
+        <p>
+          This is where a description of what we're doing with this would be.
+        </p>
+        <div class="centered">
+          <a href="/home"><button>Check it out!</button></a>
+        </div>
+        <h2>Our Team</h2>
+        <p></p>
+
+        <ul>
+          <li>Alexis M&eacute;nard - Project Client</li>
+          <li>Jonathan Jones</li>
+          <li>Brooks Mikkelsen</li>
+          <li>Brandon Mei</li>
+          <li>Tim Forsyth</li>
+          <li>Evan Brass</li>
+        </ul>
+
+        <h2>Available Experiments</h2>
+        <ul>
+          <li>
+            <a href="/planets" class="link">Planetary Diorama</a>: View the
+            motion of our solar system in 3d.
+          </li>
+          <li>
+            <a href="/falling" class="link">Falling Objects</a>: Understand how
+            local gravity affects objects with and without air resistance.
+          </li>
+          <li>
+            <a href="/pendulums" class="link">Pendulums</a>: See how pendulums
+            are affected by a different local gravity.
+          </li>
+        </ul>
+      </div>
+    </main>
+
     <canvas id="vr-port"></canvas>
     <div id="joystick-controls">
       <div id="joystick"></div>
     </div>
-    <main>
-      <p>This is where a description of what we're doing with this would be.</p>
-      <h1>Our Team</h1>
-      <p></p>
-
-      <ul>
-        <li>Alexis M&eacute;nard - Project Client</li>
-        <li>Jonathan Jones</li>
-        <li>Brooks Mikkelsen</li>
-        <li>Brandon Mei</li>
-        <li>Tim Forsyth</li>
-        <li>Evan Brass</li>
-      </ul>
-
-      <h2>Available Experiments</h2>
-      <ul>
-        <li>
-          <a href="/planets" class="link">Planetary Diorama</a>: View the motion of our
-          solar system in 3d.
-        </li>
-        <li>
-          <a href="/falling" class="link">Falling Objects</a>: Understand how local
-          gravity affects objects with and without air resistance.
-        </li>
-        <li>
-          <a href="/pendulums" class="link">Pendulums</a>: See how pendulums are affected
-          by a different local gravity.
-        </li>
-      </ul>
-    </main>
   </body>
   <script src="scripts/index.js"></script>
- </html>
+</html>
