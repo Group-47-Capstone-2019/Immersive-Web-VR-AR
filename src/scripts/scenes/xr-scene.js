@@ -133,9 +133,9 @@ export default class XrScene {
           // Update user position if touch controls are in use with magic window.
           if (XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
             updateTouchPosition(viewMatrix);
-            this._translateViewMatrix(viewMatrix, userPosition);
+            this._translateMatrix(viewMatrix, userPosition);
           } else {
-            this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
+            this._translateMatrix(viewMatrix, new Vector3(0, 0, 0));
           }
 
           this.camera.matrixWorldInverse.copy(viewMatrix);
@@ -190,22 +190,22 @@ export default class XrScene {
     }
   }
 
-  _translateViewMatrix(viewMatrix, position) {
+  _translateMatrix(matrix, position) {
     // Save initial position for later
     const tempPosition = new Vector3(position.x, position.y, position.z);
-    const tempViewMatrix = new Matrix4().copy(viewMatrix);
+    const tempMatrix = new Matrix4().copy(matrix);
 
-    tempViewMatrix.setPosition(new Vector3());
-    tempPosition.applyMatrix4(tempViewMatrix);
+    tempMatrix.setPosition(new Vector3());
+    tempPosition.applyMatrix4(tempMatrix);
 
-    const translationInView = new Matrix4();
-    translationInView.makeTranslation(
+    const translation = new Matrix4();
+    translation.makeTranslation(
       tempPosition.x,
       tempPosition.y,
       tempPosition.z
     );
 
-    viewMatrix.premultiply(translationInView);
+    matrix.premultiply(translation);
   }
 
   /**
