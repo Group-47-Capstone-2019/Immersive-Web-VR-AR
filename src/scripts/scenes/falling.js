@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
-import * as THREE from 'three';
+import THREE from '../three';
 import * as CANNON from 'cannon';
-import { worker } from 'cluster';
 import XrScene from './xr-scene';
 import { controls } from '../controls/keyboard-controls';
 
@@ -28,11 +27,23 @@ export default class FallingScene extends XrScene {
     this.ballShape = new CANNON.Sphere(0.5);
     this.ballGeo = new THREE.SphereGeometry(this.ballShape.radius, 32, 32);
 
+    this.loadTable();
     //this.ball = this.createBall();
     this.addAmbientLight();
     this.initCannon();
     this._addEventListener(window, 'click', this.spawnBall);
     this._addEventListener(window, 'keyup', this.onKeyUp);
+  }
+
+  loadTable() {
+    var loader = new THREE.GLTFLoader();
+    var table;
+    loader.setPath('../../assets/table/');
+    loader.load('scene.gltf', function(gltf) {
+      table = gltf.scene.children[0];
+      this.scene.add(table);
+      table.position.z = -2;
+    });
   }
 
   onKeyUp = () => {
@@ -116,7 +127,7 @@ export default class FallingScene extends XrScene {
     // this.world.add(sphereBody);
 
     // Creating Ground.
-    const groundShape = new CANNON.Box(new CANNON.Vec3(24, 24, 0.001));
+    const groundShape = new CANNON.Plane();
     const groundBody = new CANNON.Body({ mass: 0 });
     groundBody.addShape(groundShape);
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
@@ -125,7 +136,7 @@ export default class FallingScene extends XrScene {
 
     const roofBody = new CANNON.Body({ mass: 0 });
     roofBody.addShape(groundShape);
-    roofBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+    roofBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
     roofBody.position.set(0, 8, 0);
     this.world.addBody(roofBody);
 
@@ -136,6 +147,7 @@ export default class FallingScene extends XrScene {
 
     const wallBackBody = new CANNON.Body({mass: 0});
     wallBackBody.addShape(groundShape);
+    wallBackBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI);
     wallBackBody.position.set(12, 0, 12);
     this.world.addBody(wallBackBody);
 
@@ -147,7 +159,7 @@ export default class FallingScene extends XrScene {
 
     const wallLeftBody = new CANNON.Body({mass: 0});
     wallLeftBody.addShape(groundShape);
-    wallLeftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
+    wallLeftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
     wallLeftBody.position.set(-12, 0, 12);
     this.world.addBody(wallLeftBody);
   }
