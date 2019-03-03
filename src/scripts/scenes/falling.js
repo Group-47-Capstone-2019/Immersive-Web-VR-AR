@@ -3,6 +3,7 @@ import THREE from '../three';
 import * as CANNON from 'cannon';
 import XrScene from './xr-scene';
 import { controls } from '../controls/keyboard-controls';
+// import Table from '../../assets/table/Desk.fbx';
 
 export default class FallingScene extends XrScene {
   /**
@@ -13,38 +14,132 @@ export default class FallingScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
 
+    this.camera = camera;
+    this.renderer = renderer;
+
+    this.createRoom();
+    this.camera = camera;
+    
+    // Balls
+    this.balls = [];
+    this.ballMeshes = [];
+    this.ballShape = new CANNON.Sphere(1);
+    this.ballGeo = new THREE.SphereGeometry(this.ballShape.radius, 32, 32);
+
+    // Boxes
+    this.boxes = [];
+    this.boxMeshes = [];
+    this.boxShape = new CANNON.Box(new CANNON.Vec3(1, 1, 1));
+    this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
+
+    // Cylinders
+
+
+    // this.loadTable();
+    this.raycaster = new THREE.Raycaster();
+    this.mouseVector = new THREE.Vector3();
+    this.group = new THREE.Group();
+    this.scene.add(this.group);
+    this.selectedObj = null;
+    this.selectedObjColor;
+    this.colorSet = false;
+
+    this.createSpawners();
+    //this.ball = this.createBall();
+    this.addAmbientLight();
+    this.initCannon();
+    this._addEventListener(window, 'click', this.onClick);
+    this._addEventListener(window, 'keyup', this.onKeyUp);
+    this._addEventListener(window, 'mousemove', this.onMouseMove);
+  }
+
+
+  createRoom() {
     // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
     const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
     this.room = new THREE.Mesh(roomGeometry, roomMaterials);
     this.room.receiveShadow = true;
     this.room.castShadow = true;
-    //this.scene.fog = new THREE.Fog(0x000000, 0, 24);
     this.scene.add(this.room);
-    this.camera = camera;
-    this.balls = [];
-    this.ballMeshes = [];
-    this.ballShape = new CANNON.Sphere(0.5);
-    this.ballGeo = new THREE.SphereGeometry(this.ballShape.radius, 32, 32);
-
-    this.loadTable();
-    //this.ball = this.createBall();
-    this.addAmbientLight();
-    this.initCannon();
-    this._addEventListener(window, 'click', this.spawnBall);
-    this._addEventListener(window, 'keyup', this.onKeyUp);
+    
+    // Create spawner tube
+    const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide});
+    const spawnTubeGeo = new THREE.CylinderGeometry(2, 2, 3, 32, 32, true);
+    let spawnTube = new THREE.Mesh(spawnTubeGeo, tubeMaterials);
+    spawnTube.position.set(0, 7, 0);
+    this.scene.add(spawnTube);
   }
 
-  loadTable() {
-    var loader = new THREE.GLTFLoader();
-    var table;
-    loader.setPath('../../assets/table/');
-    loader.load('scene.gltf', function(gltf) {
-      table = gltf.scene.children[0];
-      this.scene.add(table);
-      table.position.z = -2;
-    });
+  createSpawners() {
+    // Sphere
+    let material = new THREE.MeshPhongMaterial({color: 'orange'});
+    this.ballSpawner = new THREE.Mesh(this.ballGeo, material);
+    this.ballSpawner.castShadow = true;
+    this.ballSpawner.receiveShadow = true;
+    this.ballSpawner.position.set(0, -7, -8);
+    this.group.add(this.ballSpawner);
+
+    let ballBody = new CANNON.Body({mass: 0});
+    ballBody.addShape(this.ballShape);
+    ballBody.position.copy(this.ballSpawner.position);
+    this.world.addBody(ballBody);
+
+    // Box
+    material = new THREE.MeshPhongMaterial({color: 'red'});
+    this.boxSpawner = new THREE.Mesh(this.boxGeo, material);
+    this.boxSpawner.castShadow = true;
+    this.boxSpawner.receiveShadow = true;
+    this.boxSpawner.position.set(-3, -7, -8);
+    this.group.add(this.boxSpawner);
+
+    let boxBody = new CANNON.Body({mass: 0});
+    boxBody.addShape(this.boxShape);
+    boxBody.position.copy(this.boxSpawner.position);
+    this.world.addBody(boxBody);
+    
+    // Cylinder
+
   }
+
+  onMouseMove = (event) => {
+    event.preventDefault();
+    if (this.selectedObj) {
+      this.selectedObj.material.color.set(this.selectedObjColor);
+      this.colorSet = false;
+      this.selectedObj = null;
+    }
+
+    let direction = new THREE.Vector3();
+    controls.getDirection(direction);
+    this.raycaster.set(controls.getObject().position, direction);
+    let intersects = this.raycaster.intersectObject(this.group, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
+      
+      if(res && res.object) {
+        this.selectedObj = res.object;
+        if(!this.colorSet) {
+          this.selectedObjColor = this.selectedObj.material.color.getHex();
+          
+          this.colorSet = true;
+        }
+        this.selectedObj.material.color.set('green');
+      }
+    }
+  }
+
+  // loadTable() {
+  //   var loader = new THREE.FBXLoader();
+  //   console.log("loading..");
+  //   loader.load(Table, function(obj) {
+  //     console.log("boo");
+  //     this.scene.add(obj);
+  //     obj.position.z = -2;
+  //   });
+  // }
 
   onKeyUp = () => {
     switch (event.keyCode) {
@@ -67,49 +162,60 @@ export default class FallingScene extends XrScene {
     }
   }
 
-  spawnBall = () => {
-    if(controls.enabled == true) {
-      console.log("Spawn ball");
-      let controlsYaw = controls.getObject();
-      let direction = new THREE.Vector3(0, 0, -1);
-      let speed = 20;
-      direction.applyQuaternion(controlsYaw.quaternion);
-      let x = controlsYaw.position.x;
-      x += direction.x;
-      let y = controlsYaw.position.y;
-      y += direction.y;
-      let z = controlsYaw.position.z;
-      z += direction.z;
-      let ballBody = new CANNON.Body({mass: 1});
-      ballBody.addShape(this.ballShape);
-      let material = new THREE.MeshLambertMaterial({color: 'orange'});
-      let ballMesh = new THREE.Mesh(this.ballGeo, material);
-      ballMesh.castShadow = true;
-      ballMesh.receiveShadow = true;
-      this.world.addBody(ballBody);
-      this.scene.add(ballMesh);
-      
-      this.balls.push(ballBody);
-      this.ballMeshes.push(ballMesh);
+  onClick = () => {
+    let intersects = this.raycaster.intersectObject(this.group, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
 
-      ballBody.velocity.x = direction.x * speed;
-      ballBody.velocity.y = direction.y * speed;
-      ballBody.velocity.z = direction.z * speed;
-      
-      ballBody.position.set(x,y,z);
-      ballMesh.position.set(x,y,z);
+      if (res && res.object) {
+        if (res.object === this.ballSpawner) {
+          this.spawnBall();
+        } else if (res.object === this.boxSpawner) {
+          this.spawnBox();
+        }
+      }
     }
   }
 
-  // createBall() {
-  //   // Create Sphere.
-  //   const geometry = new THREE.SphereGeometry(1, 50, 50);
-  //   const material = new THREE.MeshStandardMaterial({ color: 'orange' });
-  //   const ball = new THREE.Mesh(geometry, material);
-  //   ball.position.set(3, 5, -5);
-  //   this.scene.add(ball);
-  //   return ball;
-  // }
+  spawnBall() {
+    console.log("Spawn ball");
+    
+    let ballBody = new CANNON.Body({mass: 1});
+    ballBody.addShape(this.ballShape);
+    let material = new THREE.MeshLambertMaterial({color: 'orange'});
+    let ballMesh = new THREE.Mesh(this.ballGeo, material);
+    ballMesh.castShadow = true;
+    ballMesh.receiveShadow = true;
+    this.world.addBody(ballBody);
+    this.group.add(ballMesh);
+    
+    this.balls.push(ballBody);
+    this.ballMeshes.push(ballMesh);
+    
+    ballBody.position.set(0, 7, 0);
+    ballMesh.position.set(0, 7, 0);
+  }
+
+  spawnBox() {
+    console.log("Spawn box");
+
+    let boxBody = new CANNON.Body({mass: 1});
+    boxBody.addShape(this.boxShape);
+    let material = new THREE.MeshLambertMaterial({color: 'red'});
+    let boxMesh = new THREE.Mesh(this.boxGeo, material);
+    boxMesh.castShadow = true;
+    boxMesh.receiveShadow = true;
+    this.world.addBody(boxBody);
+    this.group.add(boxMesh);
+    
+    this.boxes.push(boxBody);
+    this.boxMeshes.push(boxMesh);
+    
+    boxBody.position.set(0, 7, 0);
+    boxMesh.position.set(0, 7, 0);
+  }
 
   initCannon() {
     //const radius = 1;
@@ -182,7 +288,9 @@ export default class FallingScene extends XrScene {
       this.ballMeshes[i].quaternion.copy(this.balls[i].quaternion);
     }
 
-    // this.ball.position.copy(this.ballBody.position);
-    // this.ball.quaternion.copy(this.ballBody.quaternion);
+    for(var i = 0; i < this.boxes.length; i++) {
+      this.boxMeshes[i].position.copy(this.boxes[i].position);
+      this.boxMeshes[i].quaternion.copy(this.boxes[i].quaternion);
+    }
   }
 }
