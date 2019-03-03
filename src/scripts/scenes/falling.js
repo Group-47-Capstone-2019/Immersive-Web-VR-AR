@@ -50,7 +50,6 @@ export default class FallingScene extends XrScene {
     this.initCannon();
     this._addEventListener(window, 'click', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
-    this._addEventListener(window, 'mousemove', this.onMouseMove);
   }
 
 
@@ -102,8 +101,7 @@ export default class FallingScene extends XrScene {
 
   }
 
-  onMouseMove = (event) => {
-    event.preventDefault();
+  updateRay() {
     if (this.selectedObj) {
       this.selectedObj.material.color.set(this.selectedObjColor);
       this.colorSet = false;
@@ -281,6 +279,8 @@ export default class FallingScene extends XrScene {
 
   animate(delta) {
     this.updatePhysics(delta);
+
+    this.updateRay();
 
     // Update position of meshes
     for(var i = 0; i < this.balls.length; i++) {
