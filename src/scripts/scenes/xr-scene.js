@@ -151,12 +151,9 @@ export default class XrScene {
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
         }
-
-        return XR.session.requestAnimationFrame(this._animationCallback);
+        this.frame = XR.session.requestAnimationFrame(this._animationCallback);
+        return this.frame;
       }
-
-      this.frame = XR.session.requestAnimationFrame(this._animationCallback);
-      return this.frame;
     }
     this.frame = null;
     return this.frame;

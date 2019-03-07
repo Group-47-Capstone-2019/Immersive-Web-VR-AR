@@ -29,26 +29,29 @@ function createVRButton() {
   vrButton.addEventListener('click', () => {
     if (XR.session) {
       XR.session.end();
-    } else {
-      xrOnRequestSession();
     }
+    xrOnRequestSession();
   });
   document.body.appendChild(vrButton);
 }
 
 function xrOnSessionEnded(event) {
   XR.session = null;
+  console.log(event.session.renderState.outputContext.canvas);
+
+  if (event.session.renderState.outputContext) {
+    document.body.removeChild(event.session.renderState.outputContext.canvas);
+  }
 
   // Reset xrState when session ends and remove the mirror canvas
   if (event.session.mode === 'immersive-vr') {
-    document.body.removeChild(document.getElementById('mirror-canvas'));
+    // TODO: Need to change this to xrValidate() to handle cases where device cannot support
+    // magic window on exit of immersive session
     xrValidateMagicWindow();
-  } else {
-    xrOnRequestSession();
   }
 }
 
-async function xrOnSessionStarted() {
+async function xrOnSessionStarted(context) {
   XR.session.addEventListener('end', xrOnSessionEnded);
 
   // Set rendering canvas to be XR compatible and add a baselayer
@@ -63,7 +66,10 @@ async function xrOnSessionStarted() {
   XR.session.depthFar = cameraSettings.far;
 
   /* global XRWebGLLayer:true */
-  XR.session.updateRenderState({ baseLayer: new XRWebGLLayer(XR.session, renderer.context) });
+  XR.session.updateRenderState({
+    baseLayer: new XRWebGLLayer(XR.session, renderer.context),
+    outputContext: context
+  });
 
   // With immersive and non immersive sessions we will be keeping track of
   // two reference spaces so we will hold two.
@@ -98,13 +104,14 @@ async function xrOnRequestSession() {
 
   // Add the mirror canvas to our XR object and the document.
   XR.mirrorCanvas = xrMirrorCanvas;
-  document.body.appendChild(xrMirrorCanvas);
 
   // Attempt to create an XR session using the mirror canvas and the connected device
   try {
-    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: xrMirrorContext });
-    xrOnSessionStarted();
+    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr' });
+    document.body.appendChild(xrMirrorCanvas);
+    xrOnSessionStarted(xrMirrorContext);
   } catch (err) {
+    xrValidateMagicWindow();
     console.error(`Error initializing XR session : ${err}`);
   }
 }
@@ -113,13 +120,10 @@ async function xrOnRequestSession() {
  * Checks for magic window compatibility
  */
 async function xrValidateMagicWindow() {
-  // Ensure that there isn't already a magic window
-  if (!XR.magicWindowCanvas) {
-    XR.magicWindowCanvas = document.createElement('canvas');
-    XR.magicWindowCanvas.setAttribute('id', 'vr-port');
-    XR.magicWindowCanvas.setAttribute('name', 'magic-window');
-    canvas.parentNode.insertBefore(XR.magicWindowCanvas, canvas);
-  }
+  XR.magicWindowCanvas = document.createElement('canvas');
+  XR.magicWindowCanvas.setAttribute('id', 'vr-port');
+  XR.magicWindowCanvas.setAttribute('name', 'magic-window');
+
   XR.magicWindowCanvas.width = window.innerWidth;
   XR.magicWindowCanvas.height = window.innerHeight;
 
@@ -127,11 +131,11 @@ async function xrValidateMagicWindow() {
   const xrMagicWindowContext = XR.magicWindowCanvas.getContext('xrpresent');
 
   try {
-    XR.session = await navigator.xr.requestSession({ outputContext: xrMagicWindowContext });
+    XR.session = await navigator.xr.requestSession();
     canvas.style.display = 'none';
-    xrOnSessionStarted();
+    canvas.parentNode.insertBefore(XR.magicWindowCanvas, canvas);
+    xrOnSessionStarted(xrMagicWindowContext);
   } catch (reason) {
-    XR.magicWindowCanvas.style.display = 'none';
     console.log(`Device unable to support magic window session : ${reason}`);
   }
 }
@@ -151,9 +155,7 @@ async function xrValidate() {
     // Check if device is capable of an immersive-vr sessions
     try {
       await navigator.xr.supportsSessionMode('immersive-vr');
-      // TODO: @author TimForsyth add the VR button creation here
       createVRButton();
-      // TODO: Enable VR button here since immersive VR is available
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
     }
