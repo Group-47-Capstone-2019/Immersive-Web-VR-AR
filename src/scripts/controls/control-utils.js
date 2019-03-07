@@ -80,7 +80,7 @@ export function createFullScreenButton() {
         const windowHeight = window.innerHeight;
         const screenWidth = window.screen.width;
         const screenHeight = window.screen.height;
-        if (((windowWidth / screenWidth) >= 0.92) && ((windowHeight / screenHeight) >= 0.92)) {
+        if (((windowWidth / screenWidth) >= 0.93) && ((windowHeight / screenHeight) >= 0.93)) {
           onFullScreen();
         } else {
           onFullScreenExit();

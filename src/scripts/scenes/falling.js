@@ -119,23 +119,23 @@ export default class FallingScene extends XrScene {
       let direction = new THREE.Vector3();
       controls.getDirection(direction);
       this.raycaster.set(controls.getObject().position, direction);
+    }
     
 
-      let intersects = this.raycaster.intersectObject(this.group, true);
-      if (intersects.length > 0) {
-        let res = intersects.filter(function(res) {
-          return res && res.object;
-        })[0];
-        
-        if(res && res.object) {
-          this.selectedObj = res.object;
-          if(!this.colorSet) {
-            this.selectedObjColor = this.selectedObj.material.color.getHex();
-            
-            this.colorSet = true;
-          }
-          this.selectedObj.material.color.set('green');
+    let intersects = this.raycaster.intersectObject(this.group, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
+      
+      if(res && res.object) {
+        this.selectedObj = res.object;
+        if(!this.colorSet) {
+          this.selectedObjColor = this.selectedObj.material.color.getHex();
+          
+          this.colorSet = true;
         }
+        this.selectedObj.material.color.set('green');
       }
     }
   }
@@ -179,6 +179,8 @@ export default class FallingScene extends XrScene {
 
       this.raycaster.setFromCamera(touch, this.camera);
     }
+
+    this.updateRay();
 
     let intersects = this.raycaster.intersectObject(this.group, true);
     if (intersects.length > 0) {
