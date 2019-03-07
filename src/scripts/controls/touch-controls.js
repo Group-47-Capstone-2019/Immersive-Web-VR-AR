@@ -3,13 +3,14 @@ import { Direction, createFullScreenButton } from './control-utils';
 
 /* eslint-disable prefer-const */
 
-let touchscreen = {
+export let touchscreen = {
   joystickOriginX: 0,
   joystickOriginY: 0,
   currentTouchId: null,
   currentPointerId: null,
   movingDirection: Direction.Stopped,
-  prevTime: performance.now()
+  prevTime: performance.now(),
+  enabled: false
 };
 
 const joystick = document.querySelector('#joystick');
@@ -161,6 +162,7 @@ export function showTouchControls() {
     joystick.addEventListener('touchmove', (ev) => { handleTouchMove(ev); });
     joystick.addEventListener('touchend', (ev) => { handleTouchEnd(ev); });
   }
+  touchscreen.enabled = true;
 }
 
 /**
@@ -178,6 +180,7 @@ export function hideTouchControls() {
     joystick.removeEventListener('touchmove', handleTouchMove());
     joystick.removeEventListener('touchend', handleTouchEnd());
   }
+  touchscreen.enabled = false;
 }
 
 /**

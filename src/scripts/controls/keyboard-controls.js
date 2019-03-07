@@ -25,7 +25,7 @@ const canvas = document.querySelector('#vr-port');
 
 /* eslint-enable prefer-const */
 
-export let controls;
+export let controls = null;
 export let keyboard = false;
 
 /**

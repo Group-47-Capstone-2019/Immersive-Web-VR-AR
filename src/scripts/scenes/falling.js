@@ -2,6 +2,7 @@
 import THREE from '../three';
 import * as CANNON from 'cannon';
 import XrScene from './xr-scene';
+import { userPosition, touchscreen } from '../controls/touch-controls';
 import { controls } from '../controls/keyboard-controls';
 // import Table from '../../assets/table/Desk.fbx';
 
@@ -38,6 +39,7 @@ export default class FallingScene extends XrScene {
 
     // Cylinders
 
+    console.log("constructor");
 
     // this.loadTable();
     this.raycaster = new THREE.Raycaster();
@@ -50,9 +52,11 @@ export default class FallingScene extends XrScene {
 
     this.createSpawners();
     //this.ball = this.createBall();
+    
     this.addLight();
+    
     this.initCannon();
-    this._addEventListener(window, 'click', this.onClick);
+    this._addEventListener(window, 'mousedown', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
   }
 
@@ -101,7 +105,6 @@ export default class FallingScene extends XrScene {
     this.world.addBody(boxBody);
     
     // Cylinder
-
   }
 
   updateRay() {
@@ -111,23 +114,28 @@ export default class FallingScene extends XrScene {
       this.selectedObj = null;
     }
 
-    let direction = new THREE.Vector3();
-    controls.getDirection(direction);
-    this.raycaster.set(controls.getObject().position, direction);
-    let intersects = this.raycaster.intersectObject(this.group, true);
-    if (intersects.length > 0) {
-      let res = intersects.filter(function(res) {
-        return res && res.object;
-      })[0];
-      
-      if(res && res.object) {
-        this.selectedObj = res.object;
-        if(!this.colorSet) {
-          this.selectedObjColor = this.selectedObj.material.color.getHex();
-          
-          this.colorSet = true;
+    // Get ray from keyboard controls
+    if(controls != null) {
+      let direction = new THREE.Vector3();
+      controls.getDirection(direction);
+      this.raycaster.set(controls.getObject().position, direction);
+    
+
+      let intersects = this.raycaster.intersectObject(this.group, true);
+      if (intersects.length > 0) {
+        let res = intersects.filter(function(res) {
+          return res && res.object;
+        })[0];
+        
+        if(res && res.object) {
+          this.selectedObj = res.object;
+          if(!this.colorSet) {
+            this.selectedObjColor = this.selectedObj.material.color.getHex();
+            
+            this.colorSet = true;
+          }
+          this.selectedObj.material.color.set('green');
         }
-        this.selectedObj.material.color.set('green');
       }
     }
   }
@@ -163,7 +171,15 @@ export default class FallingScene extends XrScene {
     }
   }
 
-  onClick = () => {
+  onClick = (event) => {
+    if (touchscreen.enabled) {
+      let touch = new THREE.Vector3();
+      touch.x = (event.clientX / window.innerWidth) * 2 - 1;
+      touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+      this.raycaster.setFromCamera(touch, this.camera);
+    }
+
     let intersects = this.raycaster.intersectObject(this.group, true);
     if (intersects.length > 0) {
       let res = intersects.filter(function(res) {
@@ -177,6 +193,16 @@ export default class FallingScene extends XrScene {
           this.spawnBox();
         }
       }
+    }
+  }
+
+  checkObjectLimit() {
+    if (this.meshes.length > 100) {
+      this.world.remove(this.bodies[0]);
+      this.group.remove(this.meshes[0]);
+      this.scene.remove(this.meshes[0]);
+      this.bodies.shift();
+      this.meshes.shift();
     }
   }
 
@@ -194,6 +220,8 @@ export default class FallingScene extends XrScene {
     
     this.bodies.push(ballBody);
     this.meshes.push(ballMesh);
+
+    this.checkObjectLimit();
     
     ballBody.position.set(0, 7, 0);
     ballMesh.position.set(0, 7, 0);
@@ -210,9 +238,11 @@ export default class FallingScene extends XrScene {
     boxMesh.receiveShadow = true;
     this.world.addBody(boxBody);
     this.group.add(boxMesh);
-    
+
     this.bodies.push(boxBody);
     this.meshes.push(boxMesh);
+
+    this.checkObjectLimit();
     
     boxBody.position.set(0, 7, 0);
     boxMesh.position.set(0, 7, 0);
@@ -277,24 +307,24 @@ export default class FallingScene extends XrScene {
 
     const keyLight = new THREE.DirectionalLight('white', 1.0, 1000);
     keyLight.position.set(-100, 0, 100);
-    keyLight.castShadow = true;
-    keyLight.shadow.bias = 0.0001;
-    keyLight.shadow.mapSize.width = 2048 * 2;
-    keyLight.shadow.mapSize.height = 2048 * 2;
-    keyLight.position.set(0, 8, 0);
+    //keyLight.castShadow = true;
+    //keyLight.shadow.bias = 0.0001;
+    //keyLight.shadow.mapSize.width = 2048 * 2;
+    //keyLight.shadow.mapSize.height = 2048 * 2;
+    keyLight.position.set(0, 100, 0);
     keyLight.decay = 1;
     
     const fillLight = new THREE.DirectionalLight('white', 0.75, 1000);
     fillLight.position.set(100, 0, 100);
 
-    const backLight = new THREE.DirectionalLight(0xffffff, 0.5, 1000);
+    const backLight = new THREE.DirectionalLight('white', 0.5, 1000);
     backLight.position.set(100, 0, -100).normalize();
 
     this.scene.add(keyLight);
     this.scene.add(fillLight);
     this.scene.add(backLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 0.8, 500);
+    const pointLight = new THREE.PointLight('white', 0.8, 500);
   
     this.scene.add(pointLight);
   }
