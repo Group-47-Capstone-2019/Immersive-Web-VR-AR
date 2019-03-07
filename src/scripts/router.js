@@ -3,6 +3,7 @@ import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import FallingScene from './scenes/falling';
+import { showWelcome, hideWelcome } from './welcome';
 
 /**
  * @type {XrScene}
@@ -11,7 +12,7 @@ let currentScene;
 const SavedStates = {};
 
 const Routes = {
-  get '/'() {
+  get '/home'() {
     return new HomeScene(renderer, camera);
   },
   get '/planets'() {
@@ -34,13 +35,19 @@ function navigateToScene(pathname, oldPath) {
     currentScene.removeEventListeners();
   }
 
-  currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/'];
-  if (pathname in SavedStates) {
-    // Reapply any state that was saved previously.
-    currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
-  }
+  if (pathname === '/') {
+    showWelcome();
+  } else {
+    hideWelcome();
 
-  currentScene.startAnimation();
+    currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/home'];
+    if (pathname in SavedStates) {
+      // Reapply any state that was saved previously.
+      currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
+    }
+
+    currentScene.startAnimation();
+  }
 }
 
 /**

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import THREE from '../three';
 import { camera } from '../renderer/camera';
-import { Direction, showStartMessage, hideStartMessage, tryFullScreen } from './control-utils';
+import { Direction, tryFullScreen } from './control-utils';
 /* eslint-enable */
 
 const Key = {
@@ -85,12 +85,10 @@ export function pointerLockChanged() {
     || document.mozPointerLockElement === document.body
     || document.webkitPointerLockElement === document.body) {
     controls.enabled = true;
-    hideStartMessage();
     showCrosshair();
   }
   else {
     hideCrosshair();
-    showStartMessage();
     controls.enabled = false;
   }
 
