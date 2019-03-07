@@ -12,6 +12,8 @@ import {
   updatePosition
 } from '../controls/keyboard-controls';
 
+import Controllers from './controllers';
+
 export default class XrScene {
   scene = new Scene();
 
@@ -19,6 +21,7 @@ export default class XrScene {
 
   clock = new Clock();
 
+  controllers = new Controllers(this.scene);
 
   isActive = true;
 
@@ -118,6 +121,8 @@ export default class XrScene {
           XR.session.renderState.baseLayer.framebuffer
         );
 
+        this._updateInputSources(xrFrame, xrRefSpace);
+
         for (let i = 0; i < pose.views.length; i++) {
           const view = pose.views[i];
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
@@ -133,9 +138,9 @@ export default class XrScene {
           // Update user position if touch controls are in use with magic window.
           if (XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
             updateTouchPosition(viewMatrix);
-            this._translateMatrix(viewMatrix, userPosition);
+            viewMatrix.premultiply(this._translateMatrix(viewMatrix, userPosition));
           } else {
-            this._translateMatrix(viewMatrix, new Vector3(0, 0, 0));
+            viewMatrix.premultiply(this._translateMatrix(viewMatrix, new Vector3(0, 0, 0)));
           }
 
           this.camera.matrixWorldInverse.copy(viewMatrix);
@@ -146,8 +151,6 @@ export default class XrScene {
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
         }
-
-        this._updateInputSources(xrFrame, xrRefSpace);
 
         return XR.session.requestAnimationFrame(this._animationCallback);
       }
@@ -170,7 +173,15 @@ export default class XrScene {
         const isTrackedPointer = inputSource.targetRayMode === 'tracked-pointer';
 
         if (isTrackedPointer && inputPose.gripTransform.matrix) {
-          // TODO: Render controller
+          if (this.controllers.length < inputSources.length) {
+            const controllerType = '';
+            // TODO: Check for controller type here
+            this.controllers.addController(controllerType);
+          }
+
+          const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
+          // TODO: Update controller global translation
+          this.controllers.updateControllerPosition(gripMatrix, i);
         }
 
         // Raycasting
@@ -205,7 +216,7 @@ export default class XrScene {
       tempPosition.z
     );
 
-    matrix.premultiply(translation);
+    return translation;
   }
 
   /**
