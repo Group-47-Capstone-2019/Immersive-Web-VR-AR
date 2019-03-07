@@ -88,7 +88,6 @@ export function createFullScreenButton() {
   const fsButton = document.createElement('button');
   fsButton.classList.add('fullscreen-toggle');
   fsButton.id = 'fs-toggle';
-  fsButton.textContent = '+';
   fsButton.addEventListener('click', () => {
     if (fullScreenAvailable() && !isFullScreenActive()) {
       window.addEventListener('resize', () => {

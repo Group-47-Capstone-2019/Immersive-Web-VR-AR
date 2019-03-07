@@ -20,6 +20,7 @@ const Key = {
 let prevTime = performance.now();
 let velocity = new THREE.Vector3();
 let movingDirection = Direction.Stopped;
+let crosshair = null;
 const canvas = document.querySelector('#vr-port');
 
 /* eslint-enable prefer-const */
@@ -35,6 +36,43 @@ export function hasPointerLock() {
   return havePointerLock;
 }
 
+export function createCrosshair() {
+  const material = new THREE.LineBasicMaterial({ color: 0xAAFFAA });
+
+  // Crosshair size
+  const x = 0.0075, y = 0.0075;
+
+  const geometry = new THREE.Geometry();
+
+  // Crosshair geometry
+  geometry.vertices.push(new THREE.Vector3(0, y, 0));
+  geometry.vertices.push(new THREE.Vector3(0, -y, 0));
+  geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+  geometry.vertices.push(new THREE.Vector3(x, 0, 0));    
+  geometry.vertices.push(new THREE.Vector3(-x, 0, 0));
+
+  crosshair = new THREE.Line( geometry, material );
+
+  // Center it
+  const crosshairPercentX = 50;
+  const crosshairPercentY = 50;
+  const crosshairPositionX = (crosshairPercentX / 100) * 2 - 1;
+  const crosshairPositionY = (crosshairPercentY / 100) * 2 - 1;
+
+  crosshair.position.x = crosshairPositionX * camera.aspect;
+  crosshair.position.y = crosshairPositionY;
+
+  crosshair.position.z = -0.3;
+}
+
+export function showCrosshair() {
+  camera.add(crosshair);
+}
+
+export function hideCrosshair() {
+  camera.remove(crosshair);
+}
+
 /**
  * Called when the pointerlockchange event is fired.
  * Either hides or shows the start message and enables or
@@ -48,8 +86,10 @@ export function pointerLockChanged() {
     || document.webkitPointerLockElement === document.body) {
     controls.enabled = true;
     hideStartMessage();
+    showCrosshair();
   }
   else {
+    hideCrosshair();
     showStartMessage();
     controls.enabled = false;
   }
@@ -134,6 +174,7 @@ export function addMouseKeyboardEventListeners() {
   keyboard = true;
   controls = new THREE.PointerLockControls(camera);
   controls.getObject().position.y = 1;
+  createCrosshair();
 
   document.addEventListener('pointerlockchange', () => { pointerLockChanged(); }, false);
   document.addEventListener('mozpointerlockchange', () => { pointerLockChanged(); }, false);

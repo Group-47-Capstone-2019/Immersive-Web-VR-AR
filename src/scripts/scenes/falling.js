@@ -17,20 +17,24 @@ export default class FallingScene extends XrScene {
     this.camera = camera;
     this.renderer = renderer;
 
+    this.renderer.shadowMap.enabled = true;
+    //this.renderer.shadowMap.type = THREE.PCFShadowMap;
+
     this.createRoom();
     this.camera = camera;
     
+
+    // Objects 
+    this.bodies = [];
+    this.meshes = [];
+    
     // Balls
-    this.balls = [];
-    this.ballMeshes = [];
     this.ballShape = new CANNON.Sphere(1);
     this.ballGeo = new THREE.SphereGeometry(this.ballShape.radius, 32, 32);
 
     // Boxes
-    this.boxes = [];
-    this.boxMeshes = [];
     this.boxShape = new CANNON.Box(new CANNON.Vec3(1, 1, 1));
-    this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
+    this.boxGeo = new THREE.BoxGeometry(2, 2, 2);
 
     // Cylinders
 
@@ -46,12 +50,11 @@ export default class FallingScene extends XrScene {
 
     this.createSpawners();
     //this.ball = this.createBall();
-    this.addAmbientLight();
+    this.addLight();
     this.initCannon();
     this._addEventListener(window, 'click', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
   }
-
 
   createRoom() {
     // Generate room geometry.
@@ -72,7 +75,7 @@ export default class FallingScene extends XrScene {
 
   createSpawners() {
     // Sphere
-    let material = new THREE.MeshPhongMaterial({color: 'orange'});
+    let material = new THREE.MeshPhongMaterial({color: 'gray'});
     this.ballSpawner = new THREE.Mesh(this.ballGeo, material);
     this.ballSpawner.castShadow = true;
     this.ballSpawner.receiveShadow = true;
@@ -85,7 +88,7 @@ export default class FallingScene extends XrScene {
     this.world.addBody(ballBody);
 
     // Box
-    material = new THREE.MeshPhongMaterial({color: 'red'});
+    material = new THREE.MeshPhongMaterial({color: 'gray'});
     this.boxSpawner = new THREE.Mesh(this.boxGeo, material);
     this.boxSpawner.castShadow = true;
     this.boxSpawner.receiveShadow = true;
@@ -182,15 +185,15 @@ export default class FallingScene extends XrScene {
     
     let ballBody = new CANNON.Body({mass: 1});
     ballBody.addShape(this.ballShape);
-    let material = new THREE.MeshLambertMaterial({color: 'orange'});
+    let material = new THREE.MeshPhongMaterial({color: 'orange'});
     let ballMesh = new THREE.Mesh(this.ballGeo, material);
     ballMesh.castShadow = true;
     ballMesh.receiveShadow = true;
     this.world.addBody(ballBody);
     this.group.add(ballMesh);
     
-    this.balls.push(ballBody);
-    this.ballMeshes.push(ballMesh);
+    this.bodies.push(ballBody);
+    this.meshes.push(ballMesh);
     
     ballBody.position.set(0, 7, 0);
     ballMesh.position.set(0, 7, 0);
@@ -201,15 +204,15 @@ export default class FallingScene extends XrScene {
 
     let boxBody = new CANNON.Body({mass: 1});
     boxBody.addShape(this.boxShape);
-    let material = new THREE.MeshLambertMaterial({color: 'red'});
+    let material = new THREE.MeshPhongMaterial({color: 'red'});
     let boxMesh = new THREE.Mesh(this.boxGeo, material);
     boxMesh.castShadow = true;
     boxMesh.receiveShadow = true;
     this.world.addBody(boxBody);
     this.group.add(boxMesh);
     
-    this.boxes.push(boxBody);
-    this.boxMeshes.push(boxMesh);
+    this.bodies.push(boxBody);
+    this.meshes.push(boxMesh);
     
     boxBody.position.set(0, 7, 0);
     boxMesh.position.set(0, 7, 0);
@@ -268,12 +271,31 @@ export default class FallingScene extends XrScene {
     this.world.addBody(wallLeftBody);
   }
 
-  addAmbientLight() {
-    const ambientLight = new THREE.AmbientLight('white', 0.7);
+  addLight() {
+    const ambientLight = new THREE.AmbientLight('white', 0.5);
     this.scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 0.8);
-    pointLight.position.set(0, 0, 0);
+    const keyLight = new THREE.DirectionalLight('white', 1.0, 1000);
+    keyLight.position.set(-100, 0, 100);
+    keyLight.castShadow = true;
+    keyLight.shadow.bias = 0.0001;
+    keyLight.shadow.mapSize.width = 2048 * 2;
+    keyLight.shadow.mapSize.height = 2048 * 2;
+    keyLight.position.set(0, 8, 0);
+    keyLight.decay = 1;
+    
+    const fillLight = new THREE.DirectionalLight('white', 0.75, 1000);
+    fillLight.position.set(100, 0, 100);
+
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.5, 1000);
+    backLight.position.set(100, 0, -100).normalize();
+
+    this.scene.add(keyLight);
+    this.scene.add(fillLight);
+    this.scene.add(backLight);
+
+    const pointLight = new THREE.PointLight(0xffffff, 0.8, 500);
+  
     this.scene.add(pointLight);
   }
 
@@ -283,14 +305,9 @@ export default class FallingScene extends XrScene {
     this.updateRay();
 
     // Update position of meshes
-    for(var i = 0; i < this.balls.length; i++) {
-      this.ballMeshes[i].position.copy(this.balls[i].position);
-      this.ballMeshes[i].quaternion.copy(this.balls[i].quaternion);
-    }
-
-    for(var i = 0; i < this.boxes.length; i++) {
-      this.boxMeshes[i].position.copy(this.boxes[i].position);
-      this.boxMeshes[i].quaternion.copy(this.boxes[i].quaternion);
+    for(var i = 0; i < this.bodies.length; i++) {
+      this.meshes[i].position.copy(this.bodies[i].position);
+      this.meshes[i].quaternion.copy(this.bodies[i].quaternion);
     }
   }
 }
