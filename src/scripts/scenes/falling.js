@@ -4,7 +4,7 @@ import * as CANNON from 'cannon';
 import XrScene from './xr-scene';
 import { userPosition, touchscreen } from '../controls/touch-controls';
 import { controls } from '../controls/keyboard-controls';
-// import Table from '../../assets/table/Desk.fbx';
+import Table from '../../assets/Simple Wood Table.obj';
 
 export default class FallingScene extends XrScene {
   /**
@@ -21,13 +21,18 @@ export default class FallingScene extends XrScene {
     this.renderer.shadowMap.enabled = true;
     //this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
+    this.length = 64;
+    this.width = 64;
+    this.height = 16;
     this.createRoom();
+    this.loadTable();
     this.camera = camera;
     
 
     // Objects 
     this.bodies = [];
     this.meshes = [];
+    this.objectMaterial = new CANNON.Material();
     
     // Balls
     this.ballShape = new CANNON.Sphere(1);
@@ -62,7 +67,7 @@ export default class FallingScene extends XrScene {
 
   createRoom() {
     // Generate room geometry.
-    const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
+    const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
     const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
     this.room = new THREE.Mesh(roomGeometry, roomMaterials);
     this.room.receiveShadow = true;
@@ -83,7 +88,7 @@ export default class FallingScene extends XrScene {
     this.ballSpawner = new THREE.Mesh(this.ballGeo, material);
     this.ballSpawner.castShadow = true;
     this.ballSpawner.receiveShadow = true;
-    this.ballSpawner.position.set(0, -7, -8);
+    this.ballSpawner.position.set(0, -1.6, -13);
     this.group.add(this.ballSpawner);
 
     let ballBody = new CANNON.Body({mass: 0});
@@ -96,7 +101,7 @@ export default class FallingScene extends XrScene {
     this.boxSpawner = new THREE.Mesh(this.boxGeo, material);
     this.boxSpawner.castShadow = true;
     this.boxSpawner.receiveShadow = true;
-    this.boxSpawner.position.set(-3, -7, -8);
+    this.boxSpawner.position.set(-4, -1.6, -13);
     this.group.add(this.boxSpawner);
 
     let boxBody = new CANNON.Body({mass: 0});
@@ -140,15 +145,43 @@ export default class FallingScene extends XrScene {
     }
   }
 
-  // loadTable() {
-  //   var loader = new THREE.FBXLoader();
-  //   console.log("loading..");
-  //   loader.load(Table, function(obj) {
-  //     console.log("boo");
-  //     this.scene.add(obj);
-  //     obj.position.z = -2;
-  //   });
-  // }
+  loadTable() {
+    let object;
+
+    function loadModel() {
+      object.traverse(function(child) {
+        if(child.isMesh)child.material.map = texture;
+      });
+
+      object.position.z = -15;
+      object.position.y = -5.5;
+      this.scene.add(object);
+    }
+
+    var manager = new THREE.LoadingManager(loadModel.bind(this));
+
+    manager.onProgress = function(item, loaded, total) {
+      console.log(item, loaded, total);
+    };
+
+    var textureLoader = new THREE.TextureLoader(manager);
+
+    var texture = textureLoader.load('../../assets/textures/Diffuse.jpeg');
+
+    function onProgress(xhr) {
+      if (xhr.lengthComputable) {
+        var percentComplete = xhr.loaded / xhr.total * 100;
+        console.log('model' + Math.round(percentComplete, 2) + '% downloaded');
+      }
+    }
+
+    function onError() {}
+
+    var loader = new THREE.OBJLoader();
+    loader.load(Table, function(obj) {
+      object = obj;
+    }, onProgress, onError);
+  }
 
   onKeyUp = () => {
     switch (event.keyCode) {
@@ -211,7 +244,7 @@ export default class FallingScene extends XrScene {
   spawnBall() {
     console.log("Spawn ball");
     
-    let ballBody = new CANNON.Body({mass: 1});
+    let ballBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
     ballBody.addShape(this.ballShape);
     let material = new THREE.MeshPhongMaterial({color: 'orange'});
     let ballMesh = new THREE.Mesh(this.ballGeo, material);
@@ -232,7 +265,7 @@ export default class FallingScene extends XrScene {
   spawnBox() {
     console.log("Spawn box");
 
-    let boxBody = new CANNON.Body({mass: 1});
+    let boxBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
     boxBody.addShape(this.boxShape);
     let material = new THREE.MeshPhongMaterial({color: 'red'});
     let boxMesh = new THREE.Mesh(this.boxGeo, material);
@@ -252,6 +285,9 @@ export default class FallingScene extends XrScene {
 
   initCannon() {
     //const radius = 1;
+    const length = this.length / 2;
+    const width = this.width / 2;
+    const height = this.height / 2;
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -9.8, 0);
     
@@ -267,39 +303,45 @@ export default class FallingScene extends XrScene {
 
     // Creating Ground.
     const groundShape = new CANNON.Plane();
-    const groundBody = new CANNON.Body({ mass: 0 });
+    const groundMaterial = new CANNON.Material();
+    const groundBody = new CANNON.Body({ mass: 0, material: groundMaterial });
     groundBody.addShape(groundShape);
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-    groundBody.position.set(0, -8, 0);
+    groundBody.position.set(0, -height, 0);
     this.world.addBody(groundBody);
+
+    const groundContact = new CANNON.ContactMaterial(groundMaterial, this.objectMaterial, {friction: 0.5, restitution: 0.2});
+    const objectContact = new CANNON.ContactMaterial(this.objectMaterial, this.objectMaterial, {friction: 0.4, restitution: 0.4});
+    this.world.addContactMaterial(groundContact);
+    this.world.addContactMaterial(objectContact);
 
     const roofBody = new CANNON.Body({ mass: 0 });
     roofBody.addShape(groundShape);
     roofBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
-    roofBody.position.set(0, 8, 0);
+    roofBody.position.set(0, height, 0);
     this.world.addBody(roofBody);
 
     const wallFrontBody = new CANNON.Body({mass: 0});
     wallFrontBody.addShape(groundShape);
-    wallFrontBody.position.set(-12, 0, -12);
+    wallFrontBody.position.set(-length, 0, -width);
     this.world.addBody(wallFrontBody);
 
     const wallBackBody = new CANNON.Body({mass: 0});
     wallBackBody.addShape(groundShape);
     wallBackBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI);
-    wallBackBody.position.set(12, 0, 12);
+    wallBackBody.position.set(length, 0, width);
     this.world.addBody(wallBackBody);
 
     const wallRightBody = new CANNON.Body({mass: 0});
     wallRightBody.addShape(groundShape);
     wallRightBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-    wallRightBody.position.set(12, 0, -12);
+    wallRightBody.position.set(length, 0, -width);
     this.world.addBody(wallRightBody);
 
     const wallLeftBody = new CANNON.Body({mass: 0});
     wallLeftBody.addShape(groundShape);
     wallLeftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
-    wallLeftBody.position.set(-12, 0, 12);
+    wallLeftBody.position.set(-length, 0, width);
     this.world.addBody(wallLeftBody);
   }
 
