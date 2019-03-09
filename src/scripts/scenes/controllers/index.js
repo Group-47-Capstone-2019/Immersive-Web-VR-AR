@@ -3,8 +3,6 @@ import * as THREE from 'three';
 export default class Controllers {
     controllers = [];
 
-    length = 0;
-
     /**
      * Constructor. Gets a reference to the
      * currently rendered scene for which to
@@ -13,6 +11,10 @@ export default class Controllers {
      */
     constructor(scene) {
       this.scene = scene;
+    }
+
+    get length() {
+      return this.controllers.length;
     }
 
     /**
@@ -45,7 +47,6 @@ export default class Controllers {
       }
 
       this.controllers.push(controller);
-      this.length++;
       this.scene.add(controller);
     }
 
@@ -65,7 +66,6 @@ export default class Controllers {
       this.controllers.splice(index, 1);
 
       controller = undefined;
-      this.length--;
     }
 
     /**
