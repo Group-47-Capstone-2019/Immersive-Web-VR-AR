@@ -1,5 +1,5 @@
 import {
-  Scene, Matrix4, Vector3, Clock
+  Scene, Quaternion, Matrix4, Vector3, Clock
 } from 'three';
 import { World } from 'cannon';
 
@@ -98,8 +98,10 @@ export default class XrScene {
         return this.frame;
       }
 
+      const immersive = (XR.session.mode === 'immersive-vr');
+
       // Get the correct reference space for the session.
-      const xrRefSpace = XR.session.mode === 'immersive-vr'
+      const xrRefSpace = immersive
         ? XR.immersiveRefSpace
         : XR.nonImmersiveRefSpace;
 
@@ -136,12 +138,11 @@ export default class XrScene {
           );
 
           // Update user position if touch controls are in use with magic window.
-          if (XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
+          if (XR.magicWindowCanvas && !immersive) {
             updateTouchPosition(viewMatrix);
-            viewMatrix.premultiply(this._translateMatrix(viewMatrix, userPosition));
-          } else {
-            viewMatrix.premultiply(this._translateMatrix(viewMatrix, new Vector3(0, 0, 0)));
           }
+
+          this._translateViewMatrix(viewMatrix, userPosition);
 
           this.camera.matrixWorldInverse.copy(viewMatrix);
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
@@ -177,7 +178,9 @@ export default class XrScene {
           }
 
           const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
-          // TODO: Update controller global translation
+          this._translateObjectMatrix(gripMatrix, userPosition);
+          const matrixPosition = new Vector3();
+          gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
           this.controllers.updateControllerPosition(gripMatrix, i);
         }
 
@@ -192,15 +195,17 @@ export default class XrScene {
     }
   }
 
-  _checkForKeyboardMouse() {
-    if (keyboard) {
-      this.scene.add(controls.getObject());
-    }
-  }
-
-  _translateMatrix(matrix, position) {
-    // Save initial position for later
-    const tempPosition = new Vector3(position.x, position.y, position.z);
+  /**
+   * The view matrix is the information for the entire world to be rendered in
+   * Translations that occur here need to be inverted for them to make sense to the user
+   * Moving the world northwest gives it the appearance of moving southeast ect.
+   * We're translating the position of the world origin rather than the user.
+   * @param {Float32Array} matrix
+   * @param {Vector3} position
+   */
+  _translateViewMatrix(matrix, position) {
+    // Invert the position since we are moving the entire world origin
+    const tempPosition = new Vector3(-position.x, -position.y, -position.z);
     const tempMatrix = new Matrix4().copy(matrix);
 
     tempMatrix.setPosition(new Vector3());
@@ -213,7 +218,30 @@ export default class XrScene {
       tempPosition.z
     );
 
-    return translation;
+    matrix.premultiply(translation);
+  }
+
+  /**
+   * Adds position offset to object matrix passed in.
+   * @param {Matrix4} matrix
+   * @param {Vector3} position
+   */
+  _translateObjectMatrix(matrix, position) {
+    const currentPosition = new Vector3(
+      position.x,
+      position.y,
+      position.z
+    );
+    const matrixPosition = new Vector3();
+    matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
+    currentPosition.add(matrixPosition);
+    matrix.setPosition(currentPosition);
+  }
+
+  _checkForKeyboardMouse() {
+    if (keyboard) {
+      this.scene.add(controls.getObject());
+    }
   }
 
   /**
