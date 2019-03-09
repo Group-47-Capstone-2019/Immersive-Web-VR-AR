@@ -172,7 +172,7 @@ export default class XrScene {
 
         if (isTrackedPointer && inputPose.gripTransform.matrix) {
           if (this.controllers.length < inputSources.length) {
-            const controllerType = '';
+            const controllerType = 'daydream';
             // TODO: Check for controller type here
             this.controllers.addController(controllerType);
           }

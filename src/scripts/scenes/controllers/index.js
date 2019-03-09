@@ -1,4 +1,6 @@
-import * as THREE from 'three';
+import THREE from '../../three';
+
+const DAYDREAM = 'https://cdn.aframe.io/controllers/google/';
 
 export default class Controllers {
     controllers = [];
@@ -11,6 +13,20 @@ export default class Controllers {
      */
     constructor(scene) {
       this.scene = scene;
+      this.meshes = [];
+
+      const mtlLoader = new THREE.MTLLoader();
+      const objLoader = new THREE.OBJLoader();
+
+      mtlLoader.setPath(DAYDREAM);
+      mtlLoader.load('vr_controller_daydream.mtl', (materials) => {
+        materials.preload();
+        objLoader.setMaterials(materials);
+        objLoader.setPath(DAYDREAM);
+        objLoader.load('vr_controller_daydream.obj', (object) => {
+          this.meshes.daydream = object;
+        });
+      });
     }
 
     get length() {
@@ -36,7 +52,7 @@ export default class Controllers {
           break;
         }
         case 'daydream': {
-          // TODO: Load daydream mesh
+          controller = this.meshes.daydream;
           break;
         }
         default: {
@@ -45,7 +61,7 @@ export default class Controllers {
           controller = new THREE.Mesh(geometry, material);
         }
       }
-
+      console.log(controller);
       this.controllers.push(controller);
       this.scene.add(controller);
     }
