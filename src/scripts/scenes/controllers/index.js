@@ -46,8 +46,8 @@ export default class Controllers {
       this.scene.remove(controller);
 
       // Clean up
-      if(controller.geometry) controller.geometry.dispose();
-      if(controller.material) controller.material.dispose();
+      if (controller.geometry) controller.geometry.dispose();
+      if (controller.material) controller.material.dispose();
 
       // Remove controller from array
       this.controllers.splice(index, 1);
@@ -56,7 +56,7 @@ export default class Controllers {
     }
 
     removeAllControllers() {
-      for(let i = 0; i < this.controllers.length; i++) {
+      for (let i = 0; i < this.controllers.length; i++) {
         this.removeController(i);
       }
     }
