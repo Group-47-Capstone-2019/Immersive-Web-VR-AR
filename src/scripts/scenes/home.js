@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import wallTexture from '../../images/wall.png';
+import { touchscreen } from '../controls/touch-controls';
+import { controls } from '../controls/keyboard-controls';
 import XrScene from './xr-scene';
+import { navigate } from '../router';
 
 const settings = {
   global: {
@@ -26,7 +29,8 @@ export default class HomeScene extends XrScene {
    */
   constructor(renderer, camera) {
     super(renderer, camera);
-
+    this.camera = camera;
+    this.renderer = renderer;
     // Basic lighting
     if (settings.global.lights.ambient) {
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -97,14 +101,128 @@ export default class HomeScene extends XrScene {
       console.error('Error creating room mesh.');
     }
 
+    this.group = new THREE.Group();
+    this.scene.add(this.group);
+    this.raycaster = new THREE.Raycaster();
+    this.selectedObj = null;
+    this.selectedObjColor;
+    this.colorSet = false;
+
+    this.createDoors();
     this._boxTest();
+    this._addEventListener(window, 'mousedown', this.onClick);
   }
 
   animate() {
+    this.updateRay();
     const box = this.scene.getObjectByName('testBox001');
     box.rotateX(0.01);
     box.rotateY(0.01);
     box.rotateZ(0.03);
+  }
+
+  updateRay() {
+    if (this.selectedObj) {
+      this.selectedObj.material.color.set(this.selectedObjColor);
+      this.colorSet = false;
+      this.selectedObj = null;
+    }
+
+    // Get ray from keyboard controls
+    if(controls != null) {
+      let direction = new THREE.Vector3();
+      controls.getDirection(direction);
+      this.raycaster.set(controls.getObject().position, direction);
+    }
+    
+    let intersects = this.raycaster.intersectObject(this.group, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
+      
+      if(res && res.object) {
+        this.selectedObj = res.object;
+        if(!this.colorSet) {
+          this.selectedObjColor = this.selectedObj.material.color.getHex();
+          
+          this.colorSet = true;
+        }
+        this.selectedObj.material.color.set('green');
+      }
+    }
+  }
+
+  onClick = (event) => {
+    if (touchscreen.enabled) {
+      let touch = new THREE.Vector3();
+      touch.x = (event.clientX / window.innerWidth) * 2 - 1;
+      touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+      this.raycaster.setFromCamera(touch, this.camera);
+    }
+
+    this.updateRay();
+
+    let intersects = this.raycaster.intersectObject(this.group, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
+
+      if (res && res.object) {
+        if (res.object === this.scene.getObjectByName('fallingDoor')) {
+          console.log('Falling Door');
+          navigate('/falling');
+        } else if (res.object === this.scene.getObjectByName('planetsDoor')) {
+          console.log('Planets Door');
+          navigate('/planets');
+        } else if (res.object === this.scene.getObjectByName('pendulumDoor')) {
+          console.log('Pendulum Door');
+          navigate('/pendulum');
+        } else if (res.object === this.scene.getObjectByName('mirrorDoor')) {
+          console.log('Mirror Door');
+          navigate('/mirror');
+        }
+      }
+    }
+  }
+
+  createDoors() {
+    const geometry = new THREE.BoxGeometry(1, 12, 7);
+    const fallingMaterial = new THREE.MeshPhongMaterial({
+      color: '#402f00',
+    });
+    const fallingDoor = new THREE.Mesh(geometry, fallingMaterial);
+    fallingDoor.name = 'fallingDoor';
+    fallingDoor.position.set(-11.5, -2, 0);
+    this.group.add(fallingDoor);
+
+    const planetsMaterial = new THREE.MeshPhongMaterial({
+      color: '#402f00',
+    });
+    const planetsDoor = new THREE.Mesh(geometry, planetsMaterial);
+    planetsDoor.name = 'planetsDoor';
+    planetsDoor.position.set(11.5, -2, 0);
+    this.group.add(planetsDoor);
+
+    const pendulumMaterial = new THREE.MeshPhongMaterial({
+      color: '#402f00',
+    });
+    const pendulumDoor = new THREE.Mesh(geometry, pendulumMaterial);
+    pendulumDoor.rotateY(Math.PI / 2);
+    pendulumDoor.name = 'pendulumDoor';
+    pendulumDoor.position.set(0, -2, -11.5);
+    this.group.add(pendulumDoor);
+
+    const mirrorMaterial = new THREE.MeshPhongMaterial({
+      color: '#402f00',
+    });
+    const mirrorDoor = new THREE.Mesh(geometry, mirrorMaterial);
+    mirrorDoor.rotateY(Math.PI / 2);
+    mirrorDoor.name = 'mirrorDoor';
+    mirrorDoor.position.set(0, -2, 11.5);
+    this.group.add(mirrorDoor);
   }
 
   _boxTest() {
