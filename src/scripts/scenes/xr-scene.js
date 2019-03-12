@@ -72,6 +72,7 @@ export default class XrScene {
 
   _restartAnimation = () => {
     if (this.frame) window.cancelAnimationFrame(this.frame);
+    this.controllers.removeAllControllers();
     this._animationCallback();
   };
 

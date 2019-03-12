@@ -1,6 +1,5 @@
 import THREE from '../../three';
-
-const DAYDREAM = 'https://cdn.aframe.io/controllers/google/';
+import controllerGLB from '../../../assets/controller/controller.glb';
 
 export default class Controllers {
     controllers = [];
@@ -13,24 +12,18 @@ export default class Controllers {
      */
     constructor(scene) {
       this.scene = scene;
-      this.meshes = [];
-
-      const mtlLoader = new THREE.MTLLoader();
-      const objLoader = new THREE.OBJLoader();
-
-      mtlLoader.setPath(DAYDREAM);
-      mtlLoader.load('vr_controller_daydream.mtl', (materials) => {
-        materials.preload();
-        objLoader.setMaterials(materials);
-        objLoader.setPath(DAYDREAM);
-        objLoader.load('vr_controller_daydream.obj', (object) => {
-          this.meshes.daydream = object;
-        });
-      });
+      this.loadControllerModel();
     }
 
     get length() {
       return this.controllers.length;
+    }
+
+    loadControllerModel() {
+      const gltfLoader = new THREE.GLTFLoader();
+      gltfLoader.load(controllerGLB, (object) => {
+        this.controllerMesh = object.scene;
+      });
     }
 
     /**
@@ -38,30 +31,8 @@ export default class Controllers {
      * Adds mesh to scene and controllers array.
      * @param {THREE.Scene} scene
      */
-    addController(type) {
-      let controller;
-
-      // Get the correct controller mesh
-      switch (type) {
-        case 'vive': {
-          // TODO: Load vive mesh
-          break;
-        }
-        case 'occulus': {
-          // TODO: Load occulus mesh
-          break;
-        }
-        case 'daydream': {
-          controller = this.meshes.daydream;
-          break;
-        }
-        default: {
-          const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.1);
-          const material = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-          controller = new THREE.Mesh(geometry, material);
-        }
-      }
-      console.log(controller);
+    addController() {
+      const controller = this.controllerMesh.clone();
       this.controllers.push(controller);
       this.scene.add(controller);
     }
@@ -75,13 +46,19 @@ export default class Controllers {
       this.scene.remove(controller);
 
       // Clean up
-      controller.geometry.dispose();
-      controller.material.dispose();
+      if(controller.geometry) controller.geometry.dispose();
+      if(controller.material) controller.material.dispose();
 
       // Remove controller from array
       this.controllers.splice(index, 1);
 
       controller = undefined;
+    }
+
+    removeAllControllers() {
+      for(let i = 0; i < this.controllers.length; i++) {
+        this.removeController(i);
+      }
     }
 
     /**
