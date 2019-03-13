@@ -4,7 +4,7 @@
   "description": "Senior Capstone project for 2019 Academic year group 47.",
   "main": "index.js",
   "scripts": {
-    "dev": "parcel --hmr-port 64320 src/index.html",
+    "dev": "parcel --hmr-port 64320 --no-hmr src/index.html",
     "build": "parcel build src/index.html",
     "now-build": "parcel build src/index.html --no-minify",
     "lint-nofix": "eslint src/scripts/**",
