@@ -1,8 +1,6 @@
 import {
   Vector3,
-  Matrix4,
-  Quaternion,
-  Vector4
+  Quaternion
 } from 'three';
 import { Direction, createFullScreenButton } from './control-utils';
 import { XR } from '../xrController';
@@ -214,19 +212,13 @@ export function updateTouchPosition(viewMatrix) {
 
   deltaPosition.applyQuaternion(invYawRotation);
 
-  const refSpace = (XR.session.mode === 'immersive-vr')
-    ? XR.immersiveRefSpace
-    : XR.nonImmersiveRefSpace;
-  const offsetMat = new Matrix4();
-  offsetMat.elements = refSpace.originOffset.matrix;
+  const { offsetMat } = XR;
   const userPosition = new Vector3();
   userPosition.setFromMatrixPosition(offsetMat);
-
   userPosition.add(deltaPosition);
-
-  const position = new Vector4(userPosition.x, userPosition.y, userPosition.z, 1);
-  refSpace.originOffset = new XRRigidTransform(position);
-  //  console.log(refSpace.originOffset.position);
+  offsetMat.setPosition(userPosition);
+  // Apply the new origin offset (Maybe switch to something like applyOffsetMat?)
+  XR.offsetMat = offsetMat;
 
   touchscreen.prevTime = time;
 }

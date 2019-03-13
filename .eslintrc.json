@@ -12,7 +12,8 @@
     "class-methods-use-this": "warn",
     "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 2 }],
     "no-use-before-define": ["warn", { "functions": true, "classes": true }],
-    "no-restricted-syntax": "warn"
+    "no-restricted-syntax": "warn",
+    "no-param-reassign": "warn"
   },
   "env": {
     "browser": true

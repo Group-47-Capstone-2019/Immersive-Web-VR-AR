@@ -136,9 +136,7 @@ export default class XrScene {
       const immersive = (XR.session.mode === 'immersive-vr');
 
       // Get the correct reference space for the session.
-      const xrRefSpace = immersive
-        ? XR.immersiveRefSpace
-        : XR.nonImmersiveRefSpace;
+      const xrRefSpace = XR.refSpace;
 
       const pose = xrFrame.getViewerPose(xrRefSpace);
 

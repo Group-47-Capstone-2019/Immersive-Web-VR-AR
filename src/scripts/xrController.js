@@ -1,6 +1,7 @@
 import {
   Matrix4,
   Vector3,
+  Vector4,
   Quaternion
 } from 'three';
 import { canvas } from './renderer/canvas';
@@ -18,19 +19,36 @@ import { getCurrentScene } from './currentScene';
 
 export const XR = {
   session: null,
-  immersiveRefSpace: null,
-  nonImmersiveRefSpace: null,
+  get refSpace() {
+    return this._refSpace;
+  },
+  set refSpace(newRefSpace) {
+    if (newRefSpace && this._refSpace) {
+      newRefSpace.originOffset = this._refSpace.originOffset;
+    }
+    this._refSpace = newRefSpace;
+  },
+  get offsetMat() {
+    const originOffset = new Matrix4();
+    if (this.refSpace) {
+      originOffset.fromArray(this.refSpace.originOffset.matrix, 0);
+    }
+    return originOffset;
+  },
+  set offsetMat(matrix4) {
+    const userPosition = new Vector3();
+    const userRotation = new Quaternion();
+    const userScale = new Vector3();
+    matrix4.decompose(userPosition, userRotation, userScale);
+    const position = new Vector4(userPosition.x, userPosition.y, userPosition.z, 1);
+    this.refSpace.originOffset = new XRRigidTransform(position, userRotation);
+  },
   magicWindowCanvas: null,
   mirrorCanvas: null
 };
 
 export function applyOriginOffset(matrix) {
-  const refSpace = (XR.session.mode === 'immersive-vr')
-    ? XR.immersiveRefSpace
-    : XR.nonImmersiveRefSpace;
-
-  const originOffset = new Matrix4();
-  originOffset.fromArray(refSpace.originOffset.matrix, 0);
+  const originOffset = XR.offsetMat;
   const currentPosition = new Vector3();
   const currentRotation = new Quaternion();
   originOffset.decompose(currentPosition, currentRotation, new Vector3());
@@ -114,29 +132,16 @@ async function xrOnSessionStarted(context) {
   // With immersive and non immersive sessions we will be keeping track of
   // two reference spaces so we will hold two.
   try {
-    const xrRefSpace = await XR.session.requestReferenceSpace({
+    XR.refSpace = await XR.session.requestReferenceSpace({
       type: 'stationary',
       subtype: 'eye-level'
     });
-    // Check if the session is immersive or non immersive and set the
-    // respective refSpace.
-    if (XR.session.mode === 'immersive-vr') {
-      XR.immersiveRefSpace = xrRefSpace;
-      if (XR.nonImmersiveRefSpace) {
-        XR.immersiveRefSpace.originOffset = XR.nonImmersiveRefSpace.originOffset;
-      }
-      XR.nonImmersiveRefSpace = null;
-    } else {
-      XR.nonImmersiveRefSpace = xrRefSpace;
-      if (XR.immersiveRefSpace) {
-        XR.nonImmersiveRefSpace.originOffset = XR.immersiveRefSpace.originOffset;
-      }
-      XR.immersiveRefSpace = null;
-    }
 
     // Fire a restart xr animation event
     const experiment = getCurrentScene();
-    XR.session.requestAnimationFrame(experiment._animationCallback);
+    if (experiment) {
+      XR.session.requestAnimationFrame(experiment._animationCallback);
+    }
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
   }
