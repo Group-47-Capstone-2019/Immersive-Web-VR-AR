@@ -1,3 +1,8 @@
+import {
+  Matrix4,
+  Vector3,
+  Quaternion
+} from 'three';
 import { canvas } from './renderer/canvas';
 import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
@@ -18,6 +23,41 @@ export const XR = {
   magicWindowCanvas: null,
   mirrorCanvas: null
 };
+
+export function applyOriginOffset(matrix) {
+  const refSpace = (XR.session.mode === 'immersive-vr')
+    ? XR.immersiveRefSpace
+    : XR.nonImmersiveRefSpace;
+
+  const originOffset = new Matrix4();
+  originOffset.fromArray(refSpace.originOffset.matrix, 0);
+  const currentPosition = new Vector3();
+  const currentRotation = new Quaternion();
+  originOffset.decompose(currentPosition, currentRotation, new Vector3());
+
+
+  const matrixWithoutTranslation = new Matrix4();
+  matrixWithoutTranslation.copy(matrix);
+  // The reason we do this here is because the view matrix may have
+  // a position set, for example in a 6DoF system or on a 3 DoF
+  // system where the height is emulated. What we want to do here is
+  // to apply the view matrix on our user position.
+  matrixWithoutTranslation.setPosition(new Vector3());
+  // The result below gives us the position after the rotation of the
+  // view has been applied. This will make the direction right.
+  currentPosition.applyMatrix4(matrixWithoutTranslation);
+  const translationInMatrix = new Matrix4();
+  // Let's build a translation matrix out of rotated position. We don't need to
+  // care about the rotation because we're going to apply that translation
+  // on the view matrix (which is rotated and translated).
+  translationInMatrix.makeTranslation(currentPosition.x, currentPosition.y, currentPosition.z);
+  const rotationInMatrix = new Matrix4();
+  rotationInMatrix.makeRotationFromQuaternion(currentRotation);
+  // pre-multiply because we want to translate before rotating. Otherwise we
+  // may end up with a wrong position.
+  matrix.premultiply(translationInMatrix);
+  matrix.premultiply(rotationInMatrix);
+}
 
 /*
 * Creates a button that renders each eye for VR
@@ -82,8 +122,16 @@ async function xrOnSessionStarted(context) {
     // respective refSpace.
     if (XR.session.mode === 'immersive-vr') {
       XR.immersiveRefSpace = xrRefSpace;
+      if (XR.nonImmersiveRefSpace) {
+        XR.immersiveRefSpace.originOffset = XR.nonImmersiveRefSpace.originOffset;
+      }
+      XR.nonImmersiveRefSpace = null;
     } else {
       XR.nonImmersiveRefSpace = xrRefSpace;
+      if (XR.immersiveRefSpace) {
+        XR.nonImmersiveRefSpace.originOffset = XR.immersiveRefSpace.originOffset;
+      }
+      XR.immersiveRefSpace = null;
     }
 
     // Fire a restart xr animation event

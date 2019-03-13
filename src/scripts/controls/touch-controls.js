@@ -1,5 +1,11 @@
-import * as THREE from 'three';
+import {
+  Vector3,
+  Matrix4,
+  Quaternion,
+  Vector4
+} from 'three';
 import { Direction, createFullScreenButton } from './control-utils';
+import { XR } from '../xrController';
 
 /* eslint-disable prefer-const */
 
@@ -15,8 +21,7 @@ let touchscreen = {
 const joystick = document.querySelector('#joystick');
 const touchControls = document.querySelector('#joystick-controls');
 
-let velocity = new THREE.Vector3();
-export let userPosition = new THREE.Vector3();
+let velocity = new Vector3();
 
 /* eslint-enable prefer-const */
 
@@ -186,14 +191,14 @@ export function hideTouchControls() {
  * @param {*} viewMatrix
  */
 export function updateTouchPosition(viewMatrix) {
-  const rotation = new THREE.Quaternion();
-  viewMatrix.decompose(new THREE.Vector3(), rotation, new THREE.Vector3());
+  const rotation = new Quaternion();
+  viewMatrix.decompose(new Vector3(), rotation, new Vector3());
   const time = performance.now();
   const delta = (time - touchscreen.prevTime) / 1000;
 
   const invRotation = rotation.inverse();
   const norm = Math.sqrt(invRotation.w * invRotation.w + invRotation.y * invRotation.y);
-  const invYawRotation = new THREE.Quaternion(0, invRotation.y / norm, 0, invRotation.w / norm);
+  const invYawRotation = new Quaternion(0, invRotation.y / norm, 0, invRotation.w / norm);
 
   velocity.x -= velocity.x * 10.0 * delta;
   velocity.z -= velocity.z * 10.0 * delta;
@@ -203,28 +208,25 @@ export function updateTouchPosition(viewMatrix) {
 
   /* eslint-disable prefer-const */
 
-  let deltaPosition = new THREE.Vector3(deltaX, 0, deltaZ);
+  let deltaPosition = new Vector3(deltaX, 0, deltaZ);
 
   /* eslint-enable prefer-const */
 
   deltaPosition.applyQuaternion(invYawRotation);
 
-  userPosition.sub(deltaPosition);
+  const refSpace = (XR.session.mode === 'immersive-vr')
+    ? XR.immersiveRefSpace
+    : XR.nonImmersiveRefSpace;
+  const offsetMat = new Matrix4();
+  offsetMat.elements = refSpace.originOffset.matrix;
+  const userPosition = new Vector3();
+  userPosition.setFromMatrixPosition(offsetMat);
 
-  // Temporary boundaries
+  userPosition.add(deltaPosition);
 
-  if (userPosition.z > 11) {
-    userPosition.z = 11;
-  }
-  if (userPosition.z < -11) {
-    userPosition.z = -11;
-  }
-  if (userPosition.x > 11) {
-    userPosition.x = 11;
-  }
-  if (userPosition.x < -11) {
-    userPosition.x = -11;
-  }
+  const position = new Vector4(userPosition.x, userPosition.y, userPosition.z, 1);
+  refSpace.originOffset = new XRRigidTransform(position);
+  //  console.log(refSpace.originOffset.position);
 
   touchscreen.prevTime = time;
 }

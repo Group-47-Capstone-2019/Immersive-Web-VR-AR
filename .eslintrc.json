@@ -16,5 +16,8 @@
   },
   "env": {
     "browser": true
+  },
+  "globals": {
+    "XRRigidTransform": "readonly"
   }
 }
