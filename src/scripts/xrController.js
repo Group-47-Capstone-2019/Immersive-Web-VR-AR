@@ -3,6 +3,7 @@ import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
 import { addMouseKeyboardEventListeners } from './controls/keyboard-controls';
 import { showTouchControls } from './controls/touch-controls';
+import { getCurrentScene } from './currentScene';
 
 /**
  * XR fields we are using
@@ -86,7 +87,8 @@ async function xrOnSessionStarted(context) {
     }
 
     // Fire a restart xr animation event
-    window.dispatchEvent(new Event('xrAnimate'));
+    const experiment = getCurrentScene();
+    XR.session.requestAnimationFrame(experiment._animationCallback);
   } catch (err) {
     console.error(`Error requesting reference space : ${err}`);
   }

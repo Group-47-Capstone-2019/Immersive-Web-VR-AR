@@ -1,4 +1,5 @@
 import HomeScene from './scenes/home';
+import { getCurrentScene, setCurrentScene } from './currentScene';
 import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
@@ -10,7 +11,6 @@ import {
 /**
  * @type {XrScene}
  */
-let currentScene;
 const SavedStates = {};
 
 const Routes = {
@@ -29,6 +29,8 @@ const Routes = {
  * update currently displayed scene based on the pathname
  * @param {string} pathname
  */
+  console.log('navigating from:', oldPath, 'to:', pathname);
+  let currentScene = getCurrentScene();
 async function navigateToScene(pathname, oldPath) {
   if (currentScene) {
     currentScene.isActive = false;
@@ -41,7 +43,9 @@ async function navigateToScene(pathname, oldPath) {
     showWelcome();
   } else {
     hideWelcome();
-    currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/home'];
+
+    setCurrentScene((pathname in Routes) ? Routes[pathname] : Routes['/home']);
+    currentScene = getCurrentScene();
     if (pathname in SavedStates) {
       // Reapply any state that was saved previously.
       currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);

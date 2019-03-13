@@ -47,9 +47,6 @@ export default class XrScene {
 
     this.loader.addGltfToQueue(controllerGlb, 'controller');
 
-    // Make sure that animation callback is called on an xrAnimate event.
-    this._addEventListener(window, 'xrAnimate', this._restartAnimation);
-
     this._checkForKeyboardMouse();
   }
 
@@ -112,28 +109,6 @@ export default class XrScene {
     this._animationCallback();
   }
 
-  /**
-   * Cancels the current animation frame to prevent
-   * artifacts from carrying over to the next render loop
-   * and compounding of render loops
-   */
-  _restartAnimation = () => {
-    if (this.frame) window.cancelAnimationFrame(this.frame);
-
-    // An XR session has ended so all the controllers need to be removed if there are any
-    this._removeAllControllers();
-
-    // Restart the animation callback loop
-    this._animationCallback();
-  };
-
-  /**
-   * Called every frame.
-   * Updates user input affected components such as viewMatrix
-   * user positions and controller positions.
-   * @param {number} timestamp total elapsed time
-   * @param {XRFrame} xrFrame contains all information (poses) about current xr frame
-   */
   _animationCallback = (timestamp, xrFrame) => {
     if (this.isActive) {
       // Update the objects in the scene that we will be rendering
