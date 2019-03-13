@@ -1,5 +1,5 @@
 import {
-  Scene, Quaternion, Matrix4, Vector3, Clock
+  Scene, Quaternion, Matrix4, Vector3, Clock, Geometry, LineBasicMaterial, Line
 } from 'three';
 import { World } from 'cannon';
 
@@ -12,7 +12,7 @@ import {
   updatePosition
 } from '../controls/keyboard-controls';
 
-import Controllers from './controllers';
+import Controller from './controllers';
 
 export default class XrScene {
   scene = new Scene();
@@ -21,7 +21,7 @@ export default class XrScene {
 
   clock = new Clock();
 
-  controllers = new Controllers(this.scene);
+  controllers = [];
 
   isActive = true;
 
@@ -46,6 +46,33 @@ export default class XrScene {
 
     this._checkForKeyboardMouse();
   }
+
+      /**
+     * Removes a controller from the scene and the controllers array
+     * @param {Number} index
+     */
+    _removeController(index) {
+      let controller = this.controllers[index];
+      this.scene.remove(controller.mesh);
+
+      // Clean up
+      if (controller.mesh.geometry) controller.mesh.geometry.dispose();
+      if (controller.mesh.material) controller.mesh.material.dispose();
+
+      // Remove controller from array
+      this.controllers.splice(index, 1);
+
+      controller = undefined;
+    }
+
+    /**
+     * Removes all controllers from the scene and member array
+     */
+    _removeAllControllers() {
+      for (let i = 0; i < this.controllers.length; i++) {
+        this._removeController(i);
+      }
+    }
 
   /**
    * Override this to handle animating objects in your scene.
@@ -72,7 +99,7 @@ export default class XrScene {
 
   _restartAnimation = () => {
     if (this.frame) window.cancelAnimationFrame(this.frame);
-    this.controllers.removeAllControllers();
+    this._removeAllControllers();
     this._animationCallback();
   };
 
@@ -173,22 +200,23 @@ export default class XrScene {
 
         if (isTrackedPointer && inputPose.gripTransform.matrix) {
           if (this.controllers.length < inputSources.length) {
-            const controllerType = 'daydream';
-            // TODO: Check for controller type here
-            this.controllers.addController(controllerType);
+            const controller = new Controller();
+            this.controllers.push(controller);
+            this.scene.add(controller.mesh);
           }
 
           const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
           this._translateObjectMatrix(gripMatrix, userPosition);
           const matrixPosition = new Vector3();
           gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
-          this.controllers.updateControllerPosition(gripMatrix, i);
+          this.controllers[i].updateControllerPosition(gripMatrix);
         }
 
         // Raycasting
         if (inputPose.targetRay) {
           if (isTrackedPointer) {
             // TODO: Render ray from controller here
+
           }
           // TODO: Ray selection here / Cursor here
         }
