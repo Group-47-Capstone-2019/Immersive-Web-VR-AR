@@ -3,6 +3,7 @@ import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
 import { addMouseKeyboardEventListeners } from './controls/keyboard-controls';
 import { showTouchControls } from './controls/touch-controls';
+import { loadController } from '../assets/loader';
 
 /**
  * XR fields we are using
@@ -154,6 +155,7 @@ async function xrValidate() {
     // Check if device is capable of an immersive-vr sessions
     try {
       await navigator.xr.supportsSessionMode('immersive-vr');
+      loadController();
       createVRButton();
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);

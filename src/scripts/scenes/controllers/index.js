@@ -1,21 +1,10 @@
 import THREE from '../../three';
-import controllerGLB from '../../../assets/controller/controller.glb';
-
-let controllerMesh;
-
-function loadControllerModel() {
-  const gltfLoader = new THREE.GLTFLoader();
-  gltfLoader.load(controllerGLB, (object) => {
-    controllerMesh = object.scene;
-  });
-}
-
-loadControllerModel();
+import { loadController } from '../../../assets/loader';
 
 export default class Controller {
 
     constructor() {
-      this.controller = controllerMesh.clone();
+      this.controller = loadController();
     }
 
     get mesh() {
