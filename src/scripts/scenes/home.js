@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import wallTexture from '../../images/wall.png';
 import { touchscreen } from '../controls/touch-controls';
-import { controls } from '../controls/keyboard-controls';
 import XrScene from './xr-scene';
 import { navigate } from '../router';
 
@@ -29,8 +28,6 @@ export default class HomeScene extends XrScene {
    */
   constructor(renderer, camera) {
     super(renderer, camera);
-    this.camera = camera;
-    this.renderer = renderer;
     // Basic lighting
     if (settings.global.lights.ambient) {
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -129,10 +126,10 @@ export default class HomeScene extends XrScene {
     }
 
     // Get ray from keyboard controls
-    if(controls != null) {
+    if(this.controls != null) {
       let direction = new THREE.Vector3();
-      controls.getDirection(direction);
-      this.raycaster.set(controls.getObject().position, direction);
+      this.controls.getDirection(direction);
+      this.raycaster.set(this.controls.getObject().position, direction);
     }
     
     let intersects = this.raycaster.intersectObject(this.group, true);

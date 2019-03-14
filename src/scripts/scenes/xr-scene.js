@@ -37,6 +37,14 @@ export default class XrScene {
   constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
+    this.controls = controls;
+
+    // reset camera
+    if(this.controls != null) {
+      this.controls.getObject().position.set(0, 0, 0);
+      this.controls.getObject().rotation.y = 0; 
+      this.controls.getObject().children[0].rotation.x = 0;
+    }
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
