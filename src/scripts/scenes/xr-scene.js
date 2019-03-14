@@ -11,6 +11,7 @@ import {
   controls,
   updatePosition
 } from '../controls/keyboard-controls';
+import { Loader } from '../loader';
 
 export default class XrScene {
   scene = new Scene();
@@ -19,6 +20,7 @@ export default class XrScene {
 
   clock = new Clock();
 
+  loader = new Loader();
 
   isActive = true;
 
@@ -42,6 +44,14 @@ export default class XrScene {
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
 
     this._checkForKeyboardMouse();
+  }
+
+  /**
+   * override this to handle adding adding assets to the scene
+   * @param {object} assetCache cache with all assets, accessible by their `id`
+   */
+  onAssetsLoaded(assetCache) {
+    return assetCache;
   }
 
   /**
