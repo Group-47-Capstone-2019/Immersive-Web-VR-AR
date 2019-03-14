@@ -12,7 +12,6 @@ import {
   updatePosition
 } from '../controls/keyboard-controls';
 import { Loader } from '../loader';
-import { hideLoading } from '../welcome';
 
 export default class XrScene {
   scene = new Scene();
@@ -52,7 +51,7 @@ export default class XrScene {
    * @param {object} assetCache cache with all assets, accessible by their `id`
    */
   onAssetsLoaded(assetCache) {
-    
+    return assetCache;
   }
 
   /**

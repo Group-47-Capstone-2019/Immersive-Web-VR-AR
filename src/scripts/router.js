@@ -3,7 +3,9 @@ import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import FallingScene from './scenes/falling';
-import { showWelcome, hideWelcome, showLoading, hideLoading } from './welcome';
+import {
+  showWelcome, hideWelcome, showLoading, hideLoading
+} from './welcome';
 
 /**
  * @type {XrScene}
@@ -44,11 +46,11 @@ function navigateToScene(pathname, oldPath) {
       // Reapply any state that was saved previously.
       currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
     }
-    
+
     // only show loading screen if there's things in the queue
     if (currentScene.loader._queue.length) {
       showLoading();
-      currentScene.loader.waitForCache().then(cache => {
+      currentScene.loader.waitForCache().then((cache) => {
         currentScene.onAssetsLoaded(cache);
         hideLoading();
       });

@@ -6,7 +6,9 @@ const textureLoader = new TextureLoader();
 
 export class Loader {
   _queue = [];
+
   cache = {};
+
   /**
    * add gltf to the queue, and return a promise with the gltf
    *
@@ -18,7 +20,7 @@ export class Loader {
     const promise = new Promise((resolve, reject) => {
       gltfLoader.load(
         url,
-        gltf => { // onSuccess
+        (gltf) => { // onSuccess
           this.cache[id] = gltf;
           resolve(gltf);
         },
@@ -30,7 +32,7 @@ export class Loader {
 
     return promise;
   }
-  
+
   /**
    * add texture to the queue, and return a promise with the texture
    *
@@ -42,7 +44,7 @@ export class Loader {
     const promise = new Promise((resolve, reject) => {
       textureLoader.load(
         url,
-        texture => { // onSuccess
+        (texture) => { // onSuccess
           this.cache[id] = texture;
           resolve(texture);
         },
@@ -54,7 +56,7 @@ export class Loader {
 
     return promise;
   }
-  
+
   /**
    * add object to the queue, and return a promise with the object
    *
@@ -66,7 +68,7 @@ export class Loader {
     const promise = new Promise((resolve, reject) => {
       objectLoader.load(
         url,
-        object => { // onSuccess
+        (object) => { // onSuccess
           this.cache[id] = object;
           resolve(object);
         },
@@ -80,10 +82,10 @@ export class Loader {
   }
 
   /**
-   * waits for all assets, returns promise with cache object as value. 
+   * waits for all assets, returns promise with cache object as value.
    */
   async waitForCache() {
     await Promise.all(this._queue);
-    return cache;
+    return this.cache;
   }
 }
