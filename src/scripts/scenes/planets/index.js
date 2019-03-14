@@ -17,7 +17,7 @@ export default class PlanetsScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
 
-    this.loader.addGltfToQueue(controllerGltf, 'controller');
+    this.loader.addGltfToQueue(controllerGltf, 'controller-gltf');
 
     this.scene.background = new Color('black');
     this.planets = createPlanets();
@@ -35,7 +35,7 @@ export default class PlanetsScene extends XrScene {
   }
 
   onAssetsLoaded(cache) {
-    const controller = cache['controller'].scene.children[0];
+    const controller = cache['controller-gltf'].scene.children[0];
     this.scene.add(controller);
   }
 

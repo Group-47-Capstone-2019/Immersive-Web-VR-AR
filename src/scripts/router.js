@@ -29,7 +29,7 @@ const Routes = {
  * update currently displayed scene based on the pathname
  * @param {string} pathname
  */
-function navigateToScene(pathname, oldPath) {
+async function navigateToScene(pathname, oldPath) {
   if (currentScene) {
     currentScene.isActive = false;
     // Save the state from the previous scene
@@ -50,10 +50,9 @@ function navigateToScene(pathname, oldPath) {
     // only show loading screen if there's things in the queue
     if (currentScene.loader._queue.length) {
       showLoading();
-      currentScene.loader.waitForCache().then((cache) => {
-        currentScene.onAssetsLoaded(cache);
-        hideLoading();
-      });
+      const cache = await currentScene.loader.waitForCache();
+      currentScene.onAssetsLoaded(cache);
+      hideLoading();
     }
 
     currentScene.startAnimation();
@@ -67,10 +66,13 @@ function navigateToScene(pathname, oldPath) {
 export function navigate(newPath) {
   const oldPath = window.location.pathname;
   window.history.pushState({}, newPath, window.location.origin + newPath);
+
+  // this is an async function but we don't care when it finishes
   navigateToScene(newPath, oldPath);
 }
 
 window.onpopstate = () => {
+  // this is an async function but we don't care when it finishes
   navigateToScene(window.location.pathname);
 };
 
