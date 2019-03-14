@@ -1,10 +1,9 @@
 import THREE from '../../three';
-import { getController } from '../../../assets/loader';
 
 export default class Controller {
 
-    constructor() {
-      this.controller = getController();
+    constructor(mesh) {
+      this.controller = mesh;
     }
 
     get mesh() {

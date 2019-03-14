@@ -11,7 +11,9 @@ import {
   controls,
   updatePosition
 } from '../controls/keyboard-controls';
+import { Loader } from '../loader';
 
+import controllerGlb from '../../assets/controller/controller.glb';
 import Controller from './controllers';
 
 export default class XrScene {
@@ -20,6 +22,8 @@ export default class XrScene {
   world = new World();
 
   clock = new Clock();
+
+  loader = new Loader();
 
   controllers = [];
 
@@ -40,6 +44,8 @@ export default class XrScene {
   constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
+
+    this.loader.addGltfToQueue(controllerGlb, 'controller');
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
@@ -72,6 +78,15 @@ export default class XrScene {
     for (let i = 0; i < this.controllers.length; i++) {
       this._removeController(i);
     }
+  }
+
+  /**
+   * override this to handle adding adding assets to the scene
+   * @param {object} assetCache cache with all assets, accessible by their `id`
+   */
+  onAssetsLoaded(assetCache) {
+    this.controllerMesh = assetCache['controller'].scene;
+    return assetCache;
   }
 
   /**
@@ -200,7 +215,7 @@ export default class XrScene {
 
         if (isTrackedPointer && inputPose.gripTransform.matrix) {
           if (this.controllers.length < inputSources.length) {
-            const controller = new Controller();
+            const controller = new Controller(this.controllerMesh.clone());
             this.controllers.push(controller);
             this.scene.add(controller.mesh);
           }

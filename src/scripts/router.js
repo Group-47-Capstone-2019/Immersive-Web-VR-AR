@@ -3,7 +3,9 @@ import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import FallingScene from './scenes/falling';
-import { showWelcome, hideWelcome } from './welcome';
+import {
+  showWelcome, hideWelcome, showLoading, hideLoading
+} from './welcome';
 
 /**
  * @type {XrScene}
@@ -27,7 +29,7 @@ const Routes = {
  * update currently displayed scene based on the pathname
  * @param {string} pathname
  */
-function navigateToScene(pathname, oldPath) {
+async function navigateToScene(pathname, oldPath) {
   if (currentScene) {
     currentScene.isActive = false;
     // Save the state from the previous scene
@@ -39,11 +41,18 @@ function navigateToScene(pathname, oldPath) {
     showWelcome();
   } else {
     hideWelcome();
-
     currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/home'];
     if (pathname in SavedStates) {
       // Reapply any state that was saved previously.
       currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
+    }
+
+    // only show loading screen if there's things in the queue
+    if (currentScene.loader._queue.length) {
+      showLoading();
+      const cache = await currentScene.loader.waitForCache();
+      currentScene.onAssetsLoaded(cache);
+      hideLoading();
     }
 
     currentScene.startAnimation();
@@ -57,10 +66,13 @@ function navigateToScene(pathname, oldPath) {
 export function navigate(newPath) {
   const oldPath = window.location.pathname;
   window.history.pushState({}, newPath, window.location.origin + newPath);
+
+  // this is an async function but we don't care when it finishes
   navigateToScene(newPath, oldPath);
 }
 
 window.onpopstate = () => {
+  // this is an async function but we don't care when it finishes
   navigateToScene(window.location.pathname);
 };
 

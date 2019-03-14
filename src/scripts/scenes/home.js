@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import wallTexture from '../../images/wall.png';
+import wallTexture from '../../assets/wall.png';
 import XrScene from './xr-scene';
 
 const settings = {
@@ -98,6 +98,11 @@ export default class HomeScene extends XrScene {
     }
 
     this._boxTest();
+  }
+
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+    return cache;
   }
 
   animate() {
