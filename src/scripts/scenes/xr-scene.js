@@ -48,14 +48,11 @@ export default class XrScene {
   }
 
   /**
-   * loads all assets currenly in `this.loader`'s queue. 
-   * hides the loading screen when done.
-   * @returns {Promise<object>} promise with cache object from loader
+   * override this to handle adding adding assets to the scene
+   * @param {object} assetCache cache with all assets, accessible by their `id`
    */
-  async loadAllAssets() {
-    const cache = await this.loader.waitForCache();
-    hideLoading();
-    return cache;
+  onAssetsLoaded(assetCache) {
+    
   }
 
   /**
