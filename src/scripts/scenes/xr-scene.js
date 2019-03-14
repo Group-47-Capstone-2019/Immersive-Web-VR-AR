@@ -59,7 +59,9 @@ export default class XrScene {
    */
   _removeController(index) {
     let controller = this.controllers[index];
-    this.scene.remove(controller.mesh);
+    if(controller.mesh) this.scene.remove(controller.mesh);
+
+    if(controller.laser) this.scene.remove(controller.laser);
 
     // Clean up
     if (controller.mesh.geometry) controller.mesh.geometry.dispose();
@@ -254,6 +256,7 @@ export default class XrScene {
             // Remove controller from array if number of controllers
             // is less than number of input sources
             this._removeController(i);
+            continue;
           }
 
           // Get the grip transform matrix
@@ -270,11 +273,36 @@ export default class XrScene {
 
         // Raycasting
         if (inputPose.targetRay) {
-          if (isTrackedPointer) {
-            // TODO: Render ray from controller here
+          const targetRay = inputPose.targetRay;
 
-          }
           // TODO: Ray selection here / Cursor here
+
+          //Draw laser if tracked pointer
+          if (isTrackedPointer) {
+            const controller = this.controllers[i];
+            const length = 100;
+
+            //Create laser if it does not exist
+            if(!controller.laser) {
+              controller.createLaser();
+              this.scene.add(controller.laser);
+            }
+
+            //Update laser mesh with current user position and target ray transformations
+            controller.updateLaser(
+              new Vector3(
+                targetRay.origin.x + userPosition.x,
+                targetRay.origin.y + userPosition.y,
+                targetRay.origin.z + userPosition.z
+              ), 
+              new Vector3(
+                targetRay.direction.x,
+                targetRay.direction.y,
+                targetRay.direction.z
+              ), 
+              length
+            );
+          }
         }
       }
     }
