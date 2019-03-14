@@ -3,7 +3,7 @@ import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import FallingScene from './scenes/falling';
-import { showWelcome, hideWelcome } from './welcome';
+import { showWelcome, hideWelcome, showLoading } from './welcome';
 
 /**
  * @type {XrScene}
@@ -39,13 +39,17 @@ function navigateToScene(pathname, oldPath) {
     showWelcome();
   } else {
     hideWelcome();
-
     currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/home'];
     if (pathname in SavedStates) {
       // Reapply any state that was saved previously.
       currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
     }
-
+    
+    // only show loading screen if there's things in the queue
+    if (currentScene.loader._queue.length) {
+      showLoading();
+    }
+    
     currentScene.startAnimation();
   }
 }

@@ -11,6 +11,8 @@ import {
   controls,
   updatePosition
 } from '../controls/keyboard-controls';
+import { Loader } from '../loader';
+import { hideLoading } from '../welcome';
 
 export default class XrScene {
   scene = new Scene();
@@ -19,6 +21,7 @@ export default class XrScene {
 
   clock = new Clock();
 
+  loader = new Loader();
 
   isActive = true;
 
@@ -42,6 +45,17 @@ export default class XrScene {
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
 
     this._checkForKeyboardMouse();
+  }
+
+  /**
+   * loads all assets currenly in `this.loader`'s queue. 
+   * hides the loading screen when done.
+   * @returns {Promise<object>} promise with cache object from loader
+   */
+  async loadAllAssets() {
+    const cache = await this.loader.waitForCache();
+    hideLoading();
+    return cache;
   }
 
   /**
