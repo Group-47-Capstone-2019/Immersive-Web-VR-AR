@@ -48,9 +48,8 @@ export default class FallingScene extends XrScene {
 
     // this.loadTable();
     this.raycaster = new THREE.Raycaster();
-    this.mouseVector = new THREE.Vector3();
-    this.group = new THREE.Group();
-    this.scene.add(this.group);
+    this.interactive = new THREE.Group();
+    this.scene.add(this.interactive);
     this.selectedObj = null;
     this.selectedObjColor;
     this.colorSet = false;
@@ -89,7 +88,7 @@ export default class FallingScene extends XrScene {
     this.ballSpawner.castShadow = true;
     this.ballSpawner.receiveShadow = true;
     this.ballSpawner.position.set(0, -1.6, -13);
-    this.group.add(this.ballSpawner);
+    this.interactive.add(this.ballSpawner);
 
     let ballBody = new CANNON.Body({mass: 0});
     ballBody.addShape(this.ballShape);
@@ -102,7 +101,7 @@ export default class FallingScene extends XrScene {
     this.boxSpawner.castShadow = true;
     this.boxSpawner.receiveShadow = true;
     this.boxSpawner.position.set(-4, -1.6, -13);
-    this.group.add(this.boxSpawner);
+    this.interactive.add(this.boxSpawner);
 
     let boxBody = new CANNON.Body({mass: 0});
     boxBody.addShape(this.boxShape);
@@ -112,38 +111,38 @@ export default class FallingScene extends XrScene {
     // Cylinder
   }
 
-  updateRay() {
-    if (this.selectedObj) {
-      this.selectedObj.material.color.set(this.selectedObjColor);
-      this.colorSet = false;
-      this.selectedObj = null;
-    }
+  // updateRay() {
+  //   if (this.selectedObj) {
+  //     this.selectedObj.material.color.set(this.selectedObjColor);
+  //     this.colorSet = false;
+  //     this.selectedObj = null;
+  //   }
 
-    // Get ray from keyboard controls
-    if(controls != null) {
-      let direction = new THREE.Vector3();
-      controls.getDirection(direction);
-      this.raycaster.set(controls.getObject().position, direction);
-    }
+  //   // Get ray from keyboard controls
+  //   if(controls != null) {
+  //     let direction = new THREE.Vector3();
+  //     controls.getDirection(direction);
+  //     this.raycaster.set(controls.getObject().position, direction);
+  //   }
     
 
-    let intersects = this.raycaster.intersectObject(this.group, true);
-    if (intersects.length > 0) {
-      let res = intersects.filter(function(res) {
-        return res && res.object;
-      })[0];
+  //   let intersects = this.raycaster.intersectObject(this.interactive, true);
+  //   if (intersects.length > 0) {
+  //     let res = intersects.filter(function(res) {
+  //       return res && res.object;
+  //     })[0];
       
-      if(res && res.object) {
-        this.selectedObj = res.object;
-        if(!this.colorSet) {
-          this.selectedObjColor = this.selectedObj.material.color.getHex();
+  //     if(res && res.object) {
+  //       this.selectedObj = res.object;
+  //       if(!this.colorSet) {
+  //         this.selectedObjColor = this.selectedObj.material.color.getHex();
           
-          this.colorSet = true;
-        }
-        this.selectedObj.material.color.set('green');
-      }
-    }
-  }
+  //         this.colorSet = true;
+  //       }
+  //       this.selectedObj.material.color.set('green');
+  //     }
+  //   }
+  // }
 
   loadTable() {
     let object;
@@ -204,37 +203,45 @@ export default class FallingScene extends XrScene {
     }
   }
 
-  onClick = (event) => {
-    if (touchscreen.enabled) {
-      let touch = new THREE.Vector3();
-      touch.x = (event.clientX / window.innerWidth) * 2 - 1;
-      touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-      this.raycaster.setFromCamera(touch, this.camera);
-    }
-
-    this.updateRay();
-
-    let intersects = this.raycaster.intersectObject(this.group, true);
-    if (intersects.length > 0) {
-      let res = intersects.filter(function(res) {
-        return res && res.object;
-      })[0];
-
-      if (res && res.object) {
-        if (res.object === this.ballSpawner) {
-          this.spawnBall();
-        } else if (res.object === this.boxSpawner) {
-          this.spawnBox();
-        }
-      }
+  objectInteraction(object) {
+    if (object === this.ballSpawner) {
+      this.spawnBall();
+    } else if (object === this.boxSpawner) {
+      this.spawnBox();
     }
   }
+
+  // onClick = (event) => {
+  //   if (touchscreen.enabled) {
+  //     let touch = new THREE.Vector3();
+  //     touch.x = (event.clientX / window.innerWidth) * 2 - 1;
+  //     touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+  //     this.raycaster.setFromCamera(touch, this.camera);
+  //   }
+
+  //   this.updateRay();
+
+  //   let intersects = this.raycaster.intersectObject(this.interactive, true);
+  //   if (intersects.length > 0) {
+  //     let res = intersects.filter(function(res) {
+  //       return res && res.object;
+  //     })[0];
+
+  //     if (res && res.object) {
+  //       if (res.object === this.ballSpawner) {
+  //         this.spawnBall();
+  //       } else if (res.object === this.boxSpawner) {
+  //         this.spawnBox();
+  //       }
+  //     }
+  //   }
+  // }
 
   checkObjectLimit() {
     if (this.meshes.length > 100) {
       this.world.remove(this.bodies[0]);
-      this.group.remove(this.meshes[0]);
+      this.interactive.remove(this.meshes[0]);
       this.scene.remove(this.meshes[0]);
       this.bodies.shift();
       this.meshes.shift();
@@ -251,7 +258,7 @@ export default class FallingScene extends XrScene {
     ballMesh.castShadow = true;
     ballMesh.receiveShadow = true;
     this.world.addBody(ballBody);
-    this.group.add(ballMesh);
+    this.interactive.add(ballMesh);
     
     this.bodies.push(ballBody);
     this.meshes.push(ballMesh);
@@ -272,7 +279,7 @@ export default class FallingScene extends XrScene {
     boxMesh.castShadow = true;
     boxMesh.receiveShadow = true;
     this.world.addBody(boxBody);
-    this.group.add(boxMesh);
+    this.interactive.add(boxMesh);
 
     this.bodies.push(boxBody);
     this.meshes.push(boxMesh);

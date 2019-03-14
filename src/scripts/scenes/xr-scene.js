@@ -5,7 +5,7 @@ import { World } from 'cannon';
 
 import { XR } from '../xrController';
 import { canvas } from '../renderer/canvas';
-import { userPosition, updateTouchPosition } from '../controls/touch-controls';
+import { userPosition, updateTouchPosition, touchscreen } from '../controls/touch-controls';
 import {
   keyboard,
   controls,
@@ -38,10 +38,61 @@ export default class XrScene {
     this.renderer = renderer;
     this.camera = camera;
 
+    // Ray variables
+    this.raycaster = new THREE.Raycaster();
+    this.interactive = new THREE.Group();
+    this.scene.add(this.interactive);
+
+    // For highlighting objects
+    this.selectedObj = null;
+    this.selectedObjColor;
+    this.colorSet = false;
+
+    
+
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
+    this._addEventListener(window, 'mousedown', this.onClick);
 
     this._checkForKeyboardMouse();
+  }
+
+  /**
+   * Basic ray functionality interacting with objects in the interactive group. 
+   * Add objects that you want to be able to interact with into this.interactive and then they will be
+   * highlighted when you look at them.
+   */
+  updateRay() {
+    if (this.selectedObj) {
+      this.selectedObj.material.color.set(this.selectedObjColor);
+      this.colorSet = false;
+      this.selectedObj = null;
+    }
+
+    // Get ray from keyboard controls
+    if(controls != null) {
+      let direction = new THREE.Vector3();
+      controls.getDirection(direction);
+      this.raycaster.set(controls.getObject().position, direction);
+    }
+    
+
+    let intersects = this.raycaster.intersectObject(this.interactive, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
+      
+      if(res && res.object) {
+        this.selectedObj = res.object;
+        if(!this.colorSet) {
+          this.selectedObjColor = this.selectedObj.material.color.getHex();
+          
+          this.colorSet = true;
+        }
+        this.selectedObj.material.color.set('green');
+      }
+    }
   }
 
   /**
@@ -49,6 +100,7 @@ export default class XrScene {
    * @param {number} delta time since last scene update
    */
   animate(delta) {
+    this.updateRay();
     return delta;
   }
 
@@ -175,6 +227,40 @@ export default class XrScene {
     );
 
     viewMatrix.premultiply(translationInView);
+  }
+
+  /**
+   * Override this function with the interaction you want for the objects in your scene.
+   */
+  objectInteraction(object) {
+    return object
+  }
+
+  /**
+   * The funcion that gets called when the mousedown event is fired. This is where the interaction
+   * for objects will be called if the object is in the interactive group.
+   */
+  onClick = (event) => {
+    if (touchscreen.enabled) {
+      let touch = new THREE.Vector3();
+      touch.x = (event.clientX / window.innerWidth) * 2 - 1;
+      touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+      this.raycaster.setFromCamera(touch, this.camera);
+    }
+
+    this.updateRay();
+
+    let intersects = this.raycaster.intersectObject(this.interactive, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
+
+      if (res && res.object) {
+        this.objectInteraction(res.object);
+      }
+    }
   }
 
   /**
