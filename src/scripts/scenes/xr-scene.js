@@ -47,32 +47,32 @@ export default class XrScene {
     this._checkForKeyboardMouse();
   }
 
-      /**
-     * Removes a controller from the scene and the controllers array
-     * @param {Number} index
-     */
-    _removeController(index) {
-      let controller = this.controllers[index];
-      this.scene.remove(controller.mesh);
+  /**
+   * Removes a controller from the scene and the controllers array
+   * @param {Number} index
+   */
+  _removeController(index) {
+    let controller = this.controllers[index];
+    this.scene.remove(controller.mesh);
 
-      // Clean up
-      if (controller.mesh.geometry) controller.mesh.geometry.dispose();
-      if (controller.mesh.material) controller.mesh.material.dispose();
+    // Clean up
+    if (controller.mesh.geometry) controller.mesh.geometry.dispose();
+    if (controller.mesh.material) controller.mesh.material.dispose();
 
-      // Remove controller from array
-      this.controllers.splice(index, 1);
+    // Remove controller from array
+    this.controllers.splice(index, 1);
 
-      controller = undefined;
+    controller = undefined;
+  }
+
+  /**
+   * Removes all controllers from the scene and member array
+   */
+  _removeAllControllers() {
+    for (let i = 0; i < this.controllers.length; i++) {
+      this._removeController(i);
     }
-
-    /**
-     * Removes all controllers from the scene and member array
-     */
-    _removeAllControllers() {
-      for (let i = 0; i < this.controllers.length; i++) {
-        this._removeController(i);
-      }
-    }
+  }
 
   /**
    * Override this to handle animating objects in your scene.

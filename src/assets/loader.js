@@ -8,9 +8,10 @@ export async function loadController() {
   if(!controllerMesh) {
     await gltfLoader.load(controller, (object) => {
       controllerMesh = object.scene;
-      console.log(controllerMesh);
     });
-  } 
-  console.log(controllerMesh);
+  }
+}
+
+export function getController() {
   return controllerMesh;
 }
