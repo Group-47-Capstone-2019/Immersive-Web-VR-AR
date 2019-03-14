@@ -1,7 +1,8 @@
-import { ObjectLoader, GLTFLoader, TextureLoader } from 'three';
+import { ObjectLoader, TextureLoader } from 'three';
+import THREE from './three';
 
 const objectLoader = new ObjectLoader();
-const gltfLoader = new GLTFLoader();
+const gltfLoader = new THREE.GLTFLoader();
 const textureLoader = new TextureLoader();
 
 export class Loader {
