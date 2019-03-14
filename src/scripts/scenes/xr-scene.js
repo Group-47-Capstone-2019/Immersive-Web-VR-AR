@@ -1,5 +1,5 @@
 import {
-  Scene, Quaternion, Matrix4, Vector3, Clock, Geometry, LineBasicMaterial, Line
+  Scene, Quaternion, Matrix4, Vector3, Clock
 } from 'three';
 import { World } from 'cannon';
 
@@ -85,7 +85,7 @@ export default class XrScene {
    * @param {object} assetCache cache with all assets, accessible by their `id`
    */
   onAssetsLoaded(assetCache) {
-    this.controllerMesh = assetCache['controller'].scene;
+    this.controllerMesh = assetCache.controller.scene;
     return assetCache;
   }
 
@@ -112,12 +112,28 @@ export default class XrScene {
     this._animationCallback();
   }
 
+  /**
+   * Cancels the current animation frame to prevent
+   * artifacts from carrying over to the next render loop
+   * and compounding of render loops
+   */
   _restartAnimation = () => {
     if (this.frame) window.cancelAnimationFrame(this.frame);
+
+    // An XR session has ended so all the controllers need to be removed if there are any
     this._removeAllControllers();
+
+    // Restart the animation callback loop
     this._animationCallback();
   };
 
+  /**
+   * Called every frame.
+   * Updates user input affected components such as viewMatrix
+   * user positions and controller positions.
+   * @param {number} timestamp total elapsed time
+   * @param {XRFrame} xrFrame contains all information (poses) about current xr frame
+   */
   _animationCallback = (timestamp, xrFrame) => {
     if (this.isActive) {
       // Update the objects in the scene that we will be rendering
@@ -203,25 +219,50 @@ export default class XrScene {
     return this.frame;
   };
 
+  /**
+   * For every frame this function updates the controller/laser transforms
+   * and raycast intersections from the controller laser.
+   * Keeps track of what input sources are currently in the scene and
+   * handles meshes accordingly when sources are added and removed
+   * @param {XRFrame} xrFrame
+   * @param {XRReferenceSpace} xrRefSpace
+   */
   _updateInputSources(xrFrame, xrRefSpace) {
     const inputSources = XR.session.getInputSources();
 
+    // For the number of input sources in the current session
     for (let i = 0; i < inputSources.length; i++) {
       const inputSource = inputSources[i];
+
+      // Get the XRPose for that input source in the current reference space
       const inputPose = xrFrame.getInputPose(inputSource, xrRefSpace);
 
       if (inputPose) {
+        // Should the input source support visual laser raycasting?
         const isTrackedPointer = inputSource.targetRayMode === 'tracked-pointer';
 
+        // If can handle visual lasers and has a grip matrix indicating that
+        // the controller is a visual element in the immersive scene
         if (isTrackedPointer && inputPose.gripTransform.matrix) {
+          // Is the number of controllers we know of less than the number of input sources?
           if (this.controllers.length < inputSources.length) {
+            // Create a new controller and add to the scene
             const controller = new Controller(this.controllerMesh.clone());
             this.controllers.push(controller);
             this.scene.add(controller.mesh);
+          } else if (this.controllers.length > inputSources.length) {
+            // Remove controller from array if number of controllers
+            // is less than number of input sources
+            this._removeController(i);
           }
 
+          // Get the grip transform matrix
           const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
+
+          // Make sure to translate the controller matrix to the user position
           this._translateObjectMatrix(gripMatrix, userPosition);
+
+          // Apply grip transform matrix to the current controller mesh
           const matrixPosition = new Vector3();
           gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
           this.controllers[i].updateControllerPosition(gripMatrix);
@@ -276,6 +317,8 @@ export default class XrScene {
       position.y,
       position.z
     );
+
+    // Get matrix components and set position
     const matrixPosition = new Vector3();
     matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
     currentPosition.add(matrixPosition);
@@ -289,16 +332,19 @@ export default class XrScene {
   }
 
   /**
-     * Initializes all event listeners associated with this room
-     */
-  _initEventListeners() {}
+   * Override this in child scene class
+   * Initializes all event listeners associated with this room
+   */
+  _initEventListeners() {
+
+  }
 
   /**
-     *
-     * @param {HTMLElement} target
-     * @param {String} type
-     * @param {Function} listener
-     */
+   *
+   * @param {HTMLElement} target
+   * @param {String} type
+   * @param {Function} listener
+   */
   _addEventListener(target, type, listener) {
     target.addEventListener(type, listener);
     this.eventListeners.push({
@@ -309,8 +355,8 @@ export default class XrScene {
   }
 
   /**
-     * Removes all event listeners associated with this room
-     */
+   * Removes all event listeners associated with this room
+   */
   removeEventListeners() {
     for (let i = 0; i < this.eventListeners.length; i++) {
       const eventListener = this.eventListeners[i];
