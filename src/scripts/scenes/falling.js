@@ -183,16 +183,6 @@ export default class FallingScene extends XrScene {
     }, onProgress, onError);
   }
 
-  onKeyUp = () => {
-    switch (event.keyCode) {
-      case 71:
-        this.toggleGravity();
-        break;
-      default:
-        break;
-    }
-  }
-
   toggleGravity = () => {
     console.log("Toggling gravity.");
     if (this.world.gravity.y === -9.8) {
@@ -201,6 +191,26 @@ export default class FallingScene extends XrScene {
     } else {
       console.log("Gravity on");
       this.world.gravity.y = -9.8;
+    }
+  }
+
+  reverseGravity() {
+    console.log("Reverse gravity.");
+    this.world.gravity.y *= -1;
+  }
+
+  onKeyUp = () => {
+    switch (event.keyCode) {
+      // G
+      case 71:
+        this.toggleGravity();
+        break;
+      // R
+      case 82:
+        this.reverseGravity();
+        break;
+      default:
+        break;
     }
   }
 
