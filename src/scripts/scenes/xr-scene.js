@@ -37,7 +37,17 @@ export default class XrScene {
   constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
+    this.controls = controls;
 
+    // reset camera
+    if(this.controls != null) {
+      this.controls.getObject().position.set(0, 0, 0);
+      this.controls.getObject().rotation.y = 0; 
+      this.controls.getObject().children[0].rotation.x = 0;
+    }
+
+    this.pause = false;
+    this._addEventListener(window, 'keyup', this.pauseAnimation);
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
 
@@ -55,8 +65,29 @@ export default class XrScene {
   /**
    * Step the physics world.
    */
-  updatePhysics(delta) {
-    this.world.step(delta);
+  updatePhysics() {
+    const timeStep = 1 / 60;
+    this.world.step(timeStep);
+  }
+
+  /**
+   * Pauses and unpauses the animation of objects in the scene when the 'P' key is pressed/released.
+   * @param {} event 
+   */
+  pauseAnimation = () => {
+    switch (event.keyCode) {
+      case 80:
+        if (this.pause) {
+          this.pause = false;
+          console.log("Unpause");
+        } else {
+          this.pause = true;
+          console.log("Pause");
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   /**
@@ -75,7 +106,9 @@ export default class XrScene {
     if (this.isActive) {
       // Update the objects in the scene that we will be rendering
       const delta = this.clock.getDelta();
-      this.animate(delta);
+      if (!this.pause) {
+        this.animate(delta);
+      }
       // Update the user position if keyboard and mouse controls are enabled.
       if (controls && controls.enabled) {
         updatePosition();
