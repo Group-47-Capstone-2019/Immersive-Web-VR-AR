@@ -1,5 +1,5 @@
 import {
-  Scene, Quaternion, Matrix4, Vector3, Clock
+  Scene, Quaternion, Matrix4, Vector3, Clock, Group
 } from 'three';
 import { World } from 'cannon';
 
@@ -16,6 +16,8 @@ import { Loader } from '../loader';
 import controllerGlb from '../../assets/controller/controller.glb';
 import Controller from './controllers';
 
+// import { TriggerMesh } from '../trigger';
+
 export default class XrScene {
   scene = new Scene();
 
@@ -24,6 +26,8 @@ export default class XrScene {
   clock = new Clock();
 
   loader = new Loader();
+
+  triggers = new Group();
 
   controllers = [];
 
@@ -59,9 +63,9 @@ export default class XrScene {
    */
   _removeController(index) {
     let controller = this.controllers[index];
-    if(controller.mesh) this.scene.remove(controller.mesh);
+    if (controller.mesh) this.scene.remove(controller.mesh);
 
-    if(controller.laser) this.scene.remove(controller.laser);
+    if (controller.laser) this.scene.remove(controller.laser);
 
     // Clean up
     if (controller.mesh.geometry) controller.mesh.geometry.dispose();
@@ -247,59 +251,80 @@ export default class XrScene {
         // the controller is a visual element in the immersive scene
         if (isTrackedPointer && inputPose.gripTransform.matrix) {
           // Is the number of controllers we know of less than the number of input sources?
-          if (this.controllers.length < inputSources.length) {
-            // Create a new controller and add to the scene
-            const controller = new Controller(this.controllerMesh.clone());
-            this.controllers.push(controller);
-            this.scene.add(controller.mesh);
-          } else if (this.controllers.length > inputSources.length) {
+          if (this.controllers.length > inputSources.length) {
             // Remove controller from array if number of controllers
             // is less than number of input sources
             this._removeController(i);
-            continue;
+          } else {
+            if (this.controllers.length < inputSources.length) {
+              // Create a new controller and add to the scene
+              const controller = new Controller(this.controllerMesh.clone());
+              this.controllers.push(controller);
+              this.scene.add(controller.mesh);
+            }
+
+            // Get the grip transform matrix
+            const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
+
+            // Make sure to translate the controller matrix to the user position
+            this._translateObjectMatrix(gripMatrix, userPosition);
+
+            // Apply grip transform matrix to the current controller mesh
+            const matrixPosition = new Vector3();
+            gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
+            this.controllers[i].updateControllerPosition(gripMatrix);
           }
-
-          // Get the grip transform matrix
-          const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
-
-          // Make sure to translate the controller matrix to the user position
-          this._translateObjectMatrix(gripMatrix, userPosition);
-
-          // Apply grip transform matrix to the current controller mesh
-          const matrixPosition = new Vector3();
-          gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
-          this.controllers[i].updateControllerPosition(gripMatrix);
         }
 
         // Raycasting
         if (inputPose.targetRay) {
           const targetRay = inputPose.targetRay;
+          console.log(targetRay);
 
           // TODO: Ray selection here / Cursor here
+          // Raycaster should ignore other objects when currently selecting an object
+          // If new intersection, call onTriggerExit on last intersection from raycaster file
 
-          //Draw laser if tracked pointer
+          /**
+          let buttonPressed; // Is there currently a select event?
+          let intersection; // Is a trigger object
+
+          if (!intersection.object.isSelected) {
+            if (buttonPressed) {
+              // Previous frame was not selected but user is pressing button
+              intersection.object.onTriggerHold();
+            } else {
+              // Button not pressed but object is selected by raycaster
+              intersection.object.onTriggerHover();
+            }
+          } else if (!buttonPressed) {
+            intersection.object.onTriggerRelease();
+          }
+          * */
+
+          // Draw laser if tracked pointer
           if (isTrackedPointer) {
             const controller = this.controllers[i];
             const length = 100;
 
-            //Create laser if it does not exist
-            if(!controller.laser) {
+            // Create laser if it does not exist
+            if (!controller.laser) {
               controller.createLaser();
               this.scene.add(controller.laser);
             }
 
-            //Update laser mesh with current user position and target ray transformations
+            // Update laser mesh with current user position and target ray transformations
             controller.updateLaser(
               new Vector3(
                 targetRay.origin.x + userPosition.x,
                 targetRay.origin.y + userPosition.y,
                 targetRay.origin.z + userPosition.z
-              ), 
+              ),
               new Vector3(
                 targetRay.direction.x,
                 targetRay.direction.y,
                 targetRay.direction.z
-              ), 
+              ),
               length
             );
           }

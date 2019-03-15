@@ -12,6 +12,7 @@ import {
  */
 export default class Controller {
   controller;
+
   laser;
 
   constructor(mesh) {
@@ -35,7 +36,7 @@ export default class Controller {
       new Vector3(0, 0, 0)
     );
 
-    const material = new LineBasicMaterial({color : 0xffffff});
+    const material = new LineBasicMaterial({ color: 0xffffff });
 
     this.laser = new Line(geometry, material);
   }
@@ -57,12 +58,12 @@ export default class Controller {
 
   /**
    * Updates the laser mesh vertices
-   * @param {Vector3} origin 
-   * @param {Vector3} direction 
-   * @param {Number} length 
+   * @param {Vector3} origin
+   * @param {Vector3} direction
+   * @param {Number} length
    */
   updateLaser(origin, direction, length) {
-    //Set origin vertex
+    // Set origin vertex
     this.laser.geometry.vertices[0] = origin;
 
     // Set end vertex by multiplying the direciton vector by the length
