@@ -17,7 +17,7 @@ import controllerGlb from '../../assets/controller/controller.glb';
 import Controller from './controllers';
 
 // import { TriggerMesh } from '../trigger';
-import {updateRay, getIntersection} from '../raycaster';
+import { updateRay, getIntersection } from '../raycaster';
 
 export default class XrScene {
   scene = new Scene();
@@ -285,7 +285,7 @@ export default class XrScene {
           // Get raycaster intersection
           const intersection = this._raycastIntersection(targetRay.matrix);
 
-          if(isTrackedPointer) {
+          if (isTrackedPointer) {
             // Get the targetRay vectors for rendering
             const rayOrigin = new Vector3(
               targetRay.origin.x + userPosition.x,
@@ -297,10 +297,10 @@ export default class XrScene {
               targetRay.direction.y,
               targetRay.direction.z
             );
-            
+
             // If there was an intersection, get the intersection length else default laser to 100
             const rayLength = intersection ? intersection.distance : 100;
-            this._renderLaser(rayOrigin, rayDirection, rayLength, this.controllers[i])
+            this._renderLaser(rayOrigin, rayDirection, rayLength, this.controllers[i]);
           }
         }
       }
@@ -326,15 +326,16 @@ export default class XrScene {
     const rOrigin = new Vector3().setFromMatrixPosition(rMatrix);
 
     // Orientation for ray on -Z Axis transformed and normalized by the ray matrix
-    const rDest = new Vector3(0,0,-1).transformDirection(rMatrix).normalize();
+    const rDest = new Vector3(0, 0, -1).transformDirection(rMatrix)
+      .normalize();
 
-    //Update raycaster object orientation
+    // Update raycaster object orientation
     updateRay(rOrigin, rDest);
 
-    //Get nearest trigger object intersection from raycaster
+    // Get nearest trigger object intersection from raycaster
     const intersection = getIntersection(this.triggers);
 
-    if(intersection) {
+    if (intersection) {
       if (!intersection.object.isSelected) {
         if (this.buttonPressed) {
           // Previous frame was not selected but user is pressing button
@@ -360,7 +361,6 @@ export default class XrScene {
    * @param {Controller} controller Controller to render laser from
    */
   _renderLaser(rayOrigin, rayDirection, rayLength, controller) {
-
     // Create laser if it does not exist
     if (!controller.laser) {
       controller.createLaser();

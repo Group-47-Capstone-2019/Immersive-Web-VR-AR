@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import wallTexture from '../../assets/wall.png';
 import XrScene from './xr-scene';
+import TriggerMesh from '../trigger';
 
 const settings = {
   global: {
@@ -106,7 +107,7 @@ export default class HomeScene extends XrScene {
   }
 
   animate() {
-    const box = this.scene.getObjectByName('testBox001');
+    const box = this.triggers.getObjectByName('testBox001');
     box.rotateX(0.01);
     box.rotateY(0.01);
     box.rotateZ(0.03);
@@ -123,13 +124,26 @@ export default class HomeScene extends XrScene {
     if (!geometry) console.log('Failed to generate geometry');
     if (!material) console.log('Failed to generate material');
 
-    const box = new THREE.Mesh(geometry, material);
+    const box = new TriggerMesh(geometry, material);
     if (!box) console.log('Failed to create box mesh');
+
+    box.hover = function () {
+      this.material.color.set(0xFF0000);
+    };
+
+    box.select = function (intersection) {
+      this.position.copy(intersection.point);
+    };
+
+    box.exit = function () {
+      this.material.color.set(0xFFFFFF);
+    };
+
 
     box.name = 'testBox001';
     box.position.set(0, 0, -5);
 
-    this.scene.add(box);
+    this.triggers.add(box);
 
     if (!this.scene.getObjectByName('testBox001')) {
       console.log('Box not found in scene');

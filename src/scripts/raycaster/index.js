@@ -1,4 +1,4 @@
-import {Raycaster} from 'three';
+import { Raycaster } from 'three';
 
 // ThreeJS raycaster object
 const raycaster = new Raycaster();
@@ -12,7 +12,7 @@ let prevIntersection;
  * @param {Vector3} direction Normalized direction vector for ray
  */
 export function updateRay(origin, direction) {
-    raycaster.set(origin, direction);
+  raycaster.set(origin, direction);
 }
 
 /**
@@ -25,31 +25,31 @@ export function updateRay(origin, direction) {
  * @returns {Intersection} Intersection information, can be null
  */
 export function getIntersection(group) {
-    //Raycast for the currently selected object only (Not hovered)
-    if(prevIntersection && prevIntersection.object.isSelected) {
-        const intersections = raycaster.intersectObject(prevIntersection);
-        if(intersections && intersections.length) return intersections[0];
-        else return null;
-    }
-
-    //Check for intersection with the entire group
-    const intersections = raycaster.intersectObject(group, true);
-    if(intersections && intersections.length) {
-        const intersection = intersections[0];
-
-        // Intersecting a new object, different from previous intersection
-        if(prevIntersection && intersection.object.id != prevIntersection.object.id) {
-            prevIntersection.object.onTriggerExit(prevIntersection);
-        }
-        prevIntersection = intersection;
-        return intersection;
-    }
-    
-    //Not intersecting anything, set prevIntersection to null and exit it if it exists
-    if(prevIntersection) {
-        prevIntersection.object.onTriggerExit(prevIntersection);
-        prevIntersection = null;
-    }
-
+  // Raycast for the currently selected object only (Not hovered)
+  if (prevIntersection && prevIntersection.object.isSelected) {
+    const intersections = raycaster.intersectObject(prevIntersection);
+    if (intersections && intersections.length) return intersections[0];
     return null;
+  }
+
+  // Check for intersection with the entire group
+  const intersections = raycaster.intersectObject(group, true);
+  if (intersections && intersections.length) {
+    const intersection = intersections[0];
+
+    // Intersecting a new object, different from previous intersection
+    if (prevIntersection && intersection.object.id !== prevIntersection.object.id) {
+      prevIntersection.object.onTriggerExit(prevIntersection);
+    }
+    prevIntersection = intersection;
+    return intersection;
+  }
+
+  // Not intersecting anything, set prevIntersection to null and exit it if it exists
+  if (prevIntersection) {
+    prevIntersection.object.onTriggerExit(prevIntersection);
+    prevIntersection = null;
+  }
+
+  return null;
 }

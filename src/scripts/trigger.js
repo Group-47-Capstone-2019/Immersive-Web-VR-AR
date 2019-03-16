@@ -7,7 +7,7 @@ export default class TriggerMesh extends Mesh {
     // True if raycaster selected this object
     isSelected = false;
 
-    //This should never change
+    // This should never change
     isTriggerObject = true;
 
     // Trigger functions - Override these
@@ -25,7 +25,7 @@ export default class TriggerMesh extends Mesh {
      * @param {Intersection} intersection
      */
     onTriggerHover(intersection) {
-      console.log("TRIGGER: HOVER");
+      console.log('TRIGGER: HOVER');
       this.isIntersected = true;
       if (this.hover) this.hover(intersection);
     }
@@ -37,7 +37,7 @@ export default class TriggerMesh extends Mesh {
      * @param {Intersection} intersection
      */
     onTriggerExit(intersection) {
-      console.log("TRIGGER: EXIT");
+      console.log('TRIGGER: EXIT');
       this.isIntersected = false;
       if (this.isSelected) this.onTriggerRelease(intersection);
       if (this.exit) this.exit();
@@ -50,7 +50,7 @@ export default class TriggerMesh extends Mesh {
      * @param {Intersection} intersection
      */
     onTriggerSelect(intersection) {
-      console.log("TRIGGER: SELECT");
+      console.log('TRIGGER: SELECT');
       this.isSelected = true;
       if (this.select) this.select(intersection);
     }
@@ -62,7 +62,7 @@ export default class TriggerMesh extends Mesh {
      * @param {Intersection} intersection
      */
     onTriggerRelease(intersection) {
-      console.log("TRIGGER: RELEASE");
+      console.log('TRIGGER: RELEASE');
       this.isSelected = false;
       if (this.release) this.release(intersection);
     }
