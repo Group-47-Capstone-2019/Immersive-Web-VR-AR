@@ -17,6 +17,7 @@ import controllerGlb from '../../assets/controller/controller.glb';
 import Controller from './controllers';
 
 // import { TriggerMesh } from '../trigger';
+import {updateRay, getIntersection} from '../raycaster';
 
 export default class XrScene {
   scene = new Scene();
@@ -50,6 +51,7 @@ export default class XrScene {
     this.camera = camera;
 
     this.loader.addGltfToQueue(controllerGlb, 'controller');
+    this.scene.add(this.triggers);
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
@@ -279,58 +281,94 @@ export default class XrScene {
         // Raycasting
         if (inputPose.targetRay) {
           const targetRay = inputPose.targetRay;
-          console.log(targetRay);
 
-          // TODO: Ray selection here / Cursor here
-          // Raycaster should ignore other objects when currently selecting an object
-          // If new intersection, call onTriggerExit on last intersection from raycaster file
+          // Get raycaster intersection
+          const intersection = this._raycastIntersection(targetRay.matrix);
 
-          /**
-          let buttonPressed; // Is there currently a select event?
-          let intersection; // Is a trigger object
-
-          if (!intersection.object.isSelected) {
-            if (buttonPressed) {
-              // Previous frame was not selected but user is pressing button
-              intersection.object.onTriggerHold();
-            } else {
-              // Button not pressed but object is selected by raycaster
-              intersection.object.onTriggerHover();
-            }
-          } else if (!buttonPressed) {
-            intersection.object.onTriggerRelease();
-          }
-          * */
-
-          // Draw laser if tracked pointer
-          if (isTrackedPointer) {
-            const controller = this.controllers[i];
-            const length = 100;
-
-            // Create laser if it does not exist
-            if (!controller.laser) {
-              controller.createLaser();
-              this.scene.add(controller.laser);
-            }
-
-            // Update laser mesh with current user position and target ray transformations
-            controller.updateLaser(
-              new Vector3(
-                targetRay.origin.x + userPosition.x,
-                targetRay.origin.y + userPosition.y,
-                targetRay.origin.z + userPosition.z
-              ),
-              new Vector3(
-                targetRay.direction.x,
-                targetRay.direction.y,
-                targetRay.direction.z
-              ),
-              length
+          if(isTrackedPointer) {
+            // Get the targetRay vectors for rendering
+            const rayOrigin = new Vector3(
+              targetRay.origin.x + userPosition.x,
+              targetRay.origin.y + userPosition.y,
+              targetRay.origin.z + userPosition.z
             );
+            const rayDirection = new Vector3(
+              targetRay.direction.x,
+              targetRay.direction.y,
+              targetRay.direction.z
+            );
+            
+            // If there was an intersection, get the intersection length else default laser to 100
+            const rayLength = intersection ? intersection.distance : 100;
+            this._renderLaser(rayOrigin, rayDirection, rayLength, this.controllers[i])
           }
         }
       }
     }
+  }
+
+  /**
+   * Calculates raycast intersections on a frame by frame basis
+   * from the XR target rays. Triggers the respective events for
+   * each intersection based on the current state of the input ray
+   * and trigger object.
+   * @param {Matrix4} targetRayMatrix Transformation matrix from the
+   * XR input pose
+   * @returns {Intersection} Intersection info, this can be null
+   */
+  _raycastIntersection(targetRayMatrix) {
+    const trMatrix = new Matrix4().fromArray(targetRayMatrix);
+    this._translateObjectMatrix(trMatrix, userPosition);
+
+    // Transformed ray matrix from the current scene matrix world
+    const rMatrix = new Matrix4().multiplyMatrices(this.scene.matrixWorld, trMatrix);
+    // Ray origin vector derived from the ray matrix
+    const rOrigin = new Vector3().setFromMatrixPosition(rMatrix);
+
+    // Orientation for ray on -Z Axis transformed and normalized by the ray matrix
+    const rDest = new Vector3(0,0,-1).transformDirection(rMatrix).normalize();
+
+    //Update raycaster object orientation
+    updateRay(rOrigin, rDest);
+
+    //Get nearest trigger object intersection from raycaster
+    const intersection = getIntersection(this.triggers);
+
+    if(intersection) {
+      if (!intersection.object.isSelected) {
+        if (this.buttonPressed) {
+          // Previous frame was not selected but user is pressing button
+          intersection.object.onTriggerSelect(intersection);
+        } else {
+          // Button not pressed but object is intersected by raycaster
+          intersection.object.onTriggerHover(intersection);
+        }
+      } else if (!this.buttonPressed) {
+        // Trigger object WAS selected but button is now longer pressed
+        intersection.object.onTriggerRelease(intersection);
+      }
+    }
+    return intersection;
+  }
+
+  /**
+   * Gets raycaster point information and renders a laser from the
+   * passed in controller based on the information given
+   * @param {Vector3} rayOrigin Origin point of ray
+   * @param {Vector3} rayDirection Direction of ray
+   * @param {Number} rayLength Calculated length of ray
+   * @param {Controller} controller Controller to render laser from
+   */
+  _renderLaser(rayOrigin, rayDirection, rayLength, controller) {
+
+    // Create laser if it does not exist
+    if (!controller.laser) {
+      controller.createLaser();
+      this.scene.add(controller.laser);
+    }
+
+    // Update laser mesh with current user position and target ray transformations
+    controller.updateLaser(rayOrigin, rayDirection, rayLength);
   }
 
   /**
