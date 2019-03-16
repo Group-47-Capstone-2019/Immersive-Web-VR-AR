@@ -6,7 +6,6 @@ import {
 import XrScene from '../xr-scene';
 import { createPlanets } from './create';
 import { movePlanets } from './orbit';
-import controllerGltf from '../../../assets/controller.glb';
 
 export default class PlanetsScene extends XrScene {
   /**
@@ -16,8 +15,6 @@ export default class PlanetsScene extends XrScene {
    */
   constructor(renderer, camera) {
     super(renderer, camera);
-
-    this.loader.addGltfToQueue(controllerGltf, 'controller-gltf');
 
     this.scene.background = new Color('black');
     this.planets = createPlanets();
@@ -35,8 +32,8 @@ export default class PlanetsScene extends XrScene {
   }
 
   onAssetsLoaded(cache) {
-    const controller = cache['controller-gltf'].scene.children[0];
-    this.scene.add(controller);
+    super.onAssetsLoaded(cache);
+    return cache;
   }
 
   /**

@@ -209,7 +209,7 @@ export function updateTouchPosition(viewMatrix) {
 
   deltaPosition.applyQuaternion(invYawRotation);
 
-  userPosition.add(deltaPosition);
+  userPosition.sub(deltaPosition);
 
   // Temporary boundaries
 

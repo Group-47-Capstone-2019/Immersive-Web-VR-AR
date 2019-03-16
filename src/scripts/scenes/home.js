@@ -100,6 +100,11 @@ export default class HomeScene extends XrScene {
     this._boxTest();
   }
 
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+    return cache;
+  }
+
   animate() {
     const box = this.scene.getObjectByName('testBox001');
     box.rotateX(0.01);

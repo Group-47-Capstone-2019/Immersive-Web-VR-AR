@@ -1,5 +1,5 @@
 import {
-  Scene, Matrix4, Vector3, Clock
+  Scene, Quaternion, Matrix4, Vector3, Clock
 } from 'three';
 import { World } from 'cannon';
 
@@ -13,6 +13,9 @@ import {
 } from '../controls/keyboard-controls';
 import { Loader } from '../loader';
 
+import controllerGlb from '../../assets/controller/controller.glb';
+import Controller from './controllers';
+
 export default class XrScene {
   scene = new Scene();
 
@@ -21,6 +24,8 @@ export default class XrScene {
   clock = new Clock();
 
   loader = new Loader();
+
+  controllers = [];
 
   isActive = true;
 
@@ -40,6 +45,8 @@ export default class XrScene {
     this.renderer = renderer;
     this.camera = camera;
 
+    this.loader.addGltfToQueue(controllerGlb, 'controller');
+
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
 
@@ -47,10 +54,38 @@ export default class XrScene {
   }
 
   /**
+   * Removes a controller from the scene and the controllers array
+   * @param {Number} index
+   */
+  _removeController(index) {
+    let controller = this.controllers[index];
+    this.scene.remove(controller.mesh);
+
+    // Clean up
+    if (controller.mesh.geometry) controller.mesh.geometry.dispose();
+    if (controller.mesh.material) controller.mesh.material.dispose();
+
+    // Remove controller from array
+    this.controllers.splice(index, 1);
+
+    controller = undefined;
+  }
+
+  /**
+   * Removes all controllers from the scene and member array
+   */
+  _removeAllControllers() {
+    for (let i = 0; i < this.controllers.length; i++) {
+      this._removeController(i);
+    }
+  }
+
+  /**
    * override this to handle adding adding assets to the scene
    * @param {object} assetCache cache with all assets, accessible by their `id`
    */
   onAssetsLoaded(assetCache) {
+    this.controllerMesh = assetCache.controller.scene;
     return assetCache;
   }
 
@@ -77,11 +112,28 @@ export default class XrScene {
     this._animationCallback();
   }
 
+  /**
+   * Cancels the current animation frame to prevent
+   * artifacts from carrying over to the next render loop
+   * and compounding of render loops
+   */
   _restartAnimation = () => {
     if (this.frame) window.cancelAnimationFrame(this.frame);
+
+    // An XR session has ended so all the controllers need to be removed if there are any
+    this._removeAllControllers();
+
+    // Restart the animation callback loop
     this._animationCallback();
   };
 
+  /**
+   * Called every frame.
+   * Updates user input affected components such as viewMatrix
+   * user positions and controller positions.
+   * @param {number} timestamp total elapsed time
+   * @param {XRFrame} xrFrame contains all information (poses) about current xr frame
+   */
   _animationCallback = (timestamp, xrFrame) => {
     if (this.isActive) {
       // Update the objects in the scene that we will be rendering
@@ -105,8 +157,10 @@ export default class XrScene {
         return this.frame;
       }
 
+      const immersive = (XR.session.mode === 'immersive-vr');
+
       // Get the correct reference space for the session.
-      const xrRefSpace = XR.session.mode === 'immersive-vr'
+      const xrRefSpace = immersive
         ? XR.immersiveRefSpace
         : XR.nonImmersiveRefSpace;
 
@@ -128,6 +182,8 @@ export default class XrScene {
           XR.session.renderState.baseLayer.framebuffer
         );
 
+        this._updateInputSources(xrFrame, xrRefSpace);
+
         for (let i = 0; i < pose.views.length; i++) {
           const view = pose.views[i];
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
@@ -141,12 +197,11 @@ export default class XrScene {
           );
 
           // Update user position if touch controls are in use with magic window.
-          if (XR.magicWindowCanvas && XR.magicWindowCanvas.hidden === false) {
+          if (XR.magicWindowCanvas && !immersive) {
             updateTouchPosition(viewMatrix);
-            this._translateViewMatrix(viewMatrix, userPosition);
-          } else {
-            this._translateViewMatrix(viewMatrix, new Vector3(0, 0, 0));
           }
+
+          this._translateViewMatrix(viewMatrix, userPosition);
 
           this.camera.matrixWorldInverse.copy(viewMatrix);
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
@@ -164,41 +219,132 @@ export default class XrScene {
     return this.frame;
   };
 
+  /**
+   * For every frame this function updates the controller/laser transforms
+   * and raycast intersections from the controller laser.
+   * Keeps track of what input sources are currently in the scene and
+   * handles meshes accordingly when sources are added and removed
+   * @param {XRFrame} xrFrame
+   * @param {XRReferenceSpace} xrRefSpace
+   */
+  _updateInputSources(xrFrame, xrRefSpace) {
+    const inputSources = XR.session.getInputSources();
+
+    // For the number of input sources in the current session
+    for (let i = 0; i < inputSources.length; i++) {
+      const inputSource = inputSources[i];
+
+      // Get the XRPose for that input source in the current reference space
+      const inputPose = xrFrame.getInputPose(inputSource, xrRefSpace);
+
+      if (inputPose) {
+        // Should the input source support visual laser raycasting?
+        const isTrackedPointer = inputSource.targetRayMode === 'tracked-pointer';
+
+        // If can handle visual lasers and has a grip matrix indicating that
+        // the controller is a visual element in the immersive scene
+        if (isTrackedPointer && inputPose.gripTransform.matrix) {
+          // Is the number of controllers we know of less than the number of input sources?
+          if (this.controllers.length < inputSources.length) {
+            // Create a new controller and add to the scene
+            const controller = new Controller(this.controllerMesh.clone());
+            this.controllers.push(controller);
+            this.scene.add(controller.mesh);
+          } else if (this.controllers.length > inputSources.length) {
+            // Remove controller from array if number of controllers
+            // is less than number of input sources
+            this._removeController(i);
+          }
+
+          // Get the grip transform matrix
+          const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
+
+          // Make sure to translate the controller matrix to the user position
+          this._translateObjectMatrix(gripMatrix, userPosition);
+
+          // Apply grip transform matrix to the current controller mesh
+          const matrixPosition = new Vector3();
+          gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
+          this.controllers[i].updateControllerPosition(gripMatrix);
+        }
+
+        // Raycasting
+        if (inputPose.targetRay) {
+          if (isTrackedPointer) {
+            // TODO: Render ray from controller here
+
+          }
+          // TODO: Ray selection here / Cursor here
+        }
+      }
+    }
+  }
+
+  /**
+   * The view matrix is the information for the entire world to be rendered in
+   * Translations that occur here need to be inverted for them to make sense to the user
+   * Moving the world northwest gives it the appearance of moving southeast ect.
+   * We're translating the position of the world origin rather than the user.
+   * @param {Float32Array} matrix
+   * @param {Vector3} position
+   */
+  _translateViewMatrix(matrix, position) {
+    // Invert the position since we are moving the entire world origin
+    const tempPosition = new Vector3(-position.x, -position.y, -position.z);
+    const tempMatrix = new Matrix4().copy(matrix);
+
+    tempMatrix.setPosition(new Vector3());
+    tempPosition.applyMatrix4(tempMatrix);
+
+    const translation = new Matrix4();
+    translation.makeTranslation(
+      tempPosition.x,
+      tempPosition.y,
+      tempPosition.z
+    );
+
+    matrix.premultiply(translation);
+  }
+
+  /**
+   * Adds position offset to object matrix passed in.
+   * @param {Matrix4} matrix
+   * @param {Vector3} position
+   */
+  _translateObjectMatrix(matrix, position) {
+    const currentPosition = new Vector3(
+      position.x,
+      position.y,
+      position.z
+    );
+
+    // Get matrix components and set position
+    const matrixPosition = new Vector3();
+    matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
+    currentPosition.add(matrixPosition);
+    matrix.setPosition(currentPosition);
+  }
+
   _checkForKeyboardMouse() {
     if (keyboard) {
       this.scene.add(controls.getObject());
     }
   }
 
-  _translateViewMatrix(viewMatrix, position) {
-    // Save initial position for later
-    const tempPosition = new Vector3(position.x, position.y, position.z);
-    const tempViewMatrix = new Matrix4().copy(viewMatrix);
+  /**
+   * Override this in child scene class
+   * Initializes all event listeners associated with this room
+   */
+  _initEventListeners() {
 
-    tempViewMatrix.setPosition(new Vector3());
-    tempPosition.applyMatrix4(tempViewMatrix);
-
-    const translationInView = new Matrix4();
-    translationInView.makeTranslation(
-      tempPosition.x,
-      tempPosition.y,
-      tempPosition.z
-    );
-
-    viewMatrix.premultiply(translationInView);
   }
 
   /**
-     * Initializes all event listeners associated with this room
-     */
-  _initEventListeners() {}
-
-  /**
-     *
-     * @param {HTMLElement} target
-     * @param {String} type
-     * @param {Function} listener
-     */
+   *
+   * @param {HTMLElement} target
+   * @param {String} type
+   * @param {Function} listener
+   */
   _addEventListener(target, type, listener) {
     target.addEventListener(type, listener);
     this.eventListeners.push({
@@ -209,8 +355,8 @@ export default class XrScene {
   }
 
   /**
-     * Removes all event listeners associated with this room
-     */
+   * Removes all event listeners associated with this room
+   */
   removeEventListeners() {
     for (let i = 0; i < this.eventListeners.length; i++) {
       const eventListener = this.eventListeners[i];
