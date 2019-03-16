@@ -261,16 +261,16 @@ export default class XrScene {
     for (let i = 0; i < inputSources.length; i++) {
       const inputSource = inputSources[i];
 
-      // Get the XRPose for that input source in the current reference space
-      const inputPose = xrFrame.getInputPose(inputSource, xrRefSpace);
-
-      if (inputPose) {
+      if (inputSource) {
         // Should the input source support visual laser raycasting?
         const isTrackedPointer = inputSource.targetRayMode === 'tracked-pointer';
 
         // If can handle visual lasers and has a grip matrix indicating that
         // the controller is a visual element in the immersive scene
-        if (isTrackedPointer && inputPose.gripTransform.matrix) {
+        if (isTrackedPointer && inputSource.gripSpace) {
+          //Get grip space pose for controller
+          const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace); 
+
           // Is the number of controllers we know of less than the number of input sources?
           if (this.controllers.length > inputSources.length) {
             // Remove controller from array if number of controllers
@@ -285,7 +285,7 @@ export default class XrScene {
             }
 
             // Get the grip transform matrix
-            const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
+            const gripMatrix = new Matrix4().fromArray(gripPose.transform.matrix);
 
             // Make sure to translate the controller matrix to the user position
             this._translateObjectMatrix(gripMatrix, userPosition);
@@ -298,23 +298,25 @@ export default class XrScene {
         }
 
         // Raycasting
-        if (inputPose.targetRay) {
-          const targetRay = inputPose.targetRay;
+        if (inputSource.targetRaySpace) {
+          const rayPose = xrFrame.getPose(inputSource.targetRaySpace, xrRefSpace);
+
+          // Create a new ray from the rayPose transform
+          const ray = new XRRay(rayPose.transform);
 
           // Get raycaster intersection
-          const intersection = this._raycastIntersection(targetRay.matrix);
-
+          const intersection = this._raycastIntersection(rayPose.transform.matrix);
           if (isTrackedPointer) {
             // Get the targetRay vectors for rendering
             const rayOrigin = new Vector3(
-              targetRay.origin.x + userPosition.x,
-              targetRay.origin.y + userPosition.y,
-              targetRay.origin.z + userPosition.z
+              ray.origin.x + userPosition.x,
+              ray.origin.y + userPosition.y,
+              ray.origin.z + userPosition.z
             );
             const rayDirection = new Vector3(
-              targetRay.direction.x,
-              targetRay.direction.y,
-              targetRay.direction.z
+              ray.direction.x,
+              ray.direction.y,
+              ray.direction.z
             );
 
             // If there was an intersection, get the intersection length else default laser to 100
