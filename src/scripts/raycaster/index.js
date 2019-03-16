@@ -27,7 +27,7 @@ export function updateRay(origin, direction) {
 export function getIntersection(group) {
   // Raycast for the currently selected object only (Not hovered)
   if (prevIntersection && prevIntersection.object.isSelected) {
-    const intersections = raycaster.intersectObject(prevIntersection);
+    const intersections = raycaster.intersectObject(prevIntersection.object);
     if (intersections && intersections.length) return intersections[0];
     return null;
   }

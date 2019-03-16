@@ -55,8 +55,27 @@ export default class XrScene {
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
+    this._addEventListener(window, 'xrSelectStart', this._xrSelectStart);
+    this._addEventListener(window, 'xrSelectEnd', this._xrSelectEnd);
 
     this._checkForKeyboardMouse();
+  }
+
+  /**
+   * Sets button pressed to true on selectstart event
+   */
+  _xrSelectStart = () => {
+    this.buttonPressed = true;
+  }
+
+  /**
+   * Sets button pressed to false and triggers a release of a selected object
+   * on selectend event
+   */
+  _xrSelectEnd = () => {
+    if (this.selected) this.selected.onTriggerRelease();
+    this.selected = null;
+    this.buttonPressed = false;
   }
 
   /**
@@ -336,17 +355,19 @@ export default class XrScene {
     const intersection = getIntersection(this.triggers);
 
     if (intersection) {
+      intersection.object.onTriggerHover(intersection);
       if (!intersection.object.isSelected) {
         if (this.buttonPressed) {
           // Previous frame was not selected but user is pressing button
           intersection.object.onTriggerSelect(intersection);
-        } else {
-          // Button not pressed but object is intersected by raycaster
-          intersection.object.onTriggerHover(intersection);
+          // Keep track of selected object reference
+          this.selected = intersection.object;
         }
       } else if (!this.buttonPressed) {
         // Trigger object WAS selected but button is now longer pressed
         intersection.object.onTriggerRelease(intersection);
+        // Drop selected object reference on release of selection
+        this.selected = null;
       }
     }
     return intersection;

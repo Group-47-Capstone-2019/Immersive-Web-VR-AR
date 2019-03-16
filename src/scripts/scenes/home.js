@@ -127,23 +127,38 @@ export default class HomeScene extends XrScene {
     const box = new TriggerMesh(geometry, material);
     if (!box) console.log('Failed to create box mesh');
 
-    box.hover = function () {
-      this.material.color.set(0xFF0000);
+    box.hover = function (intersection) {
+      if (this.debug) console.log(intersection);
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
     };
 
     box.select = function (intersection) {
-      this.position.copy(intersection.point);
+      if (this.debug) console.log(intersection);
+      this.material.color.set(0x00FF00);
     };
 
-    box.exit = function () {
+    box.release = function (intersection) {
+      if (this.debug) console.log(intersection);
+      this.material.color.set(0x0000FF);
+    };
+
+    box.exit = function (intersection) {
+      if (this.debug) console.log(intersection);
       this.material.color.set(0xFFFFFF);
     };
 
 
     box.name = 'testBox001';
-    box.position.set(0, 0, -5);
+    box.position.set(-1, 0, -5);
 
     this.triggers.add(box);
+
+    const box2 = box.clone();
+    box2.position.set(1, 0, -5);
+
+    this.triggers.add(box2);
 
     if (!this.scene.getObjectByName('testBox001')) {
       console.log('Box not found in scene');
