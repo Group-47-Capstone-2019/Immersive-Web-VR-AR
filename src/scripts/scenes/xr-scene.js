@@ -268,8 +268,8 @@ export default class XrScene {
         // If can handle visual lasers and has a grip matrix indicating that
         // the controller is a visual element in the immersive scene
         if (isTrackedPointer && inputSource.gripSpace) {
-          //Get grip space pose for controller
-          const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace); 
+          // Get grip space pose for controller
+          const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace);
 
           // Is the number of controllers we know of less than the number of input sources?
           if (this.controllers.length > inputSources.length) {
@@ -302,6 +302,7 @@ export default class XrScene {
           const rayPose = xrFrame.getPose(inputSource.targetRaySpace, xrRefSpace);
 
           // Create a new ray from the rayPose transform
+          /* global XRRay:true */
           const ray = new XRRay(rayPose.transform);
 
           // Get raycaster intersection
