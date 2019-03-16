@@ -7,48 +7,63 @@ export default class TriggerMesh extends Mesh {
     // True if raycaster selected this object
     isSelected = false;
 
-    // Trigger functions
+    //This should never change
+    isTriggerObject = true;
+
+    // Trigger functions - Override these
     hover;
 
     exit;
 
-    hold;
+    select;
 
     release;
 
     /**
      * Called when raycaster is currently intersecting
+     * Called every frame onHover
+     * @param {Intersection} intersection
      */
-    onTriggerHover() {
+    onTriggerHover(intersection) {
+      console.log("TRIGGER: HOVER");
       this.isIntersected = true;
-      if (this.hover) this.hover();
+      if (this.hover) this.hover(intersection);
     }
 
     /**
      * Called when raycaster no longer intersects
-     * this object
+     * this object.
+     * Called once on exit.
+     * @param {Intersection} intersection
      */
-    onTriggerExit() {
+    onTriggerExit(intersection) {
+      console.log("TRIGGER: EXIT");
       this.isIntersected = false;
-      if (this.isSelected) this.onTriggerRelease();
+      if (this.isSelected) this.onTriggerRelease(intersection);
       if (this.exit) this.exit();
     }
 
     /**
      * Called when raycaster intersects and
-     * the input device clicks and holds
+     * the input device clicks and holds.
+     * Called every frame on selection.
+     * @param {Intersection} intersection
      */
-    onTriggerHold() {
+    onTriggerSelect(intersection) {
+      console.log("TRIGGER: SELECT");
       this.isSelected = true;
-      if (this.hold) this.hold();
+      if (this.select) this.select(intersection);
     }
 
     /**
      * Called when raycaster input device
-     * releases a click when intersecting
+     * releases a click when intersecting.
+     * Called once on release.
+     * @param {Intersection} intersection
      */
-    onTriggerRelease() {
+    onTriggerRelease(intersection) {
+      console.log("TRIGGER: RELEASE");
       this.isSelected = false;
-      if (this.release) this.release();
+      if (this.release) this.release(intersection);
     }
 }
