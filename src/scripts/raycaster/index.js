@@ -16,6 +16,15 @@ export function updateRay(origin, direction) {
 }
 
 /**
+ * Updates the raycaster from camera. Used in keyboard session
+ * @param {Vector2} mouse
+ * @param {PerspectiveCamera} camera
+ */
+export function updateRayFromCamera(mouse, camera) {
+  raycaster.setFromCamera(mouse, camera);
+}
+
+/**
  * Checks for intersections with the group of objects passed in.
  * If the previously intersected object is still being selected
  * then only raycast for that object else get first intersection

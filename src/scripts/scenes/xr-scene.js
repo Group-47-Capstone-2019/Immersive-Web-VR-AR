@@ -354,6 +354,16 @@ export default class XrScene {
     // Update raycaster object orientation
     updateRay(rOrigin, rDest);
 
+    // Handle intersection events
+    return this._intersectionHandler();
+  }
+
+  /**
+   * Gets an intersection from the raycaster and fires
+   * the appropriate events in response to certain
+   * user gestures and ray orientation
+   */
+  _intersectionHandler() {
     // Get nearest trigger object intersection from raycaster
     const intersection = getIntersection(this.triggers);
 
