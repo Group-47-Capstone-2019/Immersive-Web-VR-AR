@@ -127,6 +127,13 @@ export default class HomeScene extends XrScene {
     const box = new TriggerMesh(geometry, material);
     if (!box) console.log('Failed to create box mesh');
 
+    const externalFunc = (args) => {
+      console.log(args);
+      console.log(this);
+    };
+
+    box.addFunction('externalFunc', externalFunc);
+
     box.hover = function (intersection) {
       if (this.debug) console.log(intersection);
       if (!this.isSelected) {
@@ -137,6 +144,9 @@ export default class HomeScene extends XrScene {
     box.select = function (intersection) {
       if (this.debug) console.log(intersection);
       this.material.color.set(0x00FF00);
+
+      //Functions call example
+      this.functions.externalFunc(intersection);
     };
 
     box.release = function (intersection) {
