@@ -52,6 +52,12 @@ function xrOnSessionEnded(event) {
 
 async function xrOnSessionStarted(context) {
   XR.session.addEventListener('end', xrOnSessionEnded);
+  XR.session.addEventListener('selectstart', () => {
+    window.dispatchEvent(new Event('xrSelectStart'));
+  });
+  XR.session.addEventListener('selectend', () => {
+    window.dispatchEvent(new Event('xrSelectEnd'));
+  });
 
   // Set rendering canvas to be XR compatible and add a baselayer
   try {

@@ -1,5 +1,5 @@
 import {
-  Scene, Quaternion, Matrix4, Vector3, Clock
+  Scene, Quaternion, Matrix4, Vector3, Clock, Group
 } from 'three';
 import { World } from 'cannon';
 
@@ -16,6 +16,9 @@ import { Loader } from '../loader';
 import controllerGlb from '../../assets/controller/controller.glb';
 import Controller from './controllers';
 
+// import { TriggerMesh } from '../trigger';
+import { updateRay, getIntersection } from '../raycaster';
+
 export default class XrScene {
   scene = new Scene();
 
@@ -24,6 +27,8 @@ export default class XrScene {
   clock = new Clock();
 
   loader = new Loader();
+
+  triggers = new Group();
 
   controllers = [];
 
@@ -46,11 +51,31 @@ export default class XrScene {
     this.camera = camera;
 
     this.loader.addGltfToQueue(controllerGlb, 'controller');
+    this.scene.add(this.triggers);
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
+    this._addEventListener(window, 'xrSelectStart', this._xrSelectStart);
+    this._addEventListener(window, 'xrSelectEnd', this._xrSelectEnd);
 
     this._checkForKeyboardMouse();
+  }
+
+  /**
+   * Sets button pressed to true on selectstart event
+   */
+  _xrSelectStart = () => {
+    this.buttonPressed = true;
+  }
+
+  /**
+   * Sets button pressed to false and triggers a release of a selected object
+   * on selectend event
+   */
+  _xrSelectEnd = () => {
+    if (this.selected) this.selected.onTriggerRelease();
+    this.selected = null;
+    this.buttonPressed = false;
   }
 
   /**
@@ -59,7 +84,9 @@ export default class XrScene {
    */
   _removeController(index) {
     let controller = this.controllers[index];
-    this.scene.remove(controller.mesh);
+    if (controller.mesh) this.scene.remove(controller.mesh);
+
+    if (controller.laser) this.scene.remove(controller.laser);
 
     // Clean up
     if (controller.mesh.geometry) controller.mesh.geometry.dispose();
@@ -234,50 +261,148 @@ export default class XrScene {
     for (let i = 0; i < inputSources.length; i++) {
       const inputSource = inputSources[i];
 
-      // Get the XRPose for that input source in the current reference space
-      const inputPose = xrFrame.getInputPose(inputSource, xrRefSpace);
-
-      if (inputPose) {
+      if (inputSource) {
         // Should the input source support visual laser raycasting?
         const isTrackedPointer = inputSource.targetRayMode === 'tracked-pointer';
 
         // If can handle visual lasers and has a grip matrix indicating that
         // the controller is a visual element in the immersive scene
-        if (isTrackedPointer && inputPose.gripTransform.matrix) {
+        if (isTrackedPointer && inputSource.gripSpace) {
+          // Get grip space pose for controller
+          const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace);
+
           // Is the number of controllers we know of less than the number of input sources?
-          if (this.controllers.length < inputSources.length) {
-            // Create a new controller and add to the scene
-            const controller = new Controller(this.controllerMesh.clone());
-            this.controllers.push(controller);
-            this.scene.add(controller.mesh);
-          } else if (this.controllers.length > inputSources.length) {
+          if (this.controllers.length > inputSources.length) {
             // Remove controller from array if number of controllers
             // is less than number of input sources
             this._removeController(i);
+          } else {
+            if (this.controllers.length < inputSources.length) {
+              // Create a new controller and add to the scene
+              const controller = new Controller(this.controllerMesh.clone());
+              this.controllers.push(controller);
+              this.scene.add(controller.mesh);
+            }
+
+            // Get the grip transform matrix
+            const gripMatrix = new Matrix4().fromArray(gripPose.transform.matrix);
+
+            // Make sure to translate the controller matrix to the user position
+            this._translateObjectMatrix(gripMatrix, userPosition);
+
+            // Apply grip transform matrix to the current controller mesh
+            const matrixPosition = new Vector3();
+            gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
+            this.controllers[i].updateControllerPosition(gripMatrix);
           }
-
-          // Get the grip transform matrix
-          const gripMatrix = new Matrix4().fromArray(inputPose.gripTransform.matrix);
-
-          // Make sure to translate the controller matrix to the user position
-          this._translateObjectMatrix(gripMatrix, userPosition);
-
-          // Apply grip transform matrix to the current controller mesh
-          const matrixPosition = new Vector3();
-          gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
-          this.controllers[i].updateControllerPosition(gripMatrix);
         }
 
         // Raycasting
-        if (inputPose.targetRay) {
-          if (isTrackedPointer) {
-            // TODO: Render ray from controller here
+        if (inputSource.targetRaySpace) {
+          const rayPose = xrFrame.getPose(inputSource.targetRaySpace, xrRefSpace);
 
+          // Create a new ray from the rayPose transform
+          /* global XRRay:true */
+          const ray = new XRRay(rayPose.transform);
+
+          // Get raycaster intersection
+          const intersection = this._raycastIntersection(rayPose.transform.matrix);
+          if (isTrackedPointer) {
+            // Get the targetRay vectors for rendering
+            const rayOrigin = new Vector3(
+              ray.origin.x + userPosition.x,
+              ray.origin.y + userPosition.y,
+              ray.origin.z + userPosition.z
+            );
+            const rayDirection = new Vector3(
+              ray.direction.x,
+              ray.direction.y,
+              ray.direction.z
+            );
+
+            // If there was an intersection, get the intersection length else default laser to 100
+            const rayLength = intersection ? intersection.distance : 100;
+            this._renderLaser(rayOrigin, rayDirection, rayLength, this.controllers[i]);
           }
-          // TODO: Ray selection here / Cursor here
         }
       }
     }
+  }
+
+  /**
+   * Calculates raycast intersections on a frame by frame basis
+   * from the XR target rays. Triggers the respective events for
+   * each intersection based on the current state of the input ray
+   * and trigger object.
+   * @param {Matrix4} targetRayMatrix Transformation matrix from the
+   * XR input pose
+   * @returns {Intersection} Intersection info, this can be null
+   */
+  _raycastIntersection(targetRayMatrix) {
+    const trMatrix = new Matrix4().fromArray(targetRayMatrix);
+    this._translateObjectMatrix(trMatrix, userPosition);
+
+    // Transformed ray matrix from the current scene matrix world
+    const rMatrix = new Matrix4().multiplyMatrices(this.scene.matrixWorld, trMatrix);
+    // Ray origin vector derived from the ray matrix
+    const rOrigin = new Vector3().setFromMatrixPosition(rMatrix);
+
+    // Orientation for ray on -Z Axis transformed and normalized by the ray matrix
+    const rDest = new Vector3(0, 0, -1).transformDirection(rMatrix)
+      .normalize();
+
+    // Update raycaster object orientation
+    updateRay(rOrigin, rDest);
+
+    // Handle intersection events
+    return this._intersectionHandler();
+  }
+
+  /**
+   * Gets an intersection from the raycaster and fires
+   * the appropriate events in response to certain
+   * user gestures and ray orientation
+   */
+  _intersectionHandler() {
+    // Get nearest trigger object intersection from raycaster
+    const intersection = getIntersection(this.triggers);
+
+    if (intersection) {
+      intersection.object.onTriggerHover(intersection);
+      if (!intersection.object.isSelected) {
+        if (this.buttonPressed) {
+          // Previous frame was not selected but user is pressing button
+          intersection.object.onTriggerSelect(intersection);
+          // Keep track of selected object reference
+          this.selected = intersection.object;
+        }
+      } else if (!this.buttonPressed) {
+        // Trigger object WAS selected but button is now longer pressed
+        intersection.object.onTriggerRelease(intersection);
+        // Drop selected object reference on release of selection
+        this.selected = null;
+      }
+    }
+    return intersection;
+  }
+
+  /**
+   * Gets raycaster point information and renders a laser from the
+   * passed in controller based on the information given
+   * @param {Vector3} rayOrigin Origin point of ray
+   * @param {Vector3} rayDirection Direction of ray
+   * @param {Number} rayLength Calculated length of ray
+   * @param {Controller} controller Controller to render laser from
+   */
+  _renderLaser(rayOrigin, rayDirection, rayLength, controller) {
+    // Create laser if it does not exist
+    if (!controller.laser) {
+      controller.createLaser();
+      this.scene.add(controller.laser);
+    }
+
+    // Update laser mesh with current user position and target ray transformations
+    controller.updateLaser(rayOrigin, rayDirection, rayLength);
   }
 
   /**
