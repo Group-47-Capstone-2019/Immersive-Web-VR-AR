@@ -213,6 +213,23 @@ export default class FallingScene extends XrScene {
     }
   }
 
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+    return cache;
+  }
+
+  createPlane() {
+    // Generate plane ground using geometry and materials.
+    const geometry2 = new THREE.PlaneGeometry(25, 25, 25, 25);
+    geometry2.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    const material2 = new THREE.MeshLambertMaterial({ color: 0xFFFFFF, wireframe: true });
+    const mesh2 = new THREE.Mesh(geometry2, material2);
+    mesh2.castShadow = true;
+    mesh2.receiveShadow = true;
+    mesh2.position.set(0, -8, 0);
+    this.scene.add(mesh2);
+  }
+
   onClick = (event) => {
     if (touchscreen.enabled) {
       let touch = new THREE.Vector3();

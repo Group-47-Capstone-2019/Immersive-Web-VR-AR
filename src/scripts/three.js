@@ -5,5 +5,6 @@ window.THREE = THREE;
 require('three/examples/js/controls/PointerLockControls.js'); // Append PointerLockControls
 require('three/examples/js/loaders/OBJLoader.js'); // Append OBJLoader
 require('three/examples/js/loaders/MTLLoader.js'); // Append OBJLoader
+require('three/examples/js/loaders/GLTFLoader'); // also include gltf loader
 
 export default THREE;
