@@ -182,16 +182,6 @@ export default class FallingScene extends XrScene {
     }, onProgress, onError);
   }
 
-  onKeyUp = () => {
-    switch (event.keyCode) {
-      case 71:
-        this.toggleGravity();
-        break;
-      default:
-        break;
-    }
-  }
-
   toggleGravity = () => {
     console.log("Toggling gravity.");
     if (this.world.gravity.y === -9.8) {
@@ -203,11 +193,50 @@ export default class FallingScene extends XrScene {
     }
   }
 
-  objectInteraction(object) {
-    if (object === this.ballSpawner) {
-      this.spawnBall();
-    } else if (object === this.boxSpawner) {
-      this.spawnBox();
+  reverseGravity() {
+    console.log("Reverse gravity.");
+    this.world.gravity.y *= -1;
+  }
+
+  onKeyUp = () => {
+    switch (event.keyCode) {
+      // G
+      case 71:
+        this.toggleGravity();
+        break;
+      // R
+      case 82:
+        this.reverseGravity();
+        break;
+      default:
+        break;
+    }
+  }
+
+  onClick = (event) => {
+    if (touchscreen.enabled) {
+      let touch = new THREE.Vector3();
+      touch.x = (event.clientX / window.innerWidth) * 2 - 1;
+      touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+      this.raycaster.setFromCamera(touch, this.camera);
+    }
+
+    this.updateRay();
+
+    let intersects = this.raycaster.intersectObject(this.group, true);
+    if (intersects.length > 0) {
+      let res = intersects.filter(function(res) {
+        return res && res.object;
+      })[0];
+
+      if (res && res.object) {
+        if (res.object === this.ballSpawner) {
+          this.spawnBall();
+        } else if (res.object === this.boxSpawner) {
+          this.spawnBox();
+        }
+      }
     }
   }
 

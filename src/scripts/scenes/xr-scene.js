@@ -61,6 +61,8 @@ export default class XrScene {
    * Basic ray functionality interacting with objects in the interactive group. 
    * Add objects that you want to be able to interact with into this.interactive and then they will be
    * highlighted when you look at them.
+   * 
+   * Make sure to call this.updateRay in the overriden animate method in a new scene.
    */
   updateRay() {
     if (this.selectedObj) {
@@ -76,7 +78,6 @@ export default class XrScene {
       this.raycaster.set(controls.getObject().position, direction);
     }
     
-
     let intersects = this.raycaster.intersectObject(this.interactive, true);
     if (intersects.length > 0) {
       let res = intersects.filter(function(res) {
@@ -100,7 +101,6 @@ export default class XrScene {
    * @param {number} delta time since last scene update
    */
   animate(delta) {
-    this.updateRay();
     return delta;
   }
 
