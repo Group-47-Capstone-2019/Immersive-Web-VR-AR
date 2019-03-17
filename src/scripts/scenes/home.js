@@ -145,7 +145,7 @@ export default class HomeScene extends XrScene {
       if (this.debug) console.log(intersection);
       this.material.color.set(0x00FF00);
 
-      //Functions call example
+      // Functions call example
       this.functions.externalFunc(intersection);
     };
 

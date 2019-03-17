@@ -27,7 +27,7 @@ export default class TriggerMesh extends Mesh {
      * Adds a function to the function list.
      * Useful for calling functions with their own contexts
      * (i.e. arrow functions)
-     * Call a function: this.functions[key](params);
+     * Call a function: this.functions.key(params);
      * @param {String} key
      * @param {Function} func
      */
