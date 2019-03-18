@@ -2,9 +2,8 @@
 import THREE from '../three';
 import * as CANNON from 'cannon';
 import XrScene from './xr-scene';
-import { userPosition, touchscreen } from '../controls/touch-controls';
-import { controls } from '../controls/keyboard-controls';
 import Table from '../../assets/Simple Wood Table.obj';
+import TriggerMesh from '../trigger';
 
 export default class FallingScene extends XrScene {
   /**
@@ -19,13 +18,12 @@ export default class FallingScene extends XrScene {
     this.renderer = renderer;
 
     this.renderer.shadowMap.enabled = true;
-    //this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
     this.length = 64;
     this.width = 64;
     this.height = 16;
-    this.createRoom();
-    this.loadTable();
+    this._createRoom();
+    this._loadTable();
     this.camera = camera;
     
 
@@ -44,27 +42,16 @@ export default class FallingScene extends XrScene {
 
     // Cylinders
 
-    console.log("constructor");
-
-    // this.loadTable();
-    this.raycaster = new THREE.Raycaster();
-    this.interactive = new THREE.Group();
-    this.scene.add(this.interactive);
-    this.selectedObj = null;
-    this.selectedObjColor;
-    this.colorSet = false;
-
-    this.createSpawners();
-    //this.ball = this.createBall();
+    this._createSpawners();
     
-    this.addLight();
+    this._addLight();
     
-    this.initCannon();
+    this._initCannon();
     this._addEventListener(window, 'mousedown', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
   }
 
-  createRoom() {
+  _createRoom() {
     // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
     const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
@@ -81,70 +68,131 @@ export default class FallingScene extends XrScene {
     this.scene.add(spawnTube);
   }
 
-  createSpawners() {
+  _spawnBall() {
+    console.log("Spawn ball");
+    
+    const ballBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
+    ballBody.addShape(this.ballShape);
+    const material = new THREE.MeshPhongMaterial({color: 'orange'});
+    const ball = new TriggerMesh(this.ballGeo, material);
+    ball.castShadow = true;
+    ball.receiveShadow = true;
+    this.world.addBody(ballBody);
+
+    ball.hover = function() {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    ball.exit = function() {
+      this.material.color.set('orange');
+    };
+
+    this.triggers.add(ball);
+    
+    this.bodies.push(ballBody);
+    this.meshes.push(ball);
+
+    this.checkObjectLimit();
+    
+    ballBody.position.set(0, 7, 0);
+    ball.position.set(0, 7, 0);
+  }
+
+  _spawnBox() {
+    console.log("Spawn box");
+
+    const boxBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
+    boxBody.addShape(this.boxShape);
+    let material = new THREE.MeshPhongMaterial({color: 'orange'});
+    let box = new TriggerMesh(this.boxGeo, material);
+    box.castShadow = true;
+    box.receiveShadow = true;
+    this.world.addBody(boxBody);
+
+    box.hover = function() {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    box.exit = function() {
+      this.material.color.set('orange');
+    };
+
+    this.triggers.add(box);
+
+    this.bodies.push(boxBody);
+    this.meshes.push(box);
+
+    this.checkObjectLimit();
+    
+    boxBody.position.set(0, 7, 0);
+    box.position.set(0, 7, 0);
+  }
+
+  _createSpawners() {
     // Sphere
     let material = new THREE.MeshPhongMaterial({color: 'gray'});
-    this.ballSpawner = new THREE.Mesh(this.ballGeo, material);
-    this.ballSpawner.castShadow = true;
-    this.ballSpawner.receiveShadow = true;
-    this.ballSpawner.position.set(0, -1.6, -13);
-    this.interactive.add(this.ballSpawner);
+    let ballSpawner = new TriggerMesh(this.ballGeo, material);
+    ballSpawner.castShadow = true;
+    ballSpawner.receiveShadow = true;
+    ballSpawner.position.set(0, -1.6, -13);
+
+    ballSpawner.hover = function() {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    ballSpawner.select = () => {
+      this._spawnBall();
+    };
+
+    ballSpawner.exit = function() {
+      this.material.color.set(0xFFFFFF);
+    };
+
+    this.triggers.add(ballSpawner);
 
     let ballBody = new CANNON.Body({mass: 0});
     ballBody.addShape(this.ballShape);
-    ballBody.position.copy(this.ballSpawner.position);
+    ballBody.position.copy(ballSpawner.position);
     this.world.addBody(ballBody);
 
     // Box
     material = new THREE.MeshPhongMaterial({color: 'gray'});
-    this.boxSpawner = new THREE.Mesh(this.boxGeo, material);
-    this.boxSpawner.castShadow = true;
-    this.boxSpawner.receiveShadow = true;
-    this.boxSpawner.position.set(-4, -1.6, -13);
-    this.interactive.add(this.boxSpawner);
+    let boxSpawner = new TriggerMesh(this.boxGeo, material);
+    boxSpawner.castShadow = true;
+    boxSpawner.receiveShadow = true;
+    boxSpawner.position.set(-4, -1.6, -13);
+    
+    boxSpawner.hover = function() {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    boxSpawner.select = () => {
+      this._spawnBox();
+    };
+
+    boxSpawner.exit = function() {
+      this.material.color.set(0xFFFFFF);
+    };
+
+    this.triggers.add(boxSpawner);
 
     let boxBody = new CANNON.Body({mass: 0});
     boxBody.addShape(this.boxShape);
-    boxBody.position.copy(this.boxSpawner.position);
+    boxBody.position.copy(boxSpawner.position);
     this.world.addBody(boxBody);
     
     // Cylinder
   }
 
-  // updateRay() {
-  //   if (this.selectedObj) {
-  //     this.selectedObj.material.color.set(this.selectedObjColor);
-  //     this.colorSet = false;
-  //     this.selectedObj = null;
-  //   }
-
-  //   // Get ray from keyboard controls
-  //   if(controls != null) {
-  //     let direction = new THREE.Vector3();
-  //     controls.getDirection(direction);
-  //     this.raycaster.set(controls.getObject().position, direction);
-  //   }
-    
-
-  //   let intersects = this.raycaster.intersectObject(this.interactive, true);
-  //   if (intersects.length > 0) {
-  //     let res = intersects.filter(function(res) {
-  //       return res && res.object;
-  //     })[0];
-      
-  //     if(res && res.object) {
-  //       this.selectedObj = res.object;
-  //       if(!this.colorSet) {
-  //         this.selectedObjColor = this.selectedObj.material.color.getHex();
-          
-  //         this.colorSet = true;
-  //       }
-  //       this.selectedObj.material.color.set('green');
-  //     }
-  //   }
-  // }
-
-  loadTable() {
+  _loadTable() {
     let object;
 
     function loadModel() {
@@ -155,7 +203,7 @@ export default class FallingScene extends XrScene {
       object.position.z = -15;
       object.position.y = -5.5;
       this.scene.add(object);
-    }
+    };
 
     var manager = new THREE.LoadingManager(loadModel.bind(this));
 
@@ -172,9 +220,9 @@ export default class FallingScene extends XrScene {
         var percentComplete = xhr.loaded / xhr.total * 100;
         console.log('model' + Math.round(percentComplete, 2) + '% downloaded');
       }
-    }
+    };
 
-    function onError() {}
+    function onError() {};
 
     var loader = new THREE.OBJLoader();
     loader.load(Table, function(obj) {
@@ -218,7 +266,7 @@ export default class FallingScene extends XrScene {
     return cache;
   }
 
-  createPlane() {
+  _createPlane() {
     // Generate plane ground using geometry and materials.
     const geometry2 = new THREE.PlaneGeometry(25, 25, 25, 25);
     geometry2.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
@@ -230,60 +278,6 @@ export default class FallingScene extends XrScene {
     this.scene.add(mesh2);
   }
 
-  onClick = (event) => {
-    if (touchscreen.enabled) {
-      let touch = new THREE.Vector3();
-      touch.x = (event.clientX / window.innerWidth) * 2 - 1;
-      touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-      this.raycaster.setFromCamera(touch, this.camera);
-    }
-
-    this.updateRay();
-
-    let intersects = this.raycaster.intersectObject(this.group, true);
-    if (intersects.length > 0) {
-      let res = intersects.filter(function(res) {
-        return res && res.object;
-      })[0];
-
-      if (res && res.object) {
-        if (res.object === this.ballSpawner) {
-          this.spawnBall();
-        } else if (res.object === this.boxSpawner) {
-          this.spawnBox();
-        }
-      }
-    }
-  }
-
-  // onClick = (event) => {
-  //   if (touchscreen.enabled) {
-  //     let touch = new THREE.Vector3();
-  //     touch.x = (event.clientX / window.innerWidth) * 2 - 1;
-  //     touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-  //     this.raycaster.setFromCamera(touch, this.camera);
-  //   }
-
-  //   this.updateRay();
-
-  //   let intersects = this.raycaster.intersectObject(this.interactive, true);
-  //   if (intersects.length > 0) {
-  //     let res = intersects.filter(function(res) {
-  //       return res && res.object;
-  //     })[0];
-
-  //     if (res && res.object) {
-  //       if (res.object === this.ballSpawner) {
-  //         this.spawnBall();
-  //       } else if (res.object === this.boxSpawner) {
-  //         this.spawnBox();
-  //       }
-  //     }
-  //   }
-  // }
-
   checkObjectLimit() {
     if (this.meshes.length > 100) {
       this.world.remove(this.bodies[0]);
@@ -294,49 +288,7 @@ export default class FallingScene extends XrScene {
     }
   }
 
-  spawnBall() {
-    console.log("Spawn ball");
-    
-    let ballBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
-    ballBody.addShape(this.ballShape);
-    let material = new THREE.MeshPhongMaterial({color: 'orange'});
-    let ballMesh = new THREE.Mesh(this.ballGeo, material);
-    ballMesh.castShadow = true;
-    ballMesh.receiveShadow = true;
-    this.world.addBody(ballBody);
-    this.interactive.add(ballMesh);
-    
-    this.bodies.push(ballBody);
-    this.meshes.push(ballMesh);
-
-    this.checkObjectLimit();
-    
-    ballBody.position.set(0, 7, 0);
-    ballMesh.position.set(0, 7, 0);
-  }
-
-  spawnBox() {
-    console.log("Spawn box");
-
-    let boxBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
-    boxBody.addShape(this.boxShape);
-    let material = new THREE.MeshPhongMaterial({color: 'red'});
-    let boxMesh = new THREE.Mesh(this.boxGeo, material);
-    boxMesh.castShadow = true;
-    boxMesh.receiveShadow = true;
-    this.world.addBody(boxBody);
-    this.interactive.add(boxMesh);
-
-    this.bodies.push(boxBody);
-    this.meshes.push(boxMesh);
-
-    this.checkObjectLimit();
-    
-    boxBody.position.set(0, 7, 0);
-    boxMesh.position.set(0, 7, 0);
-  }
-
-  initCannon() {
+  _initCannon() {
     //const radius = 1;
     const length = this.length / 2;
     const width = this.width / 2;
@@ -344,16 +296,6 @@ export default class FallingScene extends XrScene {
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -9.8, 0);
     
-    // const sphereBody = new CANNON.Body(
-    //   {
-    //     mass: 1,
-    //     shape: new CANNON.Sphere(radius)
-    //   }
-    // );
-    // sphereBody.position.set(0, 1, -5);
-    // this.ballBody = sphereBody;
-    // this.world.add(sphereBody);
-
     // Creating Ground.
     const groundShape = new CANNON.Plane();
     const groundMaterial = new CANNON.Material();
@@ -398,16 +340,12 @@ export default class FallingScene extends XrScene {
     this.world.addBody(wallLeftBody);
   }
 
-  addLight() {
+  _addLight() {
     const ambientLight = new THREE.AmbientLight('white', 0.5);
     this.scene.add(ambientLight);
 
     const keyLight = new THREE.DirectionalLight('white', 1.0, 1000);
     keyLight.position.set(-100, 0, 100);
-    //keyLight.castShadow = true;
-    //keyLight.shadow.bias = 0.0001;
-    //keyLight.shadow.mapSize.width = 2048 * 2;
-    //keyLight.shadow.mapSize.height = 2048 * 2;
     keyLight.position.set(0, 100, 0);
     keyLight.decay = 1;
     
@@ -428,8 +366,6 @@ export default class FallingScene extends XrScene {
 
   animate(delta) {
     this.updatePhysics(delta);
-
-    this.updateRay();
 
     // Update position of meshes
     for(var i = 0; i < this.bodies.length; i++) {

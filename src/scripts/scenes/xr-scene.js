@@ -49,16 +49,40 @@ export default class XrScene {
   constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
+    this.pause = false;
 
     this.loader.addGltfToQueue(controllerGlb, 'controller');
     this.scene.add(this.triggers);
+
+    this._checkForKeyboardMouse();
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
     this._addEventListener(window, 'xrSelectStart', this._xrSelectStart);
     this._addEventListener(window, 'xrSelectEnd', this._xrSelectEnd);
+  }
 
-    this._checkForKeyboardMouse();
+  _onMouseDown = () => {
+    if (controls && controls.enabled) {
+      this.buttonPressed = true;
+    }
+  }
+  
+  _onMouseUp = () => {
+    if (controls && controls.enabled) {
+      this.buttonPressed = false;
+    }
+  }
+
+  _onKeyUp = (event) => {
+    switch(event.keyCode) {
+      // F
+      case 70:
+        this.toggleAnimation();
+        break;
+      default:
+        break;
+    }
   }
 
   /**
@@ -138,6 +162,17 @@ export default class XrScene {
     this._animationCallback();
   }
 
+  /** 
+   * Called when the F key is pressed, toggles the pause value to pause/play animation.
+   */
+  toggleAnimation() {
+    if (this.pause) {
+      this.pause = false;
+    } else {
+      this.pause = true;
+    }
+  }
+
   /**
    * Cancels the current animation frame to prevent
    * artifacts from carrying over to the next render loop
@@ -164,10 +199,17 @@ export default class XrScene {
     if (this.isActive) {
       // Update the objects in the scene that we will be rendering
       const delta = this.clock.getDelta();
-      this.animate(delta);
+      if (!this.pause) {
+        this.animate(delta);
+      }
       // Update the user position if keyboard and mouse controls are enabled.
       if (controls && controls.enabled) {
         updatePosition();
+
+        let direction = new THREE.Vector3();
+        controls.getDirection(direction);
+        updateRay(controls.getObject().position, direction);
+        this._intersectionHandler();
       }
 
       if (!XR.session) {
@@ -178,6 +220,7 @@ export default class XrScene {
         this.frame = requestAnimationFrame(this._animationCallback);
         return this.frame;
       }
+
       if (!xrFrame) {
         this.frame = XR.session.requestAnimationFrame(this._animationCallback);
         return this.frame;
@@ -452,6 +495,9 @@ export default class XrScene {
   _checkForKeyboardMouse() {
     if (keyboard) {
       this.scene.add(controls.getObject());
+      this._addEventListener(window, 'mousedown', this._onMouseDown);
+      this._addEventListener(window, 'mouseup', this._onMouseUp);
+      this._addEventListener(window, 'keyup', this._onKeyUp);
     }
   }
 
