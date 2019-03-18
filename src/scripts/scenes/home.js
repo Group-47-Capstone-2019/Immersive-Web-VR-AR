@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import wallTexture from '../../images/wall.png';
+import wallTexture from '../../assets/wall.png';
 import XrScene from './xr-scene';
-import { touchscreen } from '../controls/touch-controls';
 import { navigate } from '../router';
 import TriggerMesh from '../trigger';
 
@@ -99,13 +98,6 @@ export default class HomeScene extends XrScene {
       console.error('Error creating room mesh.');
     }
 
-    this.group = new THREE.Group();
-    this.scene.add(this.group);
-    this.raycaster = new THREE.Raycaster();
-    this.selectedObj = null;
-    this.selectedObjColor;
-    this.colorSet = false;
-
     this.createDoors();
     this._boxTest();
     this._addEventListener(window, 'mousedown', this.onClick);
@@ -123,108 +115,92 @@ export default class HomeScene extends XrScene {
     box.rotateZ(0.03);
   }
 
-  updateRay() {
-    if (this.selectedObj) {
-      this.selectedObj.material.color.set(this.selectedObjColor);
-      this.colorSet = false;
-      this.selectedObj = null;
-    }
-
-    // Get ray from keyboard controls
-    if(this.controls != null) {
-      let direction = new THREE.Vector3();
-      this.controls.getDirection(direction);
-      this.raycaster.set(this.controls.getObject().position, direction);
-    }
-    
-    let intersects = this.raycaster.intersectObject(this.group, true);
-    if (intersects.length > 0) {
-      let res = intersects.filter(function(res) {
-        return res && res.object;
-      })[0];
-      
-      if(res && res.object) {
-        this.selectedObj = res.object;
-        if(!this.colorSet) {
-          this.selectedObjColor = this.selectedObj.material.color.getHex();
-          
-          this.colorSet = true;
-        }
-        this.selectedObj.material.color.set('green');
-      }
-    }
-  }
-
-  onClick = (event) => {
-    if (touchscreen.enabled) {
-      let touch = new THREE.Vector3();
-      touch.x = (event.clientX / window.innerWidth) * 2 - 1;
-      touch.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-      this.raycaster.setFromCamera(touch, this.camera);
-    }
-
-    this.updateRay();
-
-    let intersects = this.raycaster.intersectObject(this.group, true);
-    if (intersects.length > 0) {
-      let res = intersects.filter(function(res) {
-        return res && res.object;
-      })[0];
-
-      if (res && res.object) {
-        if (res.object === this.scene.getObjectByName('fallingDoor')) {
-          console.log('Falling Door');
-          navigate('/falling');
-        } else if (res.object === this.scene.getObjectByName('planetsDoor')) {
-          console.log('Planets Door');
-          navigate('/planets');
-        } else if (res.object === this.scene.getObjectByName('pendulumDoor')) {
-          console.log('Pendulum Door');
-          navigate('/pendulum');
-        } else if (res.object === this.scene.getObjectByName('mirrorDoor')) {
-          console.log('Mirror Door');
-          navigate('/mirror');
-        }
-      }
-    }
-  }
-
   createDoors() {
     const geometry = new THREE.BoxGeometry(1, 12, 7);
     const fallingMaterial = new THREE.MeshPhongMaterial({
-      color: '#402f00',
+      color: 0x402f00,
     });
-    const fallingDoor = new THREE.Mesh(geometry, fallingMaterial);
+    const fallingDoor = new TriggerMesh(geometry, fallingMaterial);
     fallingDoor.name = 'fallingDoor';
     fallingDoor.position.set(-11.5, -2, 0);
-    this.group.add(fallingDoor);
+    
+    fallingDoor.addFunction('navigate', navigate);
+
+    fallingDoor.hover = function() {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    }
+
+    fallingDoor.select = function() {
+      navigate('/falling');
+    }
+
+    fallingDoor.exit = function() {
+      this.material.color.set(0x402f00);
+    }
+    
+    this.triggers.add(fallingDoor);
 
     const planetsMaterial = new THREE.MeshPhongMaterial({
       color: '#402f00',
     });
-    const planetsDoor = new THREE.Mesh(geometry, planetsMaterial);
+    const planetsDoor = new TriggerMesh(geometry, planetsMaterial);
     planetsDoor.name = 'planetsDoor';
     planetsDoor.position.set(11.5, -2, 0);
-    this.group.add(planetsDoor);
+
+    planetsDoor.addFunction('navigate', navigate);
+
+    planetsDoor.hover = function() {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    }
+
+    planetsDoor.select = function() {
+      navigate('/planets');
+    }
+
+    planetsDoor.exit = function() {
+      this.material.color.set(0x402f00);
+    }
+
+    this.triggers.add(planetsDoor);
 
     const pendulumMaterial = new THREE.MeshPhongMaterial({
-      color: '#402f00',
+      color: 0x402f00
     });
-    const pendulumDoor = new THREE.Mesh(geometry, pendulumMaterial);
+    const pendulumDoor = new TriggerMesh(geometry, pendulumMaterial);
     pendulumDoor.rotateY(Math.PI / 2);
     pendulumDoor.name = 'pendulumDoor';
     pendulumDoor.position.set(0, -2, -11.5);
-    this.group.add(pendulumDoor);
 
-    const mirrorMaterial = new THREE.MeshPhongMaterial({
-      color: '#402f00',
+    pendulumDoor.addFunction('navigate', navigate);
+
+    pendulumDoor.hover = function() {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    }
+
+    pendulumDoor.select = function() {
+      navigate('/pendulum');
+    }
+
+    pendulumDoor.exit = function() {
+      this.material.color.set(0x402f00);
+    }
+
+    this.triggers.add(pendulumDoor);
+
+    const laserMaterial = new THREE.MeshPhongMaterial({
+      color: 0x402f00
     });
-    const mirrorDoor = new THREE.Mesh(geometry, mirrorMaterial);
-    mirrorDoor.rotateY(Math.PI / 2);
-    mirrorDoor.name = 'mirrorDoor';
-    mirrorDoor.position.set(0, -2, 11.5);
-    this.group.add(mirrorDoor);
+    const laserDoor = new TriggerMesh(geometry, laserMaterial);
+    laserDoor.rotateY(Math.PI / 2);
+    laserDoor.name = 'laserDoor';
+    laserDoor.position.set(0, -2, 11.5);
+    this.triggers.add(laserDoor);
   }
 
   _boxTest() {
