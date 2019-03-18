@@ -41,7 +41,10 @@ export default class HomeScene extends XrScene {
     }
 
     // Generate room geometry
-    const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
+    this.length = 24;
+    this.width = 24;
+    this.height = 16;
+    const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
 
     let roomMaterials;
 
@@ -116,13 +119,16 @@ export default class HomeScene extends XrScene {
   }
 
   createDoors() {
-    const geometry = new THREE.BoxGeometry(1, 12, 7);
+    const doorHeight = 12;
+    const doorWidth = 7;
+    const doorLength = 1;
+    const geometry = new THREE.BoxGeometry(doorLength, doorHeight, doorWidth);
     const fallingMaterial = new THREE.MeshPhongMaterial({
       color: 0x402f00,
     });
     const fallingDoor = new TriggerMesh(geometry, fallingMaterial);
     fallingDoor.name = 'fallingDoor';
-    fallingDoor.position.set(-11.5, -2, 0);
+    fallingDoor.position.set((doorLength / 2) - (this.length / 2), (doorHeight / 2) - (this.height / 2), 0);
     
     fallingDoor.addFunction('navigate', navigate);
 
@@ -147,7 +153,7 @@ export default class HomeScene extends XrScene {
     });
     const planetsDoor = new TriggerMesh(geometry, planetsMaterial);
     planetsDoor.name = 'planetsDoor';
-    planetsDoor.position.set(11.5, -2, 0);
+    planetsDoor.position.set((this.length / 2) - (doorLength / 2), (doorHeight / 2) - (this.height / 2), 0);
 
     planetsDoor.addFunction('navigate', navigate);
 
@@ -173,7 +179,7 @@ export default class HomeScene extends XrScene {
     const pendulumDoor = new TriggerMesh(geometry, pendulumMaterial);
     pendulumDoor.rotateY(Math.PI / 2);
     pendulumDoor.name = 'pendulumDoor';
-    pendulumDoor.position.set(0, -2, -11.5);
+    pendulumDoor.position.set(0, (doorHeight / 2) - (this.height / 2), (doorLength / 2) - (this.length / 2));
 
     pendulumDoor.addFunction('navigate', navigate);
 
@@ -199,7 +205,7 @@ export default class HomeScene extends XrScene {
     const laserDoor = new TriggerMesh(geometry, laserMaterial);
     laserDoor.rotateY(Math.PI / 2);
     laserDoor.name = 'laserDoor';
-    laserDoor.position.set(0, -2, 11.5);
+    laserDoor.position.set(0, (doorHeight / 2) - (this.height / 2), (this.length / 2) - (doorLength / 2));
     this.triggers.add(laserDoor);
   }
 
