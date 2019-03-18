@@ -28,6 +28,11 @@ export default class FallingScene extends XrScene {
     this.body = this.initCannon();
   }
 
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+    return cache;
+  }
+
   createPlane() {
     // Generate plane ground using geometry and materials.
     const geometry2 = new THREE.PlaneGeometry(25, 25, 25, 25);

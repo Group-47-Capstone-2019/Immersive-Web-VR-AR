@@ -31,6 +31,11 @@ export default class PlanetsScene extends XrScene {
     this.scene.add(pointLight);
   }
 
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+    return cache;
+  }
+
   /**
    * animation function - called each frame
    *

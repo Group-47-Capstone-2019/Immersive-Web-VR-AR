@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import wallTexture from '../../images/wall.png';
-import { touchscreen } from '../controls/touch-controls';
 import XrScene from './xr-scene';
+import { touchscreen } from '../controls/touch-controls';
 import { navigate } from '../router';
+import TriggerMesh from '../trigger';
 
 const settings = {
   global: {
@@ -110,9 +111,13 @@ export default class HomeScene extends XrScene {
     this._addEventListener(window, 'mousedown', this.onClick);
   }
 
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+    return cache;
+  }
+
   animate() {
-    this.updateRay();
-    const box = this.scene.getObjectByName('testBox001');
+    const box = this.triggers.getObjectByName('testBox001');
     box.rotateX(0.01);
     box.rotateY(0.01);
     box.rotateZ(0.03);
@@ -233,13 +238,51 @@ export default class HomeScene extends XrScene {
     if (!geometry) console.log('Failed to generate geometry');
     if (!material) console.log('Failed to generate material');
 
-    const box = new THREE.Mesh(geometry, material);
+    const box = new TriggerMesh(geometry, material);
     if (!box) console.log('Failed to create box mesh');
 
-    box.name = 'testBox001';
-    box.position.set(0, 0, -5);
+    const externalFunc = (args) => {
+      console.log(args);
+      console.log(this);
+    };
 
-    this.scene.add(box);
+    box.addFunction('externalFunc', externalFunc);
+
+    box.hover = function (intersection) {
+      if (this.debug) console.log(intersection);
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    box.select = function (intersection) {
+      if (this.debug) console.log(intersection);
+      this.material.color.set(0x00FF00);
+
+      // Functions call example
+      this.functions.externalFunc(intersection);
+    };
+
+    box.release = function (intersection) {
+      if (this.debug) console.log(intersection);
+      this.material.color.set(0x0000FF);
+    };
+
+    box.exit = function (intersection) {
+      if (this.debug) console.log(intersection);
+      this.material.color.set(0xFFFFFF);
+    };
+
+
+    box.name = 'testBox001';
+    box.position.set(-1, 0, -5);
+
+    this.triggers.add(box);
+
+    const box2 = box.clone();
+    box2.position.set(1, 0, -5);
+
+    this.triggers.add(box2);
 
     if (!this.scene.getObjectByName('testBox001')) {
       console.log('Box not found in scene');

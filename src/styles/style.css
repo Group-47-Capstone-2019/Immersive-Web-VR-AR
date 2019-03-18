@@ -88,8 +88,15 @@ h6 {
   padding: 20px;
 }
 
+#loading {
+  font-size: 2em;
+  color: #888;
+  text-align: center;
+  margin-top: 100px;
+}
+
 main {
-  z-index: 666;
+  z-index: 420;
   top: 0;
   left: 0;
   bottom: 0;

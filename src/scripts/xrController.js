@@ -37,7 +37,6 @@ function createVRButton() {
 
 function xrOnSessionEnded(event) {
   XR.session = null;
-  console.log(event.session.renderState.outputContext.canvas);
 
   if (event.session.renderState.outputContext) {
     document.body.removeChild(event.session.renderState.outputContext.canvas);
@@ -53,6 +52,12 @@ function xrOnSessionEnded(event) {
 
 async function xrOnSessionStarted(context) {
   XR.session.addEventListener('end', xrOnSessionEnded);
+  XR.session.addEventListener('selectstart', () => {
+    window.dispatchEvent(new Event('xrSelectStart'));
+  });
+  XR.session.addEventListener('selectend', () => {
+    window.dispatchEvent(new Event('xrSelectEnd'));
+  });
 
   // Set rendering canvas to be XR compatible and add a baselayer
   try {
