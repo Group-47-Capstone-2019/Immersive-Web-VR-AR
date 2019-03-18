@@ -162,10 +162,6 @@ export function showTouchControls() {
     joystick.addEventListener('touchmove', (ev) => { handleTouchMove(ev); });
     joystick.addEventListener('touchend', (ev) => { handleTouchEnd(ev); });
   }
-<<<<<<< HEAD
-
-=======
->>>>>>> object-spawning
   touchscreen.enabled = true;
 }
 
@@ -184,10 +180,6 @@ export function hideTouchControls() {
     joystick.removeEventListener('touchmove', handleTouchMove());
     joystick.removeEventListener('touchend', handleTouchEnd());
   }
-<<<<<<< HEAD
-
-=======
->>>>>>> object-spawning
   touchscreen.enabled = false;
 }
 
