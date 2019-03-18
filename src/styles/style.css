@@ -31,21 +31,23 @@
   visibility: visible;
   top: 5%;
   right: 5%;
-  background-color: white;
-  height: 30px;
-  width: 30px;
-  padding: 3px 5px;
-  border-radius: 2px;
-  border: solid 1px black;
-  font-size: 20px;
-  font-weight: bold;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  border: none;
+  height: 50px;
+  width: 50px;
+  outline: none;
+  opacity: 1;
+  background-image: url('../images/fullscreen.png');
+  background-position: center center;
+  background-size: 100%;
 }
 
 .vr-toggle {
   position: absolute;
   visibility: visible;
-  bottom: 20%;
-  left: 50%;
+  top: 5%;
+  left: 5%;
   background-color: white;
   color: black;
   padding: 12px 16px;
@@ -55,7 +57,8 @@
   font-weight: bold;
   height: 50px;
   width: 100px;
-  transform: translate(-50%, -50%);
+  opacity: 0.6;
+  outline: none;
 }
 
 #vr-port {
