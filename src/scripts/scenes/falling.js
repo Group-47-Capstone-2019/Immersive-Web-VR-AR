@@ -68,7 +68,7 @@ export default class FallingScene extends XrScene {
     this.scene.add(spawnTube);
   }
 
-  _spawnBall() {
+  _spawnBall = () => {
     console.log("Spawn ball");
     
     const ballBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
@@ -100,7 +100,7 @@ export default class FallingScene extends XrScene {
     ball.position.set(0, 7, 0);
   }
 
-  _spawnBox() {
+  _spawnBox = () => {
     console.log("Spawn box");
 
     const boxBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
@@ -140,14 +140,16 @@ export default class FallingScene extends XrScene {
     ballSpawner.receiveShadow = true;
     ballSpawner.position.set(0, -1.6, -13);
 
+    ballSpawner.addFunction('spawnBall', this._spawnBall);
+
     ballSpawner.hover = function() {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
     };
 
-    ballSpawner.select = () => {
-      this._spawnBall();
+    ballSpawner.select = function() {
+      this.functions.spawnBall();
     };
 
     ballSpawner.exit = function() {
@@ -168,14 +170,16 @@ export default class FallingScene extends XrScene {
     boxSpawner.receiveShadow = true;
     boxSpawner.position.set(-4, -1.6, -13);
     
+    boxSpawner.addFunction('spawnBox', this._spawnBox);
+
     boxSpawner.hover = function() {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
     };
 
-    boxSpawner.select = () => {
-      this._spawnBox();
+    boxSpawner.select = function() {
+      this.functions.spawnBox();
     };
 
     boxSpawner.exit = function() {
