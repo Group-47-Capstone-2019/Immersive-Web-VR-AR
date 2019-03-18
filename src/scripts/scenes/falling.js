@@ -285,7 +285,7 @@ export default class FallingScene extends XrScene {
   checkObjectLimit() {
     if (this.meshes.length > 100) {
       this.world.remove(this.bodies[0]);
-      this.interactive.remove(this.meshes[0]);
+      this.triggers.remove(this.meshes[0]);
       this.scene.remove(this.meshes[0]);
       this.bodies.shift();
       this.meshes.shift();
