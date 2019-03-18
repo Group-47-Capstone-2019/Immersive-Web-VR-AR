@@ -40,7 +40,8 @@ export function createCrosshair() {
   const material = new THREE.LineBasicMaterial({ color: 0xAAFFAA });
 
   // Crosshair size
-  const x = 0.0075, y = 0.0075;
+  const x = 0.0075; const
+    y = 0.0075;
 
   const geometry = new THREE.Geometry();
 
@@ -48,10 +49,10 @@ export function createCrosshair() {
   geometry.vertices.push(new THREE.Vector3(0, y, 0));
   geometry.vertices.push(new THREE.Vector3(0, -y, 0));
   geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-  geometry.vertices.push(new THREE.Vector3(x, 0, 0));    
+  geometry.vertices.push(new THREE.Vector3(x, 0, 0));
   geometry.vertices.push(new THREE.Vector3(-x, 0, 0));
 
-  crosshair = new THREE.Line( geometry, material );
+  crosshair = new THREE.Line(geometry, material);
 
   // Center it
   const crosshairPercentX = 50;

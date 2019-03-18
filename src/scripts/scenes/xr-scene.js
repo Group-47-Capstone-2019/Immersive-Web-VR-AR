@@ -5,7 +5,7 @@ import { World } from 'cannon';
 
 import { XR } from '../xrController';
 import { canvas } from '../renderer/canvas';
-import { userPosition, updateTouchPosition, touchscreen } from '../controls/touch-controls';
+import { userPosition, updateTouchPosition } from '../controls/touch-controls';
 import {
   keyboard,
   controls,
@@ -67,7 +67,7 @@ export default class XrScene {
       this.buttonPressed = true;
     }
   }
-  
+
   _onMouseUp = () => {
     if (controls && controls.enabled) {
       this.buttonPressed = false;
@@ -75,7 +75,7 @@ export default class XrScene {
   }
 
   _onKeyUp = (event) => {
-    switch(event.keyCode) {
+    switch (event.keyCode) {
       // F
       case 70:
         this.toggleAnimation();
@@ -162,7 +162,7 @@ export default class XrScene {
     this._animationCallback();
   }
 
-  /** 
+  /**
    * Called when the F key is pressed, toggles the pause value to pause/play animation.
    */
   toggleAnimation() {
@@ -206,7 +206,7 @@ export default class XrScene {
       if (controls && controls.enabled) {
         updatePosition();
 
-        let direction = new THREE.Vector3();
+        const direction = new Vector3();
         controls.getDirection(direction);
         updateRay(controls.getObject().position, direction);
         this._intersectionHandler();

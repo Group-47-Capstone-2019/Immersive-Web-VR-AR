@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
-import THREE from '../three';
 import * as CANNON from 'cannon';
+import THREE from '../three';
 import XrScene from './xr-scene';
 import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
@@ -25,13 +25,13 @@ export default class FallingScene extends XrScene {
     this._createRoom();
     this._loadTable();
     this.camera = camera;
-    
 
-    // Objects 
+
+    // Objects
     this.bodies = [];
     this.meshes = [];
     this.objectMaterial = new CANNON.Material();
-    
+
     // Balls
     this.ballShape = new CANNON.Sphere(1);
     this.ballGeo = new THREE.SphereGeometry(this.ballShape.radius, 32, 32);
@@ -43,9 +43,9 @@ export default class FallingScene extends XrScene {
     // Cylinders
 
     this._createSpawners();
-    
+
     this._addLight();
-    
+
     this._initCannon();
     this._addEventListener(window, 'mousedown', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
@@ -59,65 +59,65 @@ export default class FallingScene extends XrScene {
     this.room.receiveShadow = true;
     this.room.castShadow = true;
     this.scene.add(this.room);
-    
+
     // Create spawner tube
-    const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide});
+    const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide });
     const spawnTubeGeo = new THREE.CylinderGeometry(2, 2, 3, 32, 32, true);
-    let spawnTube = new THREE.Mesh(spawnTubeGeo, tubeMaterials);
+    const spawnTube = new THREE.Mesh(spawnTubeGeo, tubeMaterials);
     spawnTube.position.set(0, 7, 0);
     this.scene.add(spawnTube);
   }
 
   _spawnBall = () => {
-    console.log("Spawn ball");
-    
-    const ballBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
+    console.log('Spawn ball');
+
+    const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
-    const material = new THREE.MeshPhongMaterial({color: 'orange'});
+    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
     const ball = new TriggerMesh(this.ballGeo, material);
     ball.castShadow = true;
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
-    ball.hover = function() {
+    ball.hover = function () {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
     };
 
-    ball.exit = function() {
+    ball.exit = function () {
       this.material.color.set('orange');
     };
 
     this.triggers.add(ball);
-    
+
     this.bodies.push(ballBody);
     this.meshes.push(ball);
 
     this.checkObjectLimit();
-    
+
     ballBody.position.set(0, 7, 0);
     ball.position.set(0, 7, 0);
   }
 
   _spawnBox = () => {
-    console.log("Spawn box");
+    console.log('Spawn box');
 
-    const boxBody = new CANNON.Body({mass: 1, material: this.objectMaterial});
+    const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
-    let material = new THREE.MeshPhongMaterial({color: 'orange'});
-    let box = new TriggerMesh(this.boxGeo, material);
+    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
+    const box = new TriggerMesh(this.boxGeo, material);
     box.castShadow = true;
     box.receiveShadow = true;
     this.world.addBody(boxBody);
 
-    box.hover = function() {
+    box.hover = function () {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
     };
 
-    box.exit = function() {
+    box.exit = function () {
       this.material.color.set('orange');
     };
 
@@ -127,72 +127,72 @@ export default class FallingScene extends XrScene {
     this.meshes.push(box);
 
     this.checkObjectLimit();
-    
+
     boxBody.position.set(0, 7, 0);
     box.position.set(0, 7, 0);
   }
 
   _createSpawners() {
     // Sphere
-    let material = new THREE.MeshPhongMaterial({color: 'gray'});
-    let ballSpawner = new TriggerMesh(this.ballGeo, material);
+    let material = new THREE.MeshPhongMaterial({ color: 'gray' });
+    const ballSpawner = new TriggerMesh(this.ballGeo, material);
     ballSpawner.castShadow = true;
     ballSpawner.receiveShadow = true;
     ballSpawner.position.set(0, -1.6, -13);
 
     ballSpawner.addFunction('spawnBall', this._spawnBall);
 
-    ballSpawner.hover = function() {
+    ballSpawner.hover = function () {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
     };
 
-    ballSpawner.select = function() {
+    ballSpawner.select = function () {
       this.functions.spawnBall();
     };
 
-    ballSpawner.exit = function() {
+    ballSpawner.exit = function () {
       this.material.color.set(0xFFFFFF);
     };
 
     this.triggers.add(ballSpawner);
 
-    let ballBody = new CANNON.Body({mass: 0});
+    const ballBody = new CANNON.Body({ mass: 0 });
     ballBody.addShape(this.ballShape);
     ballBody.position.copy(ballSpawner.position);
     this.world.addBody(ballBody);
 
     // Box
-    material = new THREE.MeshPhongMaterial({color: 'gray'});
-    let boxSpawner = new TriggerMesh(this.boxGeo, material);
+    material = new THREE.MeshPhongMaterial({ color: 'gray' });
+    const boxSpawner = new TriggerMesh(this.boxGeo, material);
     boxSpawner.castShadow = true;
     boxSpawner.receiveShadow = true;
     boxSpawner.position.set(-4, -1.6, -13);
-    
+
     boxSpawner.addFunction('spawnBox', this._spawnBox);
 
-    boxSpawner.hover = function() {
+    boxSpawner.hover = function () {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
     };
 
-    boxSpawner.select = function() {
+    boxSpawner.select = function () {
       this.functions.spawnBox();
     };
 
-    boxSpawner.exit = function() {
+    boxSpawner.exit = function () {
       this.material.color.set(0xFFFFFF);
     };
 
     this.triggers.add(boxSpawner);
 
-    let boxBody = new CANNON.Body({mass: 0});
+    const boxBody = new CANNON.Body({ mass: 0 });
     boxBody.addShape(this.boxShape);
     boxBody.position.copy(boxSpawner.position);
     this.world.addBody(boxBody);
-    
+
     // Cylinder
   }
 
@@ -200,57 +200,57 @@ export default class FallingScene extends XrScene {
     let object;
 
     function loadModel() {
-      object.traverse(function(child) {
-        if(child.isMesh)child.material.map = texture;
+      object.traverse((child) => {
+        if (child.isMesh)child.material.map = texture;
       });
 
       object.position.z = -15;
       object.position.y = -5.5;
       this.scene.add(object);
-    };
+    }
 
-    var manager = new THREE.LoadingManager(loadModel.bind(this));
+    const manager = new THREE.LoadingManager(loadModel.bind(this));
 
-    manager.onProgress = function(item, loaded, total) {
+    manager.onProgress = function (item, loaded, total) {
       console.log(item, loaded, total);
     };
 
-    var textureLoader = new THREE.TextureLoader(manager);
+    const textureLoader = new THREE.TextureLoader(manager);
 
-    var texture = textureLoader.load('../../assets/textures/Diffuse.jpeg');
+    const texture = textureLoader.load('../../assets/textures/Diffuse.jpeg');
 
     function onProgress(xhr) {
       if (xhr.lengthComputable) {
-        var percentComplete = xhr.loaded / xhr.total * 100;
-        console.log('model' + Math.round(percentComplete, 2) + '% downloaded');
+        const percentComplete = xhr.loaded / xhr.total * 100;
+        console.log(`model${Math.round(percentComplete, 2)}% downloaded`);
       }
-    };
+    }
 
-    function onError() {};
+    function onError() {}
 
-    var loader = new THREE.OBJLoader();
-    loader.load(Table, function(obj) {
+    const loader = new THREE.OBJLoader();
+    loader.load(Table, (obj) => {
       object = obj;
     }, onProgress, onError);
   }
 
   toggleGravity = () => {
-    console.log("Toggling gravity.");
+    console.log('Toggling gravity.');
     if (this.world.gravity.y === -9.8) {
-      console.log("Gravity off");
+      console.log('Gravity off');
       this.world.gravity.y = 0;
     } else {
-      console.log("Gravity on");
+      console.log('Gravity on');
       this.world.gravity.y = -9.8;
     }
   }
 
   reverseGravity() {
-    console.log("Reverse gravity.");
+    console.log('Reverse gravity.');
     this.world.gravity.y *= -1;
   }
 
-  onKeyUp = () => {
+  onKeyUp = (event) => {
     switch (event.keyCode) {
       // G
       case 71:
@@ -293,13 +293,13 @@ export default class FallingScene extends XrScene {
   }
 
   _initCannon() {
-    //const radius = 1;
+    // const radius = 1;
     const length = this.length / 2;
     const width = this.width / 2;
     const height = this.height / 2;
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -9.8, 0);
-    
+
     // Creating Ground.
     const groundShape = new CANNON.Plane();
     const groundMaterial = new CANNON.Material();
@@ -309,8 +309,12 @@ export default class FallingScene extends XrScene {
     groundBody.position.set(0, -height, 0);
     this.world.addBody(groundBody);
 
-    const groundContact = new CANNON.ContactMaterial(groundMaterial, this.objectMaterial, {friction: 0.5, restitution: 0.2});
-    const objectContact = new CANNON.ContactMaterial(this.objectMaterial, this.objectMaterial, {friction: 0.4, restitution: 0.4});
+    const groundContact = new CANNON.ContactMaterial(
+      groundMaterial, this.objectMaterial, { friction: 0.5, restitution: 0.2 }
+    );
+    const objectContact = new CANNON.ContactMaterial(
+      this.objectMaterial, this.objectMaterial, { friction: 0.4, restitution: 0.4 }
+    );
     this.world.addContactMaterial(groundContact);
     this.world.addContactMaterial(objectContact);
 
@@ -320,24 +324,24 @@ export default class FallingScene extends XrScene {
     roofBody.position.set(0, height, 0);
     this.world.addBody(roofBody);
 
-    const wallFrontBody = new CANNON.Body({mass: 0});
+    const wallFrontBody = new CANNON.Body({ mass: 0 });
     wallFrontBody.addShape(groundShape);
     wallFrontBody.position.set(-length, 0, -width);
     this.world.addBody(wallFrontBody);
 
-    const wallBackBody = new CANNON.Body({mass: 0});
+    const wallBackBody = new CANNON.Body({ mass: 0 });
     wallBackBody.addShape(groundShape);
     wallBackBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI);
     wallBackBody.position.set(length, 0, width);
     this.world.addBody(wallBackBody);
 
-    const wallRightBody = new CANNON.Body({mass: 0});
+    const wallRightBody = new CANNON.Body({ mass: 0 });
     wallRightBody.addShape(groundShape);
     wallRightBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
     wallRightBody.position.set(length, 0, -width);
     this.world.addBody(wallRightBody);
 
-    const wallLeftBody = new CANNON.Body({mass: 0});
+    const wallLeftBody = new CANNON.Body({ mass: 0 });
     wallLeftBody.addShape(groundShape);
     wallLeftBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
     wallLeftBody.position.set(-length, 0, width);
@@ -352,7 +356,7 @@ export default class FallingScene extends XrScene {
     keyLight.position.set(-100, 0, 100);
     keyLight.position.set(0, 100, 0);
     keyLight.decay = 1;
-    
+
     const fillLight = new THREE.DirectionalLight('white', 0.75, 1000);
     fillLight.position.set(100, 0, 100);
 
@@ -364,7 +368,7 @@ export default class FallingScene extends XrScene {
     this.scene.add(backLight);
 
     const pointLight = new THREE.PointLight('white', 0.8, 500);
-  
+
     this.scene.add(pointLight);
   }
 
@@ -372,7 +376,7 @@ export default class FallingScene extends XrScene {
     this.updatePhysics(delta);
 
     // Update position of meshes
-    for(var i = 0; i < this.bodies.length; i++) {
+    for (let i = 0; i < this.bodies.length; i++) {
       this.meshes[i].position.copy(this.bodies[i].position);
       this.meshes[i].quaternion.copy(this.bodies[i].quaternion);
     }
