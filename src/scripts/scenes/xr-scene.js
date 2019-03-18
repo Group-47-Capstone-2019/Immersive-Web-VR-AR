@@ -410,6 +410,13 @@ export default class XrScene {
     const intersection = getIntersection(this.triggers);
 
     if (intersection) {
+      // Ensure that keyboard/mouse is not enabled before applying inverse world matrix to point
+      if (!(controls && controls.enabled)) {
+        // Fix the intersection point as it is in world coordinates
+        // rather than scene local coordinates
+        intersection.point.applyMatrix4(new Matrix4().getInverse(this.scene.matrixWorld));
+      }
+
       intersection.object.onTriggerHover(intersection);
       if (!intersection.object.isSelected) {
         if (this.buttonPressed) {

@@ -21,6 +21,20 @@ export default class TriggerMesh extends Mesh {
 
     release;
 
+    functions = {};
+
+    /**
+     * Adds a function to the function list.
+     * Useful for calling functions with their own contexts
+     * (i.e. arrow functions)
+     * Call a function: this.functions.key(params);
+     * @param {String} key
+     * @param {Function} func
+     */
+    addFunction(key, func) {
+      this.functions[key] = func;
+    }
+
     /**
      * Override of Object3D.clone() to include the object callbacks and material
      */
@@ -31,6 +45,7 @@ export default class TriggerMesh extends Mesh {
       triggerMesh.exit = this.exit;
       triggerMesh.select = this.select;
       triggerMesh.release = this.release;
+      triggerMesh.functions = this.functions;
       return triggerMesh;
     }
 
