@@ -3,6 +3,7 @@ import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import FallingScene from './scenes/falling';
+import PendulumScene from './scenes/pendulums';
 import {
   showWelcome, hideWelcome, showLoading, hideLoading
 } from './welcome';
@@ -22,6 +23,9 @@ const Routes = {
   },
   get '/falling'() {
     return new FallingScene(renderer, camera);
+  },
+  get '/pendulums'() {
+    return new PendulumScene(renderer, camera);
   }
 };
 
