@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel --hmr-port 64320 src/index.html",
+    "caddy": "parcel watch --no-hmr src/index.html",
     "build": "parcel build src/index.html",
     "now-build": "parcel build src/index.html --no-minify",
     "lint-nofix": "eslint src/scripts/**",

@@ -1,0 +1,12 @@
+localhost:1234
+
+mime .mjs application/ECMAScript
+mime .jsm application/ECMAScript
+mime .js application/JavaScript
+
+rewrite {
+  to /
+  ext /
+}
+
+root dist
