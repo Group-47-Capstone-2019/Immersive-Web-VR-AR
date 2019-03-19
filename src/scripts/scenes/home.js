@@ -124,54 +124,62 @@ export default class HomeScene extends XrScene {
     const doorLength = 1;
     const geometry = new THREE.BoxGeometry(doorLength, doorHeight, doorWidth);
     const fallingMaterial = new THREE.MeshPhongMaterial({
-      color: 0x402f00,
+      color: 0x402f00
     });
     const fallingDoor = new TriggerMesh(geometry, fallingMaterial);
     fallingDoor.name = 'fallingDoor';
-    fallingDoor.position.set((doorLength / 2) - (this.length / 2), (doorHeight / 2) - (this.height / 2), 0);
-    
+    fallingDoor.position.set(
+      (doorLength / 2) - (this.length / 2),
+      (doorHeight / 2) - (this.height / 2),
+      0
+    );
+
     fallingDoor.addFunction('navigate', navigate);
 
-    fallingDoor.hover = function() {
+    fallingDoor.hover = function () {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
-    }
+    };
 
-    fallingDoor.select = function() {
+    fallingDoor.select = function () {
       this.onTriggerRelease();
       navigate('/falling');
-    }
+    };
 
-    fallingDoor.exit = function() {
+    fallingDoor.exit = function () {
       this.material.color.set(0x402f00);
-    }
-    
+    };
+
     this.triggers.add(fallingDoor);
 
     const planetsMaterial = new THREE.MeshPhongMaterial({
-      color: '#402f00',
+      color: '#402f00'
     });
     const planetsDoor = new TriggerMesh(geometry, planetsMaterial);
     planetsDoor.name = 'planetsDoor';
-    planetsDoor.position.set((this.length / 2) - (doorLength / 2), (doorHeight / 2) - (this.height / 2), 0);
+    planetsDoor.position.set(
+      (this.length / 2) - (doorLength / 2),
+      (doorHeight / 2) - (this.height / 2),
+      0
+    );
 
     planetsDoor.addFunction('navigate', navigate);
 
-    planetsDoor.hover = function() {
+    planetsDoor.hover = function () {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
-    }
+    };
 
-    planetsDoor.select = function() {
+    planetsDoor.select = function () {
       this.onTriggerRelease();
       navigate('/planets');
-    }
+    };
 
-    planetsDoor.exit = function() {
+    planetsDoor.exit = function () {
       this.material.color.set(0x402f00);
-    }
+    };
 
     this.triggers.add(planetsDoor);
 
@@ -181,23 +189,27 @@ export default class HomeScene extends XrScene {
     const pendulumDoor = new TriggerMesh(geometry, pendulumMaterial);
     pendulumDoor.rotateY(Math.PI / 2);
     pendulumDoor.name = 'pendulumDoor';
-    pendulumDoor.position.set(0, (doorHeight / 2) - (this.height / 2), (doorLength / 2) - (this.length / 2));
+    pendulumDoor.position.set(
+      0,
+      (doorHeight / 2) - (this.height / 2),
+      (doorLength / 2) - (this.length / 2)
+    );
 
     pendulumDoor.addFunction('navigate', navigate);
 
-    pendulumDoor.hover = function() {
+    pendulumDoor.hover = function () {
       if (!this.isSelected) {
         this.material.color.set(0xFF0000);
       }
-    }
+    };
 
-    pendulumDoor.select = function() {
+    pendulumDoor.select = function () {
       navigate('/pendulum');
-    }
+    };
 
-    pendulumDoor.exit = function() {
+    pendulumDoor.exit = function () {
       this.material.color.set(0x402f00);
-    }
+    };
 
     this.triggers.add(pendulumDoor);
 
@@ -207,7 +219,11 @@ export default class HomeScene extends XrScene {
     const laserDoor = new TriggerMesh(geometry, laserMaterial);
     laserDoor.rotateY(Math.PI / 2);
     laserDoor.name = 'laserDoor';
-    laserDoor.position.set(0, (doorHeight / 2) - (this.height / 2), (this.length / 2) - (doorLength / 2));
+    laserDoor.position.set(
+      0,
+      (doorHeight / 2) - (this.height / 2),
+      (this.length / 2) - (doorLength / 2)
+    );
     this.triggers.add(laserDoor);
   }
 

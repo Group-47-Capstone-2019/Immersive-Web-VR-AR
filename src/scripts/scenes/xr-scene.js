@@ -52,9 +52,9 @@ export default class XrScene {
     this.controls = controls;
 
     // reset camera
-    if(this.controls != null) {
+    if (this.controls != null) {
       this.controls.getObject().position.set(0, 0, 0);
-      this.controls.getObject().rotation.y = 0; 
+      this.controls.getObject().rotation.y = 0;
       this.controls.getObject().children[0].rotation.x = 0;
     }
     this.pause = false;
