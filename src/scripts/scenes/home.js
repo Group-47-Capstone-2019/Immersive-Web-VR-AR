@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import wallTexture from '../../assets/wall.png';
 import XrScene from './xr-scene';
-import { navigate } from '../router';
 import TriggerMesh from '../trigger';
 
 const settings = {
@@ -118,6 +117,11 @@ export default class HomeScene extends XrScene {
     box.rotateZ(0.03);
   }
 
+  changeRoom(newPath) {
+    const event = new CustomEvent('changeRoom', { detail: { newPath } });
+    window.dispatchEvent(event);
+  }
+
   createDoors() {
     const doorHeight = 12;
     const doorWidth = 7;
@@ -134,7 +138,7 @@ export default class HomeScene extends XrScene {
       0
     );
 
-    fallingDoor.addFunction('navigate', navigate);
+    fallingDoor.addFunction('changeRoom', this.changeRoom);
 
     fallingDoor.hover = function () {
       if (!this.isSelected) {
@@ -144,7 +148,7 @@ export default class HomeScene extends XrScene {
 
     fallingDoor.select = function () {
       this.onTriggerRelease();
-      navigate('/falling');
+      this.functions.changeRoom('/falling');
     };
 
     fallingDoor.exit = function () {
@@ -164,7 +168,7 @@ export default class HomeScene extends XrScene {
       0
     );
 
-    planetsDoor.addFunction('navigate', navigate);
+    planetsDoor.addFunction('changeRoom', this.changeRoom);
 
     planetsDoor.hover = function () {
       if (!this.isSelected) {
@@ -174,7 +178,7 @@ export default class HomeScene extends XrScene {
 
     planetsDoor.select = function () {
       this.onTriggerRelease();
-      navigate('/planets');
+      this.functions.changeRoom('/planets');
     };
 
     planetsDoor.exit = function () {
@@ -195,7 +199,7 @@ export default class HomeScene extends XrScene {
       (doorLength / 2) - (this.length / 2)
     );
 
-    pendulumDoor.addFunction('navigate', navigate);
+    pendulumDoor.addFunction('changeRoom', this.changeRoom);
 
     pendulumDoor.hover = function () {
       if (!this.isSelected) {
@@ -204,7 +208,7 @@ export default class HomeScene extends XrScene {
     };
 
     pendulumDoor.select = function () {
-      navigate('/pendulum');
+      this.functions.changeRoom('/pendulum');
     };
 
     pendulumDoor.exit = function () {
