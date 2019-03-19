@@ -139,6 +139,7 @@ export default class HomeScene extends XrScene {
     }
 
     fallingDoor.select = function() {
+      this.onTriggerRelease();
       navigate('/falling');
     }
 
@@ -164,6 +165,7 @@ export default class HomeScene extends XrScene {
     }
 
     planetsDoor.select = function() {
+      this.onTriggerRelease();
       navigate('/planets');
     }
 

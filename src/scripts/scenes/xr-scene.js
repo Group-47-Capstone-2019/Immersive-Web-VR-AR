@@ -78,6 +78,8 @@ export default class XrScene {
 
   _onMouseUp = () => {
     if (controls && controls.enabled) {
+      if (this.selected) this.selected.onTriggerRelease();
+      this.selected = null;
       this.buttonPressed = false;
     }
   }
