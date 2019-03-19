@@ -1,5 +1,7 @@
 import {
-  PointLight, Vector3, Matrix4, Quaternion
+  PointLight,
+  Vector3, Matrix4, Quaternion,
+  MeshBasicMaterial
 } from 'three';
 import GLTFLoader from 'three-gltf-loader';
 import XrScene from './xr-scene';
@@ -15,6 +17,11 @@ export default class PendulumScene extends XrScene {
   }
 
   async run() {
+
+    const selectedMaterial = new MeshBasicMaterial({
+      color: '#f5b700'
+    });
+    const savedMaterials = new Map();
     const importedScene = await new Promise((resolve, reject) => {
       const loader = new GLTFLoader();
 
@@ -45,6 +52,16 @@ export default class PendulumScene extends XrScene {
       // drag_start() {},
       // Drag isn't completely necessary - Only if you want to customize in what
       // ways the object can be manipulated
+      hover_start(intersection) {
+        console.log(pendulum.material == selectedMaterial);
+        savedMaterials.set(pendulum, pendulum.material);
+        pendulum.material = selectedMaterial;
+      },
+      hover_end() {
+        console.log(savedMaterials.get(pendulum) == selectedMaterial);
+        pendulum.material = savedMaterials.get(pendulum);
+        savedMaterials.delete(pendulum);
+      },
       drag(matrix) {
         const position = new Vector3().setFromMatrixPosition(matrix);
         // Check if we should snap to any of our snapping points.
@@ -88,9 +105,8 @@ export default class PendulumScene extends XrScene {
     exitObj[Interactions] = {
       /**
        * NOTE: the format for the parameters to these functions are:
-       * hover(closeness, { distance, point, face, faceIndex, uv });
+       * hover({ distance, point, face, faceIndex, uv });
        */
-      // TODO: Add select_start and select_end
       select() {
         navigate('/home'); // Navigate to the home room
       }
@@ -100,7 +116,7 @@ export default class PendulumScene extends XrScene {
     const floor = importedScene.getObjectByName('Floor');
     const scene = this.scene;
     floor[Interactions] = {
-      select(depth, { point }) {
+      select({ point }) {
         console.log('Teleporting to:', point);
         const inverset = new Matrix4().copy(scene.matrixWorld);
         point.applyMatrix4(inverset);

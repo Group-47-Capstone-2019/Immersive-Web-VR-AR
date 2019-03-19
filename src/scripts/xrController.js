@@ -3,6 +3,7 @@ import { cameraSettings } from './renderer/camera';
 import { renderer } from './renderer';
 import { addMouseKeyboardEventListeners } from './controls/keyboard-controls';
 import { showTouchControls } from './controls/touch-controls';
+import { setupInteractions, closeInteractions } from './interactions';
 
 /**
  * XR fields we are using
@@ -37,6 +38,7 @@ function createVRButton() {
 
 function xrOnSessionEnded(event) {
   XR.session = null;
+  closeInteractions();
 
   if (event.session.renderState.outputContext) {
     document.body.removeChild(event.session.renderState.outputContext.canvas);
@@ -58,6 +60,8 @@ async function xrOnSessionStarted(context) {
   XR.session.addEventListener('selectend', () => {
     window.dispatchEvent(new Event('xrSelectEnd'));
   });
+
+  setupInteractions();
 
   // Set rendering canvas to be XR compatible and add a baselayer
   try {
