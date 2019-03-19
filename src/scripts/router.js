@@ -72,7 +72,6 @@ export function navigate(newPath) {
 }
 
 function onChangeRoom(event) {
-  console.log(event);
   navigate(event.detail.newPath);
 }
 
