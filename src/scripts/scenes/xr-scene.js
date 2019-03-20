@@ -51,6 +51,14 @@ export default class XrScene {
   constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
+    this.controls = controls;
+
+    // reset camera
+    if (this.controls != null) {
+      this.controls.getObject().position.set(0, 0, 0);
+      this.controls.getObject().rotation.y = 0;
+      this.controls.getObject().children[0].rotation.x = 0;
+    }
     this.pause = false;
 
     this.loader.addGltfToQueue(controllerGlb, 'controller');
@@ -72,6 +80,8 @@ export default class XrScene {
 
   _onMouseUp = () => {
     if (controls && controls.enabled) {
+      if (this.selected) this.selected.onTriggerRelease();
+      this.selected = null;
       this.buttonPressed = false;
     }
   }

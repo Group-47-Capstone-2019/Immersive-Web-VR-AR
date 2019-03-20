@@ -77,6 +77,13 @@ export function navigate(newPath) {
   navigateToScene(newPath, oldPath);
 }
 
+function onChangeRoom(event) {
+  navigate(event.detail.newPath);
+}
+
+
+window.addEventListener('changeRoom', onChangeRoom, true);
+
 window.onpopstate = () => {
   // this is an async function but we don't care when it finishes
   navigateToScene(window.location.pathname);
