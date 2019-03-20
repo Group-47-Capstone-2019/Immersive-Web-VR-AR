@@ -1,27 +1,23 @@
 import {
   Raycaster,
-  Color,
-  Vector3, Matrix4, Quaternion,
-  BoxGeometry, MeshBasicMaterial, Mesh,
-  Line, LineBasicMaterial,
-  Geometry
+  Vector3, Matrix4, Quaternion
 } from 'three';
 import { getCurrentScene } from './currentScene';
 import { XR } from './xrController';
 import { userPosition } from './controls/touch-controls';
 
 function translateObjectMatrix(matrix) {
- const currentPosition = new Vector3(
-   userPosition.x,
-   userPosition.y,
-   userPosition.z
- );
+  const currentPosition = new Vector3(
+    userPosition.x,
+    userPosition.y,
+    userPosition.z
+  );
 
- // Get matrix components and set position
- const matrixPosition = new Vector3();
- matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
- currentPosition.add(matrixPosition);
- matrix.setPosition(currentPosition);
+  // Get matrix components and set position
+  const matrixPosition = new Vector3();
+  matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
+  currentPosition.add(matrixPosition);
+  matrix.setPosition(currentPosition);
 }
 
 // TODO: Split Interactions into indevidual interfaces:
@@ -59,7 +55,7 @@ function createRay(inputSource, xrFrame) {
 }
 
 function handlerCommon(func) {
-  return function({frame, inputSource}) {
+  return function ({ frame, inputSource }) {
     const ray = createRay(inputSource, frame);
     if (ray) {
       for (const intersection of raycast(ray)) {
@@ -67,7 +63,7 @@ function handlerCommon(func) {
         break;
       }
     }
-  }
+  };
 }
 // Each input source can only be dragging one thing at a time, so:
 // dragAndDrop is a map from inputSource -> {offset}
@@ -89,7 +85,7 @@ const handleSelectStart = handlerCommon((intersection, inputSource, pointerMatri
           transformMatrix,
           matrixAutoUpdate: intersection.object.matrixAutoUpdate
         };
-      };
+      }
       intersection.object.matrixAutoUpdate = false;
       dragAndDrop.set(inputSource, data);
     } else if (interactions.select_start) {
@@ -148,7 +144,8 @@ function raycast(xrRay) {
 
   raycaster.set(
     new Vector3().setFromMatrixPosition(rMatrix),
-    new Vector3(0, 0, -1).transformDirection(rMatrix).normalize()
+    new Vector3(0, 0, -1).transformDirection(rMatrix)
+      .normalize()
   );
   const intersections = raycaster.intersectObjects(scene.children, true);
   for (const intersection of intersections) {

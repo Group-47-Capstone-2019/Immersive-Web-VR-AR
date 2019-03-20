@@ -7,7 +7,6 @@ import GLTFLoader from 'three-gltf-loader';
 import XrScene from './xr-scene';
 import { navigate } from '../router';
 import { Interactions } from '../interactions';
-import { XR } from '../xrController';
 import pendulumSceneGlb from '../../assets/pendulum_scene.glb';
 import { userPosition } from '../controls/touch-controls';
 
@@ -17,13 +16,13 @@ const selectedMaterial = new MeshBasicMaterial({
 const savedMaterials = new Map();
 function yellowOnHover(object) {
   return {
-    hover_start(intersection) {
+    hover_start() {
       // console.log(object.material == selectedMaterial);
       savedMaterials.set(object, object.material);
       object.material = selectedMaterial;
     },
     hover_end() {
-//      console.log(savedMaterials.get(object) == selectedMaterial);
+      //      console.log(savedMaterials.get(object) == selectedMaterial);
       object.material = savedMaterials.get(object);
       savedMaterials.delete(object);
     }
@@ -47,7 +46,7 @@ export default class PendulumScene extends XrScene {
     let gravity = false;
     for (const point of this.snappingPoints) {
       const pointPos = new Vector3().setFromMatrixPosition(point.matrix);
-      if (position.distanceTo(pointPos) < .3) {
+      if (position.distanceTo(pointPos) < 0.3) {
         gravity = point.gravity;
         break;
       }
@@ -55,7 +54,7 @@ export default class PendulumScene extends XrScene {
     if (gravity) {
       const quat = new Quaternion();
       this.pendulum_swing.matrix.decompose(new Vector3(), quat, new Vector3());
-      const theta = Math.atan(- quat.x / quat.y);
+      const theta = Math.atan(-quat.x / quat.y);
 
       this.state.amplitude = theta;
       this.state.t = Math.asin(1) / Math.sqrt(gravity / this.state.length);
@@ -64,6 +63,7 @@ export default class PendulumScene extends XrScene {
       this.clearPendulumState();
     }
   }
+
   clearPendulumState() {
     this.state.amplitude = 0;
     this.state.length = 1;
@@ -92,8 +92,8 @@ export default class PendulumScene extends XrScene {
     }
 
     // Snapping points for the pendulum
-    const snappingPoints = [1,2,3,4,5]
-      .map(num => `Snap_Point_${ num }`)
+    const snappingPoints = [1, 2, 3, 4, 5]
+      .map(num => `Snap_Point_${num}`)
       .map(name => importedScene.getObjectByName(name));
     const gravities = [
       9.8, // Earth
@@ -131,7 +131,7 @@ export default class PendulumScene extends XrScene {
         // Check if we should snap to any of our snapping points.
         for (const obj of snappingPoints) {
           const pointPos = new Vector3().setFromMatrixPosition(obj.matrix);
-          if (position.distanceTo(pointPos) < .5) {
+          if (position.distanceTo(pointPos) < 0.5) {
             pendulum.matrix.copy(obj.matrix);
             pendulum.updateMatrixWorld(true);
             return;
@@ -144,7 +144,7 @@ export default class PendulumScene extends XrScene {
       drag_end: () => {
         this.calculatePendulumState();
         this.paused = false;
-      },
+      }
     });
     this.pendulum = pendulum;
     // Things that can be dragged shouldn't have matrix auto update on because
@@ -179,7 +179,7 @@ export default class PendulumScene extends XrScene {
         const quat = new Quaternion().setFromRotationMatrix(transform);
         quat.z = 0;
         quat.w = 0;
-        quat.x = -1 * quat.x
+        quat.x *= -1;
         quat.normalize();
         transform.makeRotationFromQuaternion(quat);
 
@@ -190,7 +190,7 @@ export default class PendulumScene extends XrScene {
       drag_end: () => {
         this.calculatePendulumState();
         this.paused = false;
-      },
+      }
     });
     this.pendulum_swing = pendulum_swing;
     // Things that can be dragged shouldn't have matrix auto update on
@@ -212,7 +212,6 @@ export default class PendulumScene extends XrScene {
 
     // Interactions for the floor (Teleport);
     const floor = importedScene.getObjectByName('Floor');
-    const scene = this.scene;
     floor[Interactions] = Object.assign(yellowOnHover(floor), {
       select({ point }) {
         console.log('Teleporting to:', point);

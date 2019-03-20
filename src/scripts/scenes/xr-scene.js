@@ -16,7 +16,7 @@ import { Loader } from '../loader';
 import controllerGlb from '../../assets/controller/controller.glb';
 import Controller from './controllers';
 
-import { Interactions, handleInteractions } from '../interactions';
+import { handleInteractions } from '../interactions';
 
 // import { TriggerMesh } from '../trigger';
 import { updateRay, getIntersection } from '../raycaster';
