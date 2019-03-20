@@ -3,6 +3,7 @@ localhost:1234
 mime .mjs application/ECMAScript
 mime .jsm application/ECMAScript
 mime .js application/JavaScript
+mime .css text/css
 
 rewrite {
   to /
