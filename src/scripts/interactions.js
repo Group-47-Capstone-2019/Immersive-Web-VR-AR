@@ -39,12 +39,9 @@ const handleInputSourcesChange = ({ session }) => {
 };
 
 function createRay(inputSource, xrFrame) {
-  const xrRefSpace = (XR.session.mode === 'immersive-vr')
-    ? XR.immersiveRefSpace
-    : XR.nonImmersiveRefSpace;
 
   if (inputSource.targetRaySpace) {
-    const rayPose = xrFrame.getPose(inputSource.targetRaySpace, xrRefSpace);
+    const rayPose = xrFrame.getPose(inputSource.targetRaySpace, XR.refSpace);
 
     if (rayPose) {
       /* global XRRay:true */

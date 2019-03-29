@@ -13,8 +13,7 @@ import { setupInteractions, closeInteractions } from './interactions';
 
 export const XR = {
   session: null,
-  immersiveRefSpace: null,
-  nonImmersiveRefSpace: null,
+  refSpace: null,
   magicWindowCanvas: null,
   mirrorCanvas: null
 };
@@ -83,17 +82,10 @@ async function xrOnSessionStarted(context) {
   // With immersive and non immersive sessions we will be keeping track of
   // two reference spaces so we will hold two.
   try {
-    const xrRefSpace = await XR.session.requestReferenceSpace({
+    XR.refSpace = await XR.session.requestReferenceSpace({
       type: 'stationary',
       subtype: 'eye-level'
     });
-    // Check if the session is immersive or non immersive and set the
-    // respective refSpace.
-    if (XR.session.mode === 'immersive-vr') {
-      XR.immersiveRefSpace = xrRefSpace;
-    } else {
-      XR.nonImmersiveRefSpace = xrRefSpace;
-    }
 
     // Fire a restart xr animation event
     window.dispatchEvent(new Event('xrAnimate'));

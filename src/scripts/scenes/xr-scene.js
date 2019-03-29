@@ -241,11 +241,8 @@ export default class XrScene {
       const immersive = (XR.session.mode === 'immersive-vr');
 
       // Get the correct reference space for the session.
-      const xrRefSpace = immersive
-        ? XR.immersiveRefSpace
-        : XR.nonImmersiveRefSpace;
 
-      const pose = xrFrame.getViewerPose(xrRefSpace);
+      const pose = xrFrame.getViewerPose(XR.refSpace);
 
       if (pose) {
         this.scene.matrixAutoUpdate = false;
@@ -263,7 +260,7 @@ export default class XrScene {
           XR.session.renderState.baseLayer.framebuffer
         );
 
-        this._updateInputSources(xrFrame, xrRefSpace);
+        this._updateInputSources(xrFrame, XR.refSpace);
         handleInteractions(timestamp, xrFrame);
 
         for (let i = 0; i < pose.views.length; i++) {
