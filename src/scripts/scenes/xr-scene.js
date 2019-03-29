@@ -281,12 +281,13 @@ export default class XrScene {
           }
 
           this._translateViewMatrix(viewMatrix, userPosition);
-
-          this.camera.matrixWorldInverse.copy(viewMatrix);
+          // this.camera.matrixWorldInverse.fromArray(view.viewMatrix);
+          this.camera.matrixAutoUpdate = false;
+          this.camera.matrix.fromArray(view.transform.matrix);
+          this.camera.matrixWorldNeedsUpdate = true;
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-          this.scene.matrix.copy(viewMatrix);
-
-          this.scene.updateMatrixWorld(true);
+//          this.scene.matrix.copy(viewMatrix);
+//          this.scene.updateMatrixWorld(true);
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
         }
