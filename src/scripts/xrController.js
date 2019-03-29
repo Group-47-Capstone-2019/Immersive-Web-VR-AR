@@ -4,6 +4,7 @@ import { renderer } from './renderer';
 import { addMouseKeyboardEventListeners } from './controls/keyboard-controls';
 import { showTouchControls } from './controls/touch-controls';
 import { setupInteractions, closeInteractions } from './interactions';
+import { Vector3, Quaternion, Matrix4 } from 'three';
 
 /**
  * XR fields we are using
@@ -15,7 +16,24 @@ export const XR = {
   session: null,
   refSpace: null,
   magicWindowCanvas: null,
-  mirrorCanvas: null
+  mirrorCanvas: null,
+  getOffsetMatrix() {
+    if (this.refSpace) {
+      return new Matrix4().fromArray(this.refSpace.originOffset.matrix);
+    } else {
+      return new Matrix4();
+    }
+  },
+  setOffsetMatrix(matrix) {
+    const position = new Vector3();
+    const scale = new Vector3();
+    const rotation = new Quaternion();
+    matrix.decompose(position, rotation, scale);
+    this.refSpace.originOffset = new XRRigidTransform(
+      new DOMPoint(position.x, position.y, position.z, 1),
+      new DOMPoint(rotation.x, rotation.y, rotation.z, rotation.w)
+    );
+  }
 };
 
 /*
@@ -79,13 +97,14 @@ async function xrOnSessionStarted(context) {
     outputContext: context
   });
 
-  // With immersive and non immersive sessions we will be keeping track of
-  // two reference spaces so we will hold two.
   try {
+    // preserve originOffset
+    const originOffset = XR.getOffsetMatrix();
     XR.refSpace = await XR.session.requestReferenceSpace({
       type: 'stationary',
       subtype: 'eye-level'
     });
+    XR.setOffsetMatrix(originOffset);
 
     // Fire a restart xr animation event
     window.dispatchEvent(new Event('xrAnimate'));

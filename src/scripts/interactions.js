@@ -7,6 +7,7 @@ import { XR } from './xrController';
 import { userPosition } from './controls/touch-controls';
 
 function translateObjectMatrix(matrix) {
+  /*
   const currentPosition = new Vector3(
     userPosition.x,
     userPosition.y,
@@ -18,6 +19,7 @@ function translateObjectMatrix(matrix) {
   matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
   currentPosition.add(matrixPosition);
   matrix.setPosition(currentPosition);
+  */
 }
 
 // TODO: Split Interactions into indevidual interfaces:

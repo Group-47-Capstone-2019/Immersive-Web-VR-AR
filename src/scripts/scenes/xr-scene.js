@@ -473,6 +473,7 @@ export default class XrScene {
    * @param {Vector3} position
    */
   _translateViewMatrix(matrix, position) {
+    /*
     // Invert the position since we are moving the entire world origin
     const tempPosition = new Vector3(-position.x, -position.y, -position.z);
     const tempMatrix = new Matrix4().copy(matrix);
@@ -488,6 +489,7 @@ export default class XrScene {
     );
 
     matrix.premultiply(translation);
+    */
   }
 
   /**
@@ -496,6 +498,7 @@ export default class XrScene {
    * @param {Vector3} position
    */
   _translateObjectMatrix(matrix, position) {
+    /*
     const currentPosition = new Vector3(
       position.x,
       position.y,
@@ -507,6 +510,7 @@ export default class XrScene {
     matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
     currentPosition.add(matrixPosition);
     matrix.setPosition(currentPosition);
+    */
   }
 
   _checkForKeyboardMouse() {
