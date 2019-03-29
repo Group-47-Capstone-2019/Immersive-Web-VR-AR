@@ -8,7 +8,7 @@ import XrScene from './xr-scene';
 import { navigate } from '../router';
 import { Interactions } from '../interactions';
 import pendulumSceneGlb from '../../assets/pendulum_scene.glb';
-import { userPosition } from '../controls/touch-controls';
+import { XR } from '../xrController';
 
 const selectedMaterial = new MeshBasicMaterial({
   color: '#f5b700'
@@ -215,7 +215,11 @@ export default class PendulumScene extends XrScene {
     floor[Interactions] = Object.assign(yellowOnHover(floor), {
       select({ point }) {
         console.log('Teleporting to:', point);
-        userPosition.copy(point);
+        const offsetMatrix = XR.getOffsetMatrix();
+        point.y = 0;
+        point.multiplyScalar(-1);
+        offsetMatrix.setPosition(point);
+        XR.setOffsetMatrix(offsetMatrix);
       }
     });
 
