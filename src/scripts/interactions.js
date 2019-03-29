@@ -1,26 +1,9 @@
 import {
   Raycaster,
-  Vector3, Matrix4, Quaternion
+  Vector3, Matrix4
 } from 'three';
 import { getCurrentScene } from './currentScene';
 import { XR } from './xrController';
-import { userPosition } from './controls/touch-controls';
-
-function translateObjectMatrix(matrix) {
-  /*
-  const currentPosition = new Vector3(
-    userPosition.x,
-    userPosition.y,
-    userPosition.z
-  );
-
-  // Get matrix components and set position
-  const matrixPosition = new Vector3();
-  matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
-  currentPosition.add(matrixPosition);
-  matrix.setPosition(currentPosition);
-  */
-}
 
 // TODO: Split Interactions into indevidual interfaces:
 // - HoverInteraction
@@ -41,7 +24,6 @@ const handleInputSourcesChange = ({ session }) => {
 };
 
 function createRay(inputSource, xrFrame) {
-
   if (inputSource.targetRaySpace) {
     const rayPose = xrFrame.getPose(inputSource.targetRaySpace, XR.refSpace);
 
@@ -136,7 +118,6 @@ function raycast(xrRay) {
   const { scene } = getCurrentScene();
 
   const trMatrix = new Matrix4().fromArray(xrRay.matrix);
-  translateObjectMatrix(trMatrix);
 
   // Transformed ray matrix from the current scene matrix world
   const rMatrix = new Matrix4().multiplyMatrices(scene.matrixWorld, trMatrix);

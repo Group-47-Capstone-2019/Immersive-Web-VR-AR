@@ -5,7 +5,7 @@ import { World } from 'cannon';
 
 import { XR } from '../xrController';
 import { canvas } from '../renderer/canvas';
-import { userPosition, updateTouchPosition } from '../controls/touch-controls';
+import { updateTouchPosition } from '../controls/touch-controls';
 import {
   keyboard,
   controls,
@@ -280,14 +280,13 @@ export default class XrScene {
             updateTouchPosition(viewMatrix);
           }
 
-          this._translateViewMatrix(viewMatrix, userPosition);
           // this.camera.matrixWorldInverse.fromArray(view.viewMatrix);
           this.camera.matrixAutoUpdate = false;
           this.camera.matrix.fromArray(view.transform.matrix);
           this.camera.matrixWorldNeedsUpdate = true;
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-//          this.scene.matrix.copy(viewMatrix);
-//          this.scene.updateMatrixWorld(true);
+          //          this.scene.matrix.copy(viewMatrix);
+          //          this.scene.updateMatrixWorld(true);
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
         }
@@ -340,9 +339,6 @@ export default class XrScene {
             // Get the grip transform matrix
             const gripMatrix = new Matrix4().fromArray(gripPose.transform.matrix);
 
-            // Make sure to translate the controller matrix to the user position
-            this._translateObjectMatrix(gripMatrix, userPosition);
-
             // Apply grip transform matrix to the current controller mesh
             const matrixPosition = new Vector3();
             gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
@@ -363,9 +359,9 @@ export default class XrScene {
           if (isTrackedPointer) {
             // Get the targetRay vectors for rendering
             const rayOrigin = new Vector3(
-              ray.origin.x + userPosition.x,
-              ray.origin.y + userPosition.y,
-              ray.origin.z + userPosition.z
+              ray.origin.x,
+              ray.origin.y,
+              ray.origin.z
             );
             const rayDirection = new Vector3(
               ray.direction.x,
@@ -393,7 +389,6 @@ export default class XrScene {
    */
   _raycastIntersection(targetRayMatrix) {
     const trMatrix = new Matrix4().fromArray(targetRayMatrix);
-    this._translateObjectMatrix(trMatrix, userPosition);
 
     // Transformed ray matrix from the current scene matrix world
     const rMatrix = new Matrix4().multiplyMatrices(this.scene.matrixWorld, trMatrix);
@@ -463,55 +458,6 @@ export default class XrScene {
 
     // Update laser mesh with current user position and target ray transformations
     controller.updateLaser(rayOrigin, rayDirection, rayLength);
-  }
-
-  /**
-   * The view matrix is the information for the entire world to be rendered in
-   * Translations that occur here need to be inverted for them to make sense to the user
-   * Moving the world northwest gives it the appearance of moving southeast ect.
-   * We're translating the position of the world origin rather than the user.
-   * @param {Float32Array} matrix
-   * @param {Vector3} position
-   */
-  _translateViewMatrix(matrix, position) {
-    /*
-    // Invert the position since we are moving the entire world origin
-    const tempPosition = new Vector3(-position.x, -position.y, -position.z);
-    const tempMatrix = new Matrix4().copy(matrix);
-
-    tempMatrix.setPosition(new Vector3());
-    tempPosition.applyMatrix4(tempMatrix);
-
-    const translation = new Matrix4();
-    translation.makeTranslation(
-      tempPosition.x,
-      tempPosition.y,
-      tempPosition.z
-    );
-
-    matrix.premultiply(translation);
-    */
-  }
-
-  /**
-   * Adds position offset to object matrix passed in.
-   * @param {Matrix4} matrix
-   * @param {Vector3} position
-   */
-  _translateObjectMatrix(matrix, position) {
-    /*
-    const currentPosition = new Vector3(
-      position.x,
-      position.y,
-      position.z
-    );
-
-    // Get matrix components and set position
-    const matrixPosition = new Vector3();
-    matrix.decompose(matrixPosition, new Quaternion(), new Vector3());
-    currentPosition.add(matrixPosition);
-    matrix.setPosition(currentPosition);
-    */
   }
 
   _checkForKeyboardMouse() {
