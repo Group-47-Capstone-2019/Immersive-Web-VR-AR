@@ -54,8 +54,8 @@ function createVRButton() {
 }
 
 function xrOnSessionEnded(event) {
-  closeInteractions();
-  XR.session = null;
+  closeInteractions(event.session);
+  if (event.session == XR.session) XR.session = null;
 
   if (event.session.renderState.outputContext) {
     document.body.removeChild(event.session.renderState.outputContext.canvas);

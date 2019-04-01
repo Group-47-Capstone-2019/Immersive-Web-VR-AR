@@ -174,10 +174,10 @@ export function handleInteractions(timestamp, frame) {
 }
 
 
-export function closeInteractions() {
-  XR.session.removeEventListener('inputsourceschange', handleInputSourcesChange);
+export function closeInteractions(session) {
+  session.removeEventListener('inputsourceschange', handleInputSourcesChange);
 
-  XR.session.removeEventListener('select', handleSelect);
-  XR.session.removeEventListener('selectstart', handleSelectStart);
-  XR.session.removeEventListener('selectend', handleSelectEnd);
+  session.removeEventListener('select', handleSelect);
+  session.removeEventListener('selectstart', handleSelectStart);
+  session.removeEventListener('selectend', handleSelectEnd);
 }
