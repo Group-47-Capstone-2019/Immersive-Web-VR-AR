@@ -28,6 +28,18 @@ function yellowOnHover(object) {
     }
   };
 }
+function teleportOnSelect() {
+  return {
+    select({ point }) {
+      console.log('Teleporting to:', point);
+      const offsetMatrix = XR.getOffsetMatrix();
+      point.y = 0;
+      point.multiplyScalar(-1);
+      offsetMatrix.setPosition(point);
+      XR.setOffsetMatrix(offsetMatrix);
+    }
+  };
+}
 
 export default class PendulumScene extends XrScene {
   constructor(renderer, camera) {
@@ -210,18 +222,13 @@ export default class PendulumScene extends XrScene {
       }
     });
 
-    // Interactions for the floor (Teleport);
+    // Interactions for the floor + surfaces (Teleport);
     const floor = importedScene.getObjectByName('Floor');
-    floor[Interactions] = Object.assign(yellowOnHover(floor), {
-      select({ point }) {
-        console.log('Teleporting to:', point);
-        const offsetMatrix = XR.getOffsetMatrix();
-        point.y = 0;
-        point.multiplyScalar(-1);
-        offsetMatrix.setPosition(point);
-        XR.setOffsetMatrix(offsetMatrix);
-      }
-    });
+    floor[Interactions] = Object.assign(yellowOnHover(floor), teleportOnSelect());
+    const surfaces = ['Lunar', 'Martian', 'Mystery'].map(room => importedScene.getObjectByName(room + '_Surface'));
+    for (const surface of surfaces) {
+      surface[Interactions] = teleportOnSelect();
+    }
 
     this.scene.add(importedScene);
     console.log(importedScene);
