@@ -58,7 +58,8 @@ function xrOnSessionEnded(event) {
   if (event.session == XR.session) XR.session = null;
 
   if (event.session.renderState.outputContext) {
-    document.body.removeChild(event.session.renderState.outputContext.canvas);
+    // Not sure why it wasn't on the body element, but this should remove it no matter where it is.
+    event.session.renderState.outputContext.canvas.remove();
   }
 
   // Reset xrState when session ends and remove the mirror canvas
