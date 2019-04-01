@@ -208,7 +208,7 @@ export default class HomeScene extends XrScene {
     };
 
     pendulumDoor.select = function () {
-      this.functions.changeRoom('/pendulum');
+      this.functions.changeRoom('/pendulums');
     };
 
     pendulumDoor.exit = function () {
