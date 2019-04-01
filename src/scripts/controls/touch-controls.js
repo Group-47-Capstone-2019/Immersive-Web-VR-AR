@@ -214,7 +214,7 @@ export function updateTouchPosition(viewMatrix) {
 
   const offsetMat = XR.getOffsetMatrix();
   const userPosition = new THREE.Vector3().setFromMatrixPosition(offsetMat);
-  userPosition.sub(deltaPosition);
+  userPosition.add(deltaPosition);
   offsetMat.setPosition(userPosition);
   XR.setOffsetMatrix(offsetMat);
 
