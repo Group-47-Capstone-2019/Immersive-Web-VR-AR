@@ -152,8 +152,8 @@ export function handleInteractions(timestamp, frame) {
       }
 
       for (const intersection of raycast(ray)) {
+        const lastObject = lastObjects.get(inputSource);
         if (intersection) {
-          const lastObject = lastObjects.get(inputSource);
           if (lastObject !== intersection.object) {
             if (lastObject && lastObject[Interactions] && lastObject[Interactions].hover_end) {
               lastObject[Interactions].hover_end();
@@ -167,6 +167,13 @@ export function handleInteractions(timestamp, frame) {
             intersection.object[Interactions].hover(intersection);
           }
           break; // MAYBE: Handle more than the closest object?
+        } else {
+          if (lastObject) {
+            if (lastObject[Interactions] && lastObject[Interactions].hover_end) {
+              lastObject[Interactions].hover_end();
+            }
+            lastObjects.delete(inputSource);
+          }
         }
       }
     }
@@ -175,6 +182,14 @@ export function handleInteractions(timestamp, frame) {
 
 
 export function closeInteractions(session) {
+  for (const [inputSource, lastObject] of lastObjects.entries()) {
+    if (lastObject) {
+      if (lastObject[Interactions] && lastObject[Interactions].hover_end) {
+        lastObject[Interactions].hover_end();
+      }
+      lastObjects.delete(inputSource);
+    }
+  }
   session.removeEventListener('inputsourceschange', handleInputSourcesChange);
 
   session.removeEventListener('select', handleSelect);
