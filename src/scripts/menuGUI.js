@@ -54,16 +54,16 @@ export default function createGUI(scene, camera, object, world, renderer) {
     .name('Wireframe')
     .listen();
 
-    const state = {
-      reset: function() {
-        world.gravity.set(0, 0, 0);
-      }
-    };
+  const state = {
+    reset() {
+      world.gravity.set(0, 0, 0);
+    }
+  };
 
   const newFolder = dat.GUIVR.create('Reset');
   newFolder.add(state, 'reset')
-  .name('Turn Off Gravity');
-  gui.addFolder(newFolder);
+    .name('Turn Off Gravity');
 
+  gui.addFolder(newFolder);
   scene.add(gui);
 }

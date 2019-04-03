@@ -196,7 +196,7 @@ export default class FallingScene extends XrScene {
     // Cylinder
 
     // Create gui menu.
-    const menu = createGUI(this.scene, this.camera, ballSpawner, this.world);
+    const menu = createGUI(this.scene, this.camera, ballSpawner, this.world, this.renderer);
     const menuTest = new THREE.Mesh(menu);
     this.scene.add(menuTest);
   }
