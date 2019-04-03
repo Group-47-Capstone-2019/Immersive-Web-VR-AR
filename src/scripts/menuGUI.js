@@ -2,9 +2,9 @@
 /* eslint-disable eol-last */
 import 'datguivr';
 
-export default function createGUI(scene, camera, object, world) {
+export default function createGUI(scene, camera, object, world, renderer) {
   // Allow mouse input for non-VR app and testing without a VR device.
-  dat.GUIVR.enableMouse(camera);
+  dat.GUIVR.enableMouse(camera, renderer);
 
   // Gaze Input is use for on VR devices without controllers.
   const gazeInput = dat.GUIVR.addInputObject(camera);
@@ -25,14 +25,14 @@ export default function createGUI(scene, camera, object, world) {
       }, false);
     });
 
-  // Create name test to show at thte top of the gui tab.
+  // Create name settings to show at the top of the gui tab.
   const gui = dat.GUIVR.create('Settings');
-  gui.position.set(3, 0.5, -13);
+  gui.position.set(3, 1, -13);
 
   // Set the size of the gui.
   gui.scale.set(2, 2, 2);
 
-  // Gravity Slider.
+  // Create sliders for gravity and object position.
   gui.add(world.gravity, 'y', -9.8, 9.8).step(0.2)
     .name('Gravity')
     .listen();
@@ -49,16 +49,21 @@ export default function createGUI(scene, camera, object, world) {
     .name('Position Y')
     .listen();
 
-  gui.add(object.position, 'z').min(-1)
-    .max(1)
-    .step(0.25)
-    .name('Position Z')
-    .listen();
-
   // Toggle for specific object material as wireframe.
   gui.add(object.material, 'wireframe')
     .name('Wireframe')
     .listen();
+
+    const state = {
+      reset: function() {
+        world.gravity.set(0, 0, 0);
+      }
+    };
+
+  const newFolder = dat.GUIVR.create('Reset');
+  newFolder.add(state, 'reset')
+  .name('Turn Off Gravity');
+  gui.addFolder(newFolder);
 
   scene.add(gui);
 }

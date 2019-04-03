@@ -27,7 +27,6 @@ export default class FallingScene extends XrScene {
     this._loadTable();
     this.camera = camera;
 
-
     // Objects
     this.bodies = [];
     this.meshes = [];
