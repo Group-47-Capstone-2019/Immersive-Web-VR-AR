@@ -4,7 +4,7 @@ import THREE from '../three';
 import XrScene from './xr-scene';
 import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
-import createGUI from '../menu-gui';
+import createGUI from '../menuGUI';
 
 export default class FallingScene extends XrScene {
   /**
@@ -199,7 +199,7 @@ export default class FallingScene extends XrScene {
     // Create gui menu.
     const menu = createGUI(this.scene, this.camera, ballSpawner, this.world);
     const menuTest = new THREE.Mesh(menu);
-    this.scene.add(menuTest); 
+    this.scene.add(menuTest);
   }
 
   _loadTable() {

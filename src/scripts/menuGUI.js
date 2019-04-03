@@ -11,14 +11,14 @@ export default function createGUI(scene, camera, object, world) {
   scene.add(gazeInput.cursor);
 
   // Bind mouse or touch on the GUI to a press.
-  ['mousedown', 'touchstart', 'keydown']
+  ['mousedown', 'touchstart']
     .forEach((e) => {
       window.addEventListener(e, () => {
         gazeInput.pressed(true);
       }, false);
     });
 
-  ['mouseup', 'touchend', 'keyup']
+  ['mouseup', 'touchend']
     .forEach((e) => {
       window.addEventListener(e, () => {
         gazeInput.pressed(false);
