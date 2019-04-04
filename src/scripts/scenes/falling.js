@@ -98,6 +98,11 @@ export default class FallingScene extends XrScene {
 
     ballBody.position.set(0, 7, 0);
     ball.position.set(0, 7, 0);
+
+    // Create Ball Menu
+    const menu = createGUI(this.scene, this.camera, this.renderer, ball, this.world);
+    const menuBall = new THREE.Mesh(menu);
+    this.scene.add(menuBall);
   }
 
   _spawnBox = () => {
@@ -130,6 +135,11 @@ export default class FallingScene extends XrScene {
 
     boxBody.position.set(0, 7, 0);
     box.position.set(0, 7, 0);
+
+    // Create Box Menu
+    const menu = createGUI(this.scene, this.camera, this.renderer, box, this.world);
+    const menuBox = new THREE.Mesh(menu);
+    this.scene.add(menuBox);
   }
 
   _createSpawners() {
@@ -196,9 +206,9 @@ export default class FallingScene extends XrScene {
     // Cylinder
 
     // Create gui menu.
-    const menu = createGUI(this.scene, this.camera, ballSpawner, this.world, this.renderer);
-    const menuTest = new THREE.Mesh(menu);
-    this.scene.add(menuTest);
+    // const menu = createGUI(this.scene, this.camera, ballSpawner, this.world, this.renderer);
+    // const menuTest = new THREE.Mesh(menu);
+    // this.scene.add(menuTest);
   }
 
   _loadTable() {
