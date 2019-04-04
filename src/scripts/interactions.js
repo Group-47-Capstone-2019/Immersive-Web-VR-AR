@@ -1,9 +1,10 @@
 import {
   Raycaster,
-  Vector3, Matrix4
+  Vector3, Matrix4, Quaternion
 } from 'three';
 import { getCurrentScene } from './currentScene';
 import { XR } from './xrController';
+import { camera } from './renderer/camera';
 
 // TODO: Split Interactions into indevidual interfaces:
 // - HoverInteraction
@@ -135,47 +136,64 @@ function raycast(xrRay) {
 }
 
 const lastObjects = new Map();
+function updateInputSource(inputSource, ray) {
+  // Handle Drag and Drop
+  if (dragAndDrop.has(inputSource)) {
+    const { object, transformMatrix } = dragAndDrop.get(inputSource);
+    const newMatrix = new Matrix4().multiplyMatrices(new Matrix4().fromArray(ray.matrix), transformMatrix);
+    if (object[Interactions].drag) {
+      object[Interactions].drag(newMatrix);
+    } else {
+      object.matrix = newMatrix;
+      object.updateMatrixWorld(true);
+    }
+  }
+
+  for (const intersection of raycast(ray)) {
+    const lastObject = lastObjects.get(inputSource);
+    if (intersection) {
+      if (lastObject !== intersection.object) {
+        if (lastObject && lastObject[Interactions] && lastObject[Interactions].hover_end) {
+          lastObject[Interactions].hover_end();
+        }
+        if (intersection.object[Interactions] && intersection.object[Interactions].hover_start) {
+          intersection.object[Interactions].hover_start(intersection);
+        }
+        lastObjects.set(inputSource, intersection.object);
+      }
+      if (intersection.object[Interactions] && intersection.object[Interactions].hover) {
+        intersection.object[Interactions].hover(intersection);
+      }
+      break; // MAYBE: Handle more than the closest object?
+    } else {
+      if (lastObject) {
+        if (lastObject[Interactions] && lastObject[Interactions].hover_end) {
+          lastObject[Interactions].hover_end();
+        }
+        lastObjects.delete(inputSource);
+      }
+    }
+  }
+}
+const psuedoInputSource = Symbol('Psydo InputSource')
 export function handleInteractions(timestamp, frame) {
   if (frame) {
-    for (const inputSource of inputSources) {
-      const ray = createRay(inputSource, frame);
-      // Handle Drag and Drop
-      if (dragAndDrop.has(inputSource)) {
-        const { object, transformMatrix } = dragAndDrop.get(inputSource);
-        const newMatrix = new Matrix4().multiplyMatrices(new Matrix4().fromArray(ray.matrix), transformMatrix);
-        if (object[Interactions].drag) {
-          object[Interactions].drag(newMatrix);
-        } else {
-          object.matrix = newMatrix;
-          object.updateMatrixWorld(true);
-        }
+    if (inputSources.length > 0) {
+      for (const inputSource of inputSources) {
+        const ray = createRay(inputSource, frame);
+        updateInputSource(inputSource, ray);
       }
-
-      for (const intersection of raycast(ray)) {
-        const lastObject = lastObjects.get(inputSource);
-        if (intersection) {
-          if (lastObject !== intersection.object) {
-            if (lastObject && lastObject[Interactions] && lastObject[Interactions].hover_end) {
-              lastObject[Interactions].hover_end();
-            }
-            if (intersection.object[Interactions] && intersection.object[Interactions].hover_start) {
-              intersection.object[Interactions].hover_start(intersection);
-            }
-            lastObjects.set(inputSource, intersection.object);
-          }
-          if (intersection.object[Interactions] && intersection.object[Interactions].hover) {
-            intersection.object[Interactions].hover(intersection);
-          }
-          break; // MAYBE: Handle more than the closest object?
-        } else {
-          if (lastObject) {
-            if (lastObject[Interactions] && lastObject[Interactions].hover_end) {
-              lastObject[Interactions].hover_end();
-            }
-            lastObjects.delete(inputSource);
-          }
-        }
-      }
+    } else {
+      // Psuedo input source for hover using magic window (mostly);
+      // This projects a ray from the last rendered eye
+      const cameraPosition = new Vector3();
+      const cameraOrientation = new Quaternion()
+      camera.matrixWorld.decompose(cameraPosition, cameraOrientation, new Vector3());
+      const pseudoRay = new XRRay(new XRRigidTransform(
+        new DOMPoint(cameraPosition.x, cameraPosition.y, cameraPosition.z, 1),
+        new DOMPoint(cameraOrientation.x, cameraOrientation.y, cameraOrientation.z, cameraOrientation.w)
+        ));
+      updateInputSource(psuedoInputSource, pseudoRay);
     }
   }
 }
