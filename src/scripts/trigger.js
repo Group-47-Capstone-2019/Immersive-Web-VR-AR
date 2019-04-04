@@ -1,4 +1,5 @@
 import { Mesh } from 'three';
+import { Interactions } from './interactions';
 
 export default class TriggerMesh extends Mesh {
     // True if raycaster intersects this object
@@ -13,15 +14,37 @@ export default class TriggerMesh extends Mesh {
     debug = false;
 
     // Trigger functions - Override these
-    hover;
+    hover() {}
 
-    exit;
+    exit() {};
 
-    select;
+    select() {};
 
-    release;
+    release() {};
 
     functions = {};
+
+    get [Interactions]() {
+      const self = this;
+      return {
+        select_start(intersection) {
+          console.log('TriggerMesh - select_start');
+          self.select(intersection);
+        },
+        select_end(intersection) { // This doesn't actually receive an intersection
+        console.log('TriggerMesh - select_end');
+          self.release(intersection);
+        },
+        hover_start(intersection) {
+          console.log('TriggerMesh - hover_start');
+          self.hover(intersection);
+        },
+        hover_end(intersection) { // This doesn't actually receive an intersection
+          console.log('TriggerMesh - hover_end');
+          self.exit(intersection);
+        }
+      };
+    }
 
     /**
      * Adds a function to the function list.
@@ -47,52 +70,5 @@ export default class TriggerMesh extends Mesh {
       triggerMesh.release = this.release;
       triggerMesh.functions = this.functions;
       return triggerMesh;
-    }
-
-    /**
-     * Called when raycaster is currently intersecting
-     * Called every frame onHover
-     * @param {Intersection} intersection
-     */
-    onTriggerHover(intersection) {
-      if (this.debug) console.log('TRIGGER: HOVER');
-      this.isIntersected = true;
-      if (this.hover) this.hover(intersection);
-    }
-
-    /**
-     * Called when raycaster no longer intersects
-     * this object.
-     * Called once on exit.
-     * @param {Intersection} intersection
-     */
-    onTriggerExit(intersection) {
-      if (this.debug) console.log('TRIGGER: EXIT');
-      this.isIntersected = false;
-      if (this.exit) this.exit(intersection);
-    }
-
-    /**
-     * Called when raycaster intersects and
-     * the input device clicks and holds.
-     * Called every frame on selection.
-     * @param {Intersection} intersection
-     */
-    onTriggerSelect(intersection) {
-      if (this.debug) console.log('TRIGGER: SELECT');
-      this.isSelected = true;
-      if (this.select) this.select(intersection);
-    }
-
-    /**
-     * Called when raycaster input device
-     * releases a click when intersecting.
-     * Called once on release.
-     * @param {Intersection} intersection
-     */
-    onTriggerRelease(intersection) {
-      if (this.debug) console.log('TRIGGER: RELEASE');
-      this.isSelected = false;
-      if (this.release) this.release(intersection);
     }
 }
