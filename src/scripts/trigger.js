@@ -28,19 +28,15 @@ export default class TriggerMesh extends Mesh {
       const self = this;
       return {
         select_start(intersection) {
-          console.log('TriggerMesh - select_start');
           self.select(intersection);
         },
         select_end(intersection) { // This doesn't actually receive an intersection
-        console.log('TriggerMesh - select_end');
           self.release(intersection);
         },
         hover_start(intersection) {
-          console.log('TriggerMesh - hover_start');
           self.hover(intersection);
         },
         hover_end(intersection) { // This doesn't actually receive an intersection
-          console.log('TriggerMesh - hover_end');
           self.exit(intersection);
         }
       };
