@@ -234,19 +234,19 @@ export function updatePosition() {
 
   // Temporary boundaries
 
-  if (controlsYaw.position.z > 31) {
-    controlsYaw.position.z = 31;
-  }
-  if (controlsYaw.position.z < -31) {
-    controlsYaw.position.z = -31;
-  }
+  // if (controlsYaw.position.z > 31) {
+  //   controlsYaw.position.z = 31;
+  // }
+  // if (controlsYaw.position.z < -31) {
+  //   controlsYaw.position.z = -31;
+  // }
 
-  if (controlsYaw.position.x > 31) {
-    controlsYaw.position.x = 31;
-  }
-  if (controlsYaw.position.x < -31) {
-    controlsYaw.position.x = -31;
-  }
+  // if (controlsYaw.position.x > 31) {
+  //   controlsYaw.position.x = 31;
+  // }
+  // if (controlsYaw.position.x < -31) {
+  //   controlsYaw.position.x = -31;
+  // }
 
   prevTime = time;
 }

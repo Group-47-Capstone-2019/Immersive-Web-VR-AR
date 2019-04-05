@@ -19,13 +19,14 @@ export default class LaserScene extends XrScene {
     this.laserRay.set(this.laserOrigin, this.laserDirection);
 
     this.mirrors = new THREE.Group();
-    this.scene.add(this.mirrors);
+    this.intersects = new THREE.Group();
+    this.intersects.add(this.mirrors);
+    this.scene.add(this.intersects);
 
     this.length = 64;
     this.width = 64;
     this.height = 16;
     this._createRoom();
-    this._createLaser();
     this._addMirror();
 
     this._addLight();
@@ -41,15 +42,17 @@ export default class LaserScene extends XrScene {
   }
 
   _createLaser() {
+    if (this.laser) {
+      this.scene.remove(this.laser);
+    }
     const geometry = new THREE.Geometry();
     geometry.vertices.push(
       new THREE.Vector3(0, -2, 32),
     );
 
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const material = new THREE.LineBasicMaterial({ color: 'red' });
 
     this.laser = new THREE.Line(geometry, material);
-
     this.scene.add(this.laser);
   }
 
@@ -57,25 +60,14 @@ export default class LaserScene extends XrScene {
     const numVertices = this.laser.geometry.vertices.length;
     let lineOrigin = new THREE.Vector3();
     lineOrigin.copy(this.laser.geometry.vertices[numVertices - 1]);
-    this.laser.geometry.vertices.push(direction.multiplyScalar(length).add(lineOrigin));
+    const newPoint = direction.multiplyScalar(length).add(lineOrigin);
+    this.laser.geometry.vertices.push(newPoint);
+    this.laser.geometry.computeBoundingSphere();
     this.laser.geometry.verticesNeedUpdate = true;
   }
 
-  _reflect(intersect) {
-    console.log(this.laserRay.ray.direction);
-    let normal = new THREE.Matrix3().getNormalMatrix(intersect.object.matrixWorld);
-    const newDirection = this.laserRay.ray.direction.reflect(normal);
-    const newOrigin = intersect.point;
-    console.log(intersect.face.normal);
-    console.log(newDirection);
-    console.log(newOrigin);
-    this.laserRay.set(newOrigin, newDirection);
-    const intersectDist = intersect.distance;
-    this._updateLaser(newDirection, intersectDist);
-  }
-
   _updateLaserRay() {
-    const intersect = this.laserRay.intersectObjects(this.scene.children, true);
+    const intersect = this.laserRay.intersectObject(this.mirrors, true);
     
     if (intersect.length > 0) {
       let res = intersect.filter(function(res) {
@@ -84,11 +76,16 @@ export default class LaserScene extends XrScene {
 
       if (res && res.object) {
         if (res.object != this.laser) {
-          console.log("draw laser");
-          this._updateLaser(this.laserRay.ray.direction, res.distance);
+          let direction = new THREE.Vector3();
+          direction.copy(this.laserRay.ray.direction);
+          direction.normalize();
+          let origin = new THREE.Vector3(0, -2, 32);
+          console.log(res.point);
+          console.log(res.distance);
+          let distance = res.distance;
+          this._updateLaser(direction, distance);
           if (res.object.parent === this.mirrors) {
             console.log("intersected");
-            this._reflect(res);
           }
         }
       }
@@ -102,7 +99,7 @@ export default class LaserScene extends XrScene {
     this.room = new THREE.Mesh(roomGeometry, roomMaterials);
     this.room.receiveShadow = true;
     this.room.castShadow = true;
-    this.scene.add(this.room);
+    this.intersects.add(this.room);
   }
 
   _addLight() {
@@ -130,6 +127,7 @@ export default class LaserScene extends XrScene {
   }
 
   animate(delta) {
+    this._createLaser();
     this._updateLaserRay();
   }
 }

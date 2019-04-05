@@ -216,18 +216,18 @@ export function updateTouchPosition(viewMatrix) {
 
   // Temporary boundaries
 
-  if (userPosition.z > 11) {
-    userPosition.z = 11;
-  }
-  if (userPosition.z < -11) {
-    userPosition.z = -11;
-  }
-  if (userPosition.x > 11) {
-    userPosition.x = 11;
-  }
-  if (userPosition.x < -11) {
-    userPosition.x = -11;
-  }
+  // if (userPosition.z > 11) {
+  //   userPosition.z = 11;
+  // }
+  // if (userPosition.z < -11) {
+  //   userPosition.z = -11;
+  // }
+  // if (userPosition.x > 11) {
+  //   userPosition.x = 11;
+  // }
+  // if (userPosition.x < -11) {
+  //   userPosition.x = -11;
+  // }
 
   touchscreen.prevTime = time;
 }
