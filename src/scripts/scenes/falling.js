@@ -26,9 +26,11 @@ export default class FallingScene extends XrScene {
 
     this.renderer.shadowMap.enabled = true;
 
+    this.length = 64;
+    this.width = 64;
+    this.height = 16;
     this._createRoom();
     this._loadTable();
-    this.camera = camera;
 
     //Assets
     this.loader.addTextureToQueue(sky_nx, 'sky_nx');
@@ -37,9 +39,6 @@ export default class FallingScene extends XrScene {
     this.loader.addTextureToQueue(sky_px, 'sky_px');
     this.loader.addTextureToQueue(sky_py, 'sky_py');
     this.loader.addTextureToQueue(sky_pz, 'sky_pz');
-
-    this.length = 2000;
-    this.width = 2000;
 
     // Objects
     this.bodies = [];
@@ -66,7 +65,7 @@ export default class FallingScene extends XrScene {
   }
 
   _createSkybox(textures) {
-    const gSkybox = new THREE.BoxGeometry(3000, 3000, 3000);
+    const gSkybox = new THREE.BoxGeometry(1000, 1000, 1000);
     const mSkybox = [];
     for(let i = 0; i < 6; i++) {
         mSkybox.push(new THREE.MeshBasicMaterial({
@@ -100,7 +99,7 @@ export default class FallingScene extends XrScene {
     // Generate room geometry.
     const gGround = new THREE.PlaneGeometry(this.width, this.length);
     const mGround = new THREE.MeshPhongMaterial({
-      color : 0xa8a8a8,
+      color       : 'gray',
       specular    : 0xffffff,
       shininess   : 10
     });
@@ -341,7 +340,7 @@ export default class FallingScene extends XrScene {
     // const radius = 1;
     const length = this.length / 2;
     const width = this.width / 2;
-    const height = 8;
+    const height = this.height / 2;
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -9.8, 0);
 
@@ -398,7 +397,7 @@ export default class FallingScene extends XrScene {
     dLight.position.x = 500;
     dLight.position.y = 500;
     dLight.position.z = 500;
-    dLight.castShadow = true;
+    //dLight.castShadow = true;
     this.scene.add( dLight );
 
     const aLight = new THREE.AmbientLight(0xaabbff, 0.2);
