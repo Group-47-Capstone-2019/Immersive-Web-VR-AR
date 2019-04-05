@@ -323,7 +323,7 @@ export default class XrScene {
         if (isTrackedPointer && inputSource.gripSpace) {
           // Get grip space pose for controller
           const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace);
-          if (!gripPose) return;
+          if (!gripPose) continue;
 
           // Is the number of controllers we know of less than the number of input sources?
           if (this.controllers.length > inputSources.length) {
