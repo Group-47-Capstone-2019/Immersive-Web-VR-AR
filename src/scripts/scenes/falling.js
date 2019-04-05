@@ -5,6 +5,13 @@ import XrScene from './xr-scene';
 import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
 
+import sky_nx from '../../assets/textures/Skybox/sky_nx.png';
+import sky_ny from '../../assets/textures/Skybox/sky_ny.png'; 
+import sky_nz from '../../assets/textures/Skybox/sky_nz.png';
+import sky_px from '../../assets/textures/Skybox/sky_px.png'; 
+import sky_py from '../../assets/textures/Skybox/sky_py.png'; 
+import sky_pz from '../../assets/textures/Skybox/sky_pz.png';
+
 export default class FallingScene extends XrScene {
   /**
   *
@@ -19,13 +26,20 @@ export default class FallingScene extends XrScene {
 
     this.renderer.shadowMap.enabled = true;
 
-    this.length = 64;
-    this.width = 64;
-    this.height = 16;
     this._createRoom();
     this._loadTable();
     this.camera = camera;
 
+    //Assets
+    this.loader.addTextureToQueue(sky_nx, 'sky_nx');
+    this.loader.addTextureToQueue(sky_ny, 'sky_ny');
+    this.loader.addTextureToQueue(sky_nz, 'sky_nz');
+    this.loader.addTextureToQueue(sky_px, 'sky_px');
+    this.loader.addTextureToQueue(sky_py, 'sky_py');
+    this.loader.addTextureToQueue(sky_pz, 'sky_pz');
+
+    this.length = 2000;
+    this.width = 2000;
 
     // Objects
     this.bodies = [];
@@ -51,14 +65,48 @@ export default class FallingScene extends XrScene {
     this._addEventListener(window, 'keyup', this.onKeyUp);
   }
 
+  _createSkybox(textures) {
+    const gSkybox = new BoxGeometry(3000, 3000, 3000);
+    const mSkybox = [];
+    for(let i = 0; i < 6; i++) {
+        mSkybox.push(new MeshBasicMaterial({
+            map : new TextureLoader().load(textures[i]),
+            side : DoubleSide
+        }));
+    }
+    const skybox = new Mesh(gSkybox, mSkybox);
+    this.scene.add(skybox);
+  }
+
+  /**
+   * override this to handle adding adding assets to the scene
+   * @param {object} assetCache cache with all assets, accessible by their `id`
+   */
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+
+    const skyboxTextures = [
+      cache.sky_nz, cache.sky_pz,
+      cache.sky_py, cache.sky_ny,
+      cache.sky_px, cache.sky_nx 
+    ];
+
+    this._createSkybox(skyboxTextures);
+  }
+
   _createRoom() {
     // Generate room geometry.
-    const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
-    const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
-    this.room = new THREE.Mesh(roomGeometry, roomMaterials);
-    this.room.receiveShadow = true;
-    this.room.castShadow = true;
-    this.scene.add(this.room);
+    const gGround = new THREE.PlaneGeometry(this.width, this.length);
+    const mGround = new THREE.MeshPhongMaterial({
+      color : 0xa8a8a8,
+      specular    : 0xffffff,
+      shininess   : 10
+    });
+    const ground = new THREE.Mesh(gGround, mGround);
+    ground.receiveShadow = true;
+    ground.rotateX(-1.5708);
+    ground.position.set(0, -8, 0);
+    this.scene.add(ground);
 
     // Create spawner tube
     const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide });
@@ -296,7 +344,7 @@ export default class FallingScene extends XrScene {
     // const radius = 1;
     const length = this.length / 2;
     const width = this.width / 2;
-    const height = this.height / 2;
+    const height = 8;
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -9.8, 0);
 
@@ -349,27 +397,15 @@ export default class FallingScene extends XrScene {
   }
 
   _addLight() {
-    const ambientLight = new THREE.AmbientLight('white', 0.5);
-    this.scene.add(ambientLight);
+    const dLight = new THREE.DirectionalLight( 0xd7cbb1, 0.4 );
+    dLight.position.x = 500;
+    dLight.position.y = 500;
+    dLight.position.z = 500;
+    dLight.castShadow = true;
+    this.scene.add( dLight );
 
-    const keyLight = new THREE.DirectionalLight('white', 1.0, 1000);
-    keyLight.position.set(-100, 0, 100);
-    keyLight.position.set(0, 100, 0);
-    keyLight.decay = 1;
-
-    const fillLight = new THREE.DirectionalLight('white', 0.75, 1000);
-    fillLight.position.set(100, 0, 100);
-
-    const backLight = new THREE.DirectionalLight('white', 0.5, 1000);
-    backLight.position.set(100, 0, -100).normalize();
-
-    this.scene.add(keyLight);
-    this.scene.add(fillLight);
-    this.scene.add(backLight);
-
-    const pointLight = new THREE.PointLight('white', 0.8, 500);
-
-    this.scene.add(pointLight);
+    const aLight = new THREE.AmbientLight(0xaabbff, 0.2);
+    this.scene.add(aLight);
   }
 
   animate(delta) {
