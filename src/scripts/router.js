@@ -6,6 +6,7 @@ import FallingScene from './scenes/falling';
 import {
   showWelcome, hideWelcome, showLoading, hideLoading
 } from './welcome';
+import LaserScene from './scenes/laser';
 
 /**
  * @type {XrScene}
@@ -22,6 +23,9 @@ const Routes = {
   },
   get '/falling'() {
     return new FallingScene(renderer, camera);
+  },
+  get '/lasers'() {
+    return new LaserScene(renderer, camera);
   }
 };
 
