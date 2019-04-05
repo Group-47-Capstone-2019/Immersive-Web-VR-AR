@@ -66,16 +66,18 @@ export default class FallingScene extends XrScene {
   }
 
   _createSkybox(textures) {
-    const gSkybox = new BoxGeometry(3000, 3000, 3000);
+    const gSkybox = new THREE.BoxGeometry(3000, 3000, 3000);
     const mSkybox = [];
     for(let i = 0; i < 6; i++) {
-        mSkybox.push(new MeshBasicMaterial({
-            map : new TextureLoader().load(textures[i]),
-            side : DoubleSide
+        mSkybox.push(new THREE.MeshBasicMaterial({
+            map : textures[i],
+            side : THREE.DoubleSide
         }));
     }
-    const skybox = new Mesh(gSkybox, mSkybox);
+    const skybox = new THREE.Mesh(gSkybox, mSkybox);
+    skybox.name = 'skybox';
     this.scene.add(skybox);
+    console.log(this.scene);
   }
 
   /**
@@ -311,11 +313,6 @@ export default class FallingScene extends XrScene {
       default:
         break;
     }
-  }
-
-  onAssetsLoaded(cache) {
-    super.onAssetsLoaded(cache);
-    return cache;
   }
 
   _createPlane() {
