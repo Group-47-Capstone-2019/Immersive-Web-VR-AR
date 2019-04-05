@@ -266,7 +266,8 @@ export default class XrScene {
         for (let i = 0; i < pose.views.length; i++) {
           const view = pose.views[i];
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
-          const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
+          const viewMatrix = new Matrix4().fromArray(view.transform.matrix);
+          viewMatrix.getInverse(viewMatrix);
 
           this.renderer.context.viewport(
             viewport.x,
@@ -322,6 +323,7 @@ export default class XrScene {
         if (isTrackedPointer && inputSource.gripSpace) {
           // Get grip space pose for controller
           const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace);
+          if (!gripPose) continue;
 
           // Is the number of controllers we know of less than the number of input sources?
           if (this.controllers.length > inputSources.length) {
