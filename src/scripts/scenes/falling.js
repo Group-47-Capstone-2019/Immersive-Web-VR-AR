@@ -2,15 +2,21 @@
 import * as CANNON from 'cannon';
 import THREE from '../three';
 import XrScene from './xr-scene';
-import Table from '../../assets/Simple Wood Table.obj';
+
+import table from '../../assets/table.obj';
+import tTable from '../../assets/textures/table/table.jpeg';
+import nTable from '../../assets/textures/table/tableNormal.jpeg';
+
+import nGround from '../../assets/textures/groundNormal.png';
+
 import TriggerMesh from '../trigger';
 
-import sky_nx from '../../assets/textures/Skybox/sky_nx.png';
-import sky_ny from '../../assets/textures/Skybox/sky_ny.png'; 
-import sky_nz from '../../assets/textures/Skybox/sky_nz.png';
-import sky_px from '../../assets/textures/Skybox/sky_px.png'; 
-import sky_py from '../../assets/textures/Skybox/sky_py.png'; 
-import sky_pz from '../../assets/textures/Skybox/sky_pz.png';
+import sky_nx from '../../assets/textures/skybox/sky_nx.png';
+import sky_ny from '../../assets/textures/skybox/sky_ny.png'; 
+import sky_nz from '../../assets/textures/skybox/sky_nz.png';
+import sky_px from '../../assets/textures/skybox/sky_px.png'; 
+import sky_py from '../../assets/textures/skybox/sky_py.png'; 
+import sky_pz from '../../assets/textures/skybox/sky_pz.png';
 
 export default class FallingScene extends XrScene {
   /**
@@ -24,13 +30,10 @@ export default class FallingScene extends XrScene {
     this.camera = camera;
     this.renderer = renderer;
 
-    this.renderer.shadowMap.enabled = true;
-
-    this.length = 64;
-    this.width = 64;
-    this.height = 16;
-    this._createRoom();
-    this._loadTable();
+    this.length = 2000;
+    this.width = 2000;
+    this.height = 8;
+    this._createEnv();
 
     //Assets
     this.loader.addTextureToQueue(sky_nx, 'sky_nx');
@@ -39,6 +42,12 @@ export default class FallingScene extends XrScene {
     this.loader.addTextureToQueue(sky_px, 'sky_px');
     this.loader.addTextureToQueue(sky_py, 'sky_py');
     this.loader.addTextureToQueue(sky_pz, 'sky_pz');
+
+    this.loader.addOBJToQueue(table, 'table');
+    this.loader.addTextureToQueue(tTable, 'tTable');
+    this.loader.addTextureToQueue(nTable, 'nTable');
+
+    this.loader.addTextureToQueue(nGround, 'ground');
 
     // Objects
     this.bodies = [];
@@ -51,7 +60,7 @@ export default class FallingScene extends XrScene {
 
     // Boxes
     this.boxShape = new CANNON.Box(new CANNON.Vec3(1, 1, 1));
-    this.boxGeo = new THREE.BoxGeometry(2, 2, 2);
+    this.boxGeo = new THREE.BoxGeometry(2, 2, 2, 10, 10, 10);
 
     // Cylinders
 
@@ -76,7 +85,29 @@ export default class FallingScene extends XrScene {
     const skybox = new THREE.Mesh(gSkybox, mSkybox);
     skybox.name = 'skybox';
     this.scene.add(skybox);
-    console.log(this.scene);
+  }
+
+  _loadTable(asset) {
+    const mesh = asset.obj.children[0];
+    const material = new THREE.MeshPhongMaterial({
+      normalMap : asset.normal
+    });
+    mesh.material.copy(material);
+    mesh.position.set(0, -5.5, -15);
+    this.scene.add(mesh);
+  }
+
+  _textureGround(texture) {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(100, 100);
+    const material = new THREE.MeshPhongMaterial({
+      color       : 'gray',
+      specular    : 0xffffff,
+      shininess   : 2.5,
+      normalMap   : texture
+    });
+    this.ground.material.copy(material);
   }
 
   /**
@@ -92,10 +123,19 @@ export default class FallingScene extends XrScene {
       cache.sky_px, cache.sky_nx 
     ];
 
+    const tableAsset = {};
+    tableAsset.obj = cache.table;
+    tableAsset.texture = cache.tTable;
+    tableAsset.normal = cache.nTable;
+
+    const groundTexture = cache.ground;
+
     this._createSkybox(skyboxTextures);
+    this._loadTable(tableAsset);
+    this._textureGround(groundTexture);
   }
 
-  _createRoom() {
+  _createEnv() {
     // Generate room geometry.
     const gGround = new THREE.PlaneGeometry(this.width, this.length);
     const mGround = new THREE.MeshPhongMaterial({
@@ -106,14 +146,15 @@ export default class FallingScene extends XrScene {
     const ground = new THREE.Mesh(gGround, mGround);
     ground.receiveShadow = true;
     ground.rotateX(-1.5708);
-    ground.position.set(0, -8, 0);
+    ground.position.set(0, -this.height, 0);
+    this.ground = ground;
     this.scene.add(ground);
 
     // Create spawner tube
     const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide });
     const spawnTubeGeo = new THREE.CylinderGeometry(2, 2, 3, 32, 32, true);
     const spawnTube = new THREE.Mesh(spawnTubeGeo, tubeMaterials);
-    spawnTube.position.set(0, 7, 0);
+    spawnTube.position.set(0, this.height - 1, 0);
     this.scene.add(spawnTube);
   }
 
@@ -183,7 +224,7 @@ export default class FallingScene extends XrScene {
 
   _createSpawners() {
     // Sphere
-    let material = new THREE.MeshPhongMaterial({ color: 'gray' });
+    let material = new THREE.MeshPhongMaterial({ color: 'white' });
     const ballSpawner = new TriggerMesh(this.ballGeo, material);
     ballSpawner.castShadow = true;
     ballSpawner.receiveShadow = true;
@@ -213,7 +254,12 @@ export default class FallingScene extends XrScene {
     this.world.addBody(ballBody);
 
     // Box
-    material = new THREE.MeshPhongMaterial({ color: 'gray' });
+    material = new THREE.MeshPhongMaterial({ 
+      color     : 'white',
+      specular  : 0xffffff,
+      shininess : 2
+    });
+
     const boxSpawner = new TriggerMesh(this.boxGeo, material);
     boxSpawner.castShadow = true;
     boxSpawner.receiveShadow = true;
@@ -241,46 +287,6 @@ export default class FallingScene extends XrScene {
     boxBody.addShape(this.boxShape);
     boxBody.position.copy(boxSpawner.position);
     this.world.addBody(boxBody);
-
-    // Cylinder
-  }
-
-  _loadTable() {
-    let object;
-
-    function loadModel() {
-      object.traverse((child) => {
-        if (child.isMesh)child.material.map = texture;
-      });
-
-      object.position.z = -15;
-      object.position.y = -5.5;
-      this.scene.add(object);
-    }
-
-    const manager = new THREE.LoadingManager(loadModel.bind(this));
-
-    manager.onProgress = function (item, loaded, total) {
-      console.log(item, loaded, total);
-    };
-
-    const textureLoader = new THREE.TextureLoader(manager);
-
-    const texture = textureLoader.load('../../assets/textures/Diffuse.jpeg');
-
-    function onProgress(xhr) {
-      if (xhr.lengthComputable) {
-        const percentComplete = xhr.loaded / xhr.total * 100;
-        console.log(`model${Math.round(percentComplete, 2)}% downloaded`);
-      }
-    }
-
-    function onError() {}
-
-    const loader = new THREE.OBJLoader();
-    loader.load(Table, (obj) => {
-      object = obj;
-    }, onProgress, onError);
   }
 
   toggleGravity = () => {
@@ -314,18 +320,6 @@ export default class FallingScene extends XrScene {
     }
   }
 
-  _createPlane() {
-    // Generate plane ground using geometry and materials.
-    const geometry2 = new THREE.PlaneGeometry(25, 25, 25, 25);
-    geometry2.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
-    const material2 = new THREE.MeshLambertMaterial({ color: 0xFFFFFF, wireframe: true });
-    const mesh2 = new THREE.Mesh(geometry2, material2);
-    mesh2.castShadow = true;
-    mesh2.receiveShadow = true;
-    mesh2.position.set(0, -8, 0);
-    this.scene.add(mesh2);
-  }
-
   checkObjectLimit() {
     if (this.meshes.length > 100) {
       this.world.remove(this.bodies[0]);
@@ -340,7 +334,7 @@ export default class FallingScene extends XrScene {
     // const radius = 1;
     const length = this.length / 2;
     const width = this.width / 2;
-    const height = this.height / 2;
+    const height = this.height;
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -9.8, 0);
 
@@ -393,11 +387,10 @@ export default class FallingScene extends XrScene {
   }
 
   _addLight() {
-    const dLight = new THREE.DirectionalLight( 0xd7cbb1, 0.4 );
+    const dLight = new THREE.DirectionalLight( 0xd7cbb1, 1.0 );
     dLight.position.x = 500;
     dLight.position.y = 500;
     dLight.position.z = 500;
-    //dLight.castShadow = true;
     this.scene.add( dLight );
 
     const aLight = new THREE.AmbientLight(0xaabbff, 0.2);

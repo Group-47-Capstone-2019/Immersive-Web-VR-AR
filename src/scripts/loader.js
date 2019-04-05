@@ -3,6 +3,7 @@ import THREE from './three';
 
 const objectLoader = new ObjectLoader();
 const gltfLoader = new THREE.GLTFLoader();
+const objLoader = new THREE.OBJLoader();
 const textureLoader = new TextureLoader();
 
 export class Loader {
@@ -68,6 +69,30 @@ export class Loader {
   addObjectToQueue = (url, id) => {
     const promise = new Promise((resolve, reject) => {
       objectLoader.load(
+        url,
+        (object) => { // onSuccess
+          this.cache[id] = object;
+          resolve(object);
+        },
+        () => {}, // onProgress
+        err => reject(err) // onError
+      );
+    });
+    this._queue.push(promise);
+
+    return promise;
+  }
+
+  /**
+   * add object to the queue, and return a promise with the object
+   *
+   * @param {string} url
+   * @param {string} id unique id to access the object from the cache
+   * @returns {Promise<THREE.Object3D>}
+   */
+  addOBJToQueue = (url, id) => {
+    const promise = new Promise((resolve, reject) => {
+      objLoader.load(
         url,
         (object) => { // onSuccess
           this.cache[id] = object;
