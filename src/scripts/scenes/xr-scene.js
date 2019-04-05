@@ -5,7 +5,7 @@ import { World } from 'cannon';
 
 import { XR } from '../xrController';
 import { canvas } from '../renderer/canvas';
-import { userPosition, updateTouchPosition } from '../controls/touch-controls';
+import { updateTouchPosition } from '../controls/touch-controls';
 import {
   keyboard,
   controls,
@@ -29,6 +29,8 @@ export default class XrScene {
   loader = new Loader();
 
   triggers = new Group();
+
+  position = new Vector3(0, 0, 0);
 
   controllers = [];
 
@@ -56,6 +58,7 @@ export default class XrScene {
       this.controls.getObject().position.set(0, 0, 0);
       this.controls.getObject().rotation.y = 0;
       this.controls.getObject().children[0].rotation.x = 0;
+      this.position.copy(this.controls.getObject().position);
     }
     this.pause = false;
 
@@ -214,11 +217,10 @@ export default class XrScene {
       }
       // Update the user position if keyboard and mouse controls are enabled.
       if (controls && controls.enabled) {
-        updatePosition();
-
+        this.position.copy(updatePosition());
         const direction = new Vector3();
         controls.getDirection(direction);
-        updateRay(controls.getObject().position, direction);
+        updateRay(this.position, direction);
         this._intersectionHandler();
       }
 
@@ -278,10 +280,10 @@ export default class XrScene {
 
           // Update user position if touch controls are in use with magic window.
           if (XR.magicWindowCanvas && !immersive) {
-            updateTouchPosition(viewMatrix);
+            this.position.copy(updateTouchPosition(viewMatrix));
           }
 
-          this._translateViewMatrix(viewMatrix, userPosition);
+          this._translateViewMatrix(viewMatrix, this.position);
 
           this.camera.matrixWorldInverse.copy(viewMatrix);
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
@@ -342,7 +344,7 @@ export default class XrScene {
             const gripMatrix = new Matrix4().fromArray(gripPose.transform.matrix);
 
             // Make sure to translate the controller matrix to the user position
-            this._translateObjectMatrix(gripMatrix, userPosition);
+            this._translateObjectMatrix(gripMatrix, this.position);
 
             // Apply grip transform matrix to the current controller mesh
             const matrixPosition = new Vector3();
@@ -364,9 +366,9 @@ export default class XrScene {
           if (isTrackedPointer) {
             // Get the targetRay vectors for rendering
             const rayOrigin = new Vector3(
-              ray.origin.x + userPosition.x,
-              ray.origin.y + userPosition.y,
-              ray.origin.z + userPosition.z
+              ray.origin.x + this.position.x,
+              ray.origin.y + this.position.y,
+              ray.origin.z + this.position.z
             );
             const rayDirection = new Vector3(
               ray.direction.x,
@@ -394,7 +396,7 @@ export default class XrScene {
    */
   _raycastIntersection(targetRayMatrix) {
     const trMatrix = new Matrix4().fromArray(targetRayMatrix);
-    this._translateObjectMatrix(trMatrix, userPosition);
+    this._translateObjectMatrix(trMatrix, this.position);
 
     // Transformed ray matrix from the current scene matrix world
     const rMatrix = new Matrix4().multiplyMatrices(this.scene.matrixWorld, trMatrix);

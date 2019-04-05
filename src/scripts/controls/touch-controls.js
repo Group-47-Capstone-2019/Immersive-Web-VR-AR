@@ -16,8 +16,8 @@ export let touchscreen = {
 const joystick = document.querySelector('#joystick');
 const touchControls = document.querySelector('#joystick-controls');
 
-let velocity = new THREE.Vector3();
-export let userPosition = new THREE.Vector3();
+const velocity = new THREE.Vector3();
+const userPosition = new THREE.Vector3();
 
 /* eslint-enable prefer-const */
 
@@ -214,20 +214,7 @@ export function updateTouchPosition(viewMatrix) {
 
   userPosition.sub(deltaPosition);
 
-  // Temporary boundaries
-
-  if (userPosition.z > 11) {
-    userPosition.z = 11;
-  }
-  if (userPosition.z < -11) {
-    userPosition.z = -11;
-  }
-  if (userPosition.x > 11) {
-    userPosition.x = 11;
-  }
-  if (userPosition.x < -11) {
-    userPosition.x = -11;
-  }
-
   touchscreen.prevTime = time;
+  
+  return userPosition;
 }
