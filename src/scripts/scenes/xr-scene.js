@@ -67,6 +67,12 @@ export default class XrScene {
 
     this._checkForKeyboardMouse();
 
+    //Set bounds
+    this.bounds = {
+      one : new Vector3(100, 100, 100),
+      two : new Vector3(-100, -100, -100)
+    };
+
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
     this._addEventListener(window, 'xrSelectStart', this._xrSelectStart);
@@ -218,6 +224,10 @@ export default class XrScene {
       // Update the user position if keyboard and mouse controls are enabled.
       if (controls && controls.enabled) {
         this.position.copy(updatePosition());
+
+        //Constrain user position within bounds
+        this._testBounds(controls.getObject().position);
+
         const direction = new Vector3();
         controls.getDirection(direction);
         updateRay(this.position, direction);
@@ -282,6 +292,9 @@ export default class XrScene {
           if (XR.magicWindowCanvas && !immersive) {
             this.position.copy(updateTouchPosition(viewMatrix));
           }
+
+          //Constrain user position within bounds
+          this._testBounds(this.position);
 
           this._translateViewMatrix(viewMatrix, this.position);
 
@@ -519,6 +532,42 @@ export default class XrScene {
       this._addEventListener(window, 'mousedown', this._onMouseDown);
       this._addEventListener(window, 'mouseup', this._onMouseUp);
       this._addEventListener(window, 'keyup', this._onKeyUp);
+    }
+  }
+
+  /**
+   * Set the bounds for movement in this scene
+   * bound1 elements must all be greater than bound2 elements
+   * @param {Vector3} bound1 
+   * @param {Vector3} bound2 
+   */
+  _setBounds(bound1, bound2) {
+    this.bounds.one.copy(bound1);
+    this.bounds.two.copy(bound2);
+  }
+
+  /**
+   * Tests for boundary collisions in scene
+   */
+  _testBounds(position) {
+    const bound1 = this.bounds.one;
+    const bound2 = this.bounds.two;
+    if (position.x > bound1.x) {
+      position.x = bound1.x;
+    } else if (position.x < bound2.x) {
+      position.x = bound2.x;
+    }
+
+    if (position.y > bound1.y) {
+      position.y = bound1.y;
+    } else if (position.y < bound2.y) {
+      position.y = bound2.y;
+    }
+
+    if (position.z > bound1.z) {
+      position.z = bound1.z;
+    } else if (position.z < bound2.z) {
+      position.z = bound2.z;
     }
   }
 

@@ -39,6 +39,11 @@ export default class HomeScene extends XrScene {
       this.scene.add(pointLight);
     }
 
+    this._setBounds(
+      new THREE.Vector3(11, 0, 11),
+      new THREE.Vector3(-11, 0, -11)
+    );
+
     // Generate room geometry
     this.length = 24;
     this.width = 24;
