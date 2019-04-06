@@ -1,10 +1,14 @@
+/* eslint-disable func-names */
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-restricted-syntax */
 import * as CANNON from 'cannon';
 import THREE from '../three';
 import XrScene from './xr-scene';
 import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
 import createGUI from '../menuGUI';
+import 'datguivr';
 
 export default class FallingScene extends XrScene {
   /**
@@ -25,6 +29,24 @@ export default class FallingScene extends XrScene {
     this.height = 16;
     this._createRoom();
     this._loadTable();
+
+    // Create Gui Menu
+    this.menu = createGUI(this.scene, this.camera, this.renderer);
+    this.menu.position.set(3, 1.2, -13);
+    // Add Global Gravity
+    this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
+      .name('Gravity')
+      .listen();
+
+    // const state = {
+    //   reset = () => {
+    //     this.world.gravity.set(0, 0, 0);
+    //   }
+    // };
+    // const newFolder = dat.GUIVR.create('Reset');
+    // this.menu = newFolder.add(state, 'reset')
+    //   .name('Turn Off Gravity');
+
     this.camera = camera;
 
     // Objects
@@ -68,25 +90,67 @@ export default class FallingScene extends XrScene {
     this.scene.add(spawnTube);
   }
 
+  // Create Gui folders.
+  _initGui = (context) => {
+    const createFolder = dat.GUIVR.create('Object Settings');
+    this.menu.addFolder(createFolder);
+
+    createFolder.add(context.position, 'x').min(-1)
+      .max(1)
+      .step(0.25)
+      .name('Position X')
+      .listen();
+
+    createFolder.add(context.position, 'y').min(-1)
+      .max(1)
+      .step(0.25)
+      .name('Position Y')
+      .listen();
+
+    createFolder.add(context.position, 'z').min(-1)
+      .max(1)
+      .step(0.25)
+      .name('Position Z')
+      .listen();
+
+    createFolder.add(context.material, 'wireframe')
+      .name('Wireframe')
+      .listen();
+
+    // this.menu.add(object.material, 'wireframe')
+    //   .name('Wireframe')
+    //   .listen();
+  }
+
   _spawnBall = () => {
     console.log('Spawn ball');
 
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
+    const material = new THREE.MeshPhongMaterial({ color: 'red' });
     const ball = new TriggerMesh(this.ballGeo, material);
     ball.castShadow = true;
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
+    ball.addFunction('_initGui', this._initGui);
+
     ball.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+        this.material.color.set('green');
       }
     };
 
+    // Select Ball
+    ball.select = function () {
+      if (!this.debug) console.log('Add Menu Gui Ball Settings');
+      this.functions._initGui(this);
+      this.material.color.set('white');
+    };
+
+
     ball.exit = function () {
-      this.material.color.set('orange');
+      this.material.color.set('red');
     };
 
     this.triggers.add(ball);
@@ -98,11 +162,6 @@ export default class FallingScene extends XrScene {
 
     ballBody.position.set(0, 7, 0);
     ball.position.set(0, 7, 0);
-
-    // Create Ball Menu
-    const menu = createGUI(this.scene, this.camera, this.renderer, ball, this.world);
-    const menuBall = new THREE.Mesh(menu);
-    this.scene.add(menuBall);
   }
 
   _spawnBox = () => {
@@ -110,20 +169,29 @@ export default class FallingScene extends XrScene {
 
     const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
+    const material = new THREE.MeshPhongMaterial({ color: 'red' });
     const box = new TriggerMesh(this.boxGeo, material);
     box.castShadow = true;
     box.receiveShadow = true;
     this.world.addBody(boxBody);
 
+    box.addFunction('_initGui', this._initGui);
+
     box.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+        this.material.color.set('green');
       }
     };
 
+    // Select Box
+    box.select = function () {
+      if (!this.debug) console.log('Add Menu Gui Box Settings');
+      this.functions._initGui(this);
+      this.material.color.set('white');
+    };
+
     box.exit = function () {
-      this.material.color.set('orange');
+      this.material.color.set('red');
     };
 
     this.triggers.add(box);
@@ -135,11 +203,6 @@ export default class FallingScene extends XrScene {
 
     boxBody.position.set(0, 7, 0);
     box.position.set(0, 7, 0);
-
-    // Create Box Menu
-    const menu = createGUI(this.scene, this.camera, this.renderer, box, this.world);
-    const menuBox = new THREE.Mesh(menu);
-    this.scene.add(menuBox);
   }
 
   _createSpawners() {
@@ -154,16 +217,17 @@ export default class FallingScene extends XrScene {
 
     ballSpawner.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+        this.material.color.set('green');
       }
     };
 
     ballSpawner.select = function () {
+      this.material.color.set('white');
       this.functions.spawnBall();
     };
 
     ballSpawner.exit = function () {
-      this.material.color.set(0xFFFFFF);
+      this.material.color.set('grey');
     };
 
     this.triggers.add(ballSpawner);
@@ -184,16 +248,17 @@ export default class FallingScene extends XrScene {
 
     boxSpawner.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+        this.material.color.set('green');
       }
     };
 
     boxSpawner.select = function () {
+      this.material.color.set('white');
       this.functions.spawnBox();
     };
 
     boxSpawner.exit = function () {
-      this.material.color.set(0xFFFFFF);
+      this.material.color.set('grey');
     };
 
     this.triggers.add(boxSpawner);
@@ -204,11 +269,6 @@ export default class FallingScene extends XrScene {
     this.world.addBody(boxBody);
 
     // Cylinder
-
-    // Create gui menu.
-    // const menu = createGUI(this.scene, this.camera, ballSpawner, this.world, this.renderer);
-    // const menuTest = new THREE.Mesh(menu);
-    // this.scene.add(menuTest);
   }
 
   _loadTable() {
