@@ -67,10 +67,10 @@ export default class XrScene {
 
     this._checkForKeyboardMouse();
 
-    //Set bounds
+    // Set bounds
     this.bounds = {
-      one : new Vector3(100, 100, 100),
-      two : new Vector3(-100, -100, -100)
+      one: new Vector3(100, 100, 100),
+      two: new Vector3(-100, -100, -100)
     };
 
     // Make sure that animation callback is called on an xrAnimate event.
@@ -225,7 +225,7 @@ export default class XrScene {
       if (controls && controls.enabled) {
         this.position.copy(updatePosition());
 
-        //Constrain user position within bounds
+        // Constrain user position within bounds
         this._testBounds(controls.getObject().position);
 
         const direction = new Vector3();
@@ -293,7 +293,7 @@ export default class XrScene {
             this.position.copy(updateTouchPosition(viewMatrix));
           }
 
-          //Constrain user position within bounds
+          // Constrain user position within bounds
           this._testBounds(this.position);
 
           this._translateViewMatrix(viewMatrix, this.position);
@@ -338,31 +338,31 @@ export default class XrScene {
         if (isTrackedPointer && inputSource.gripSpace) {
           // Get grip space pose for controller
           const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace);
-          if (!gripPose) continue;
+          if (gripPose) {
+            // Is the number of controllers we know of less than the number of input sources?
+            if (this.controllers.length > inputSources.length) {
+              // Remove controller from array if number of controllers
+              // is less than number of input sources
+              this._removeController(i);
+            } else {
+              if (this.controllers.length < inputSources.length) {
+                // Create a new controller and add to the scene
+                const controller = new Controller(this.controllerMesh.clone());
+                this.controllers.push(controller);
+                this.scene.add(controller.mesh);
+              }
 
-          // Is the number of controllers we know of less than the number of input sources?
-          if (this.controllers.length > inputSources.length) {
-            // Remove controller from array if number of controllers
-            // is less than number of input sources
-            this._removeController(i);
-          } else {
-            if (this.controllers.length < inputSources.length) {
-              // Create a new controller and add to the scene
-              const controller = new Controller(this.controllerMesh.clone());
-              this.controllers.push(controller);
-              this.scene.add(controller.mesh);
+              // Get the grip transform matrix
+              const gripMatrix = new Matrix4().fromArray(gripPose.transform.matrix);
+
+              // Make sure to translate the controller matrix to the user position
+              this._translateObjectMatrix(gripMatrix, this.position);
+
+              // Apply grip transform matrix to the current controller mesh
+              const matrixPosition = new Vector3();
+              gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
+              this.controllers[i].updateControllerPosition(gripMatrix);
             }
-
-            // Get the grip transform matrix
-            const gripMatrix = new Matrix4().fromArray(gripPose.transform.matrix);
-
-            // Make sure to translate the controller matrix to the user position
-            this._translateObjectMatrix(gripMatrix, this.position);
-
-            // Apply grip transform matrix to the current controller mesh
-            const matrixPosition = new Vector3();
-            gripMatrix.decompose(matrixPosition, new Quaternion(), new Vector3());
-            this.controllers[i].updateControllerPosition(gripMatrix);
           }
         }
 
@@ -538,8 +538,8 @@ export default class XrScene {
   /**
    * Set the bounds for movement in this scene
    * bound1 elements must all be greater than bound2 elements
-   * @param {Vector3} bound1 
-   * @param {Vector3} bound2 
+   * @param {Vector3} bound1
+   * @param {Vector3} bound2
    */
   _setBounds(bound1, bound2) {
     this.bounds.one.copy(bound1);

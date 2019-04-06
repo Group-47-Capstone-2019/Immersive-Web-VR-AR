@@ -215,6 +215,6 @@ export function updateTouchPosition(viewMatrix) {
   userPosition.sub(deltaPosition);
 
   touchscreen.prevTime = time;
-  
+
   return userPosition;
 }
