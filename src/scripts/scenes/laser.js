@@ -60,6 +60,7 @@ export default class LaserScene extends XrScene {
     const numVertices = this.laser.geometry.vertices.length;
     let lineOrigin = new THREE.Vector3();
     lineOrigin.copy(this.laser.geometry.vertices[numVertices - 1]);
+    console.log(lineOrigin);
     const newPoint = direction.multiplyScalar(length).add(lineOrigin);
     this.laser.geometry.vertices.push(newPoint);
     this.laser.geometry.computeBoundingSphere();
@@ -67,7 +68,13 @@ export default class LaserScene extends XrScene {
   }
 
   _updateLaserRay() {
-    const intersect = this.laserRay.intersectObject(this.mirrors, true);
+    let raycasterOrigin = new THREE.Vector3();
+    let raycasterDestination = new THREE.Vector3(0, 0, -1);
+    let rayMatrixWorld = new THREE.Matrix4();
+    rayMatrixWorld.multiplyMatrices(this.scene.matrixWorld, this.laser.matrix);
+    raycasterOrigin.setFromMatrixPosition(rayMatrixWorld);
+    this.laserRay.set(raycasterOrigin, raycasterDestination.transformDirection(rayMatrixWorld).normalize());
+    const intersect = this.laserRay.intersectObject(this.intersects, true);
     
     if (intersect.length > 0) {
       let res = intersect.filter(function(res) {
@@ -83,7 +90,8 @@ export default class LaserScene extends XrScene {
           console.log(res.point);
           console.log(res.distance);
           let distance = res.distance;
-          this._updateLaser(direction, distance);
+          this.laser.geometry.vertices.push(res.point);
+          //this._updateLaser(direction, distance);
           if (res.object.parent === this.mirrors) {
             console.log("intersected");
           }
