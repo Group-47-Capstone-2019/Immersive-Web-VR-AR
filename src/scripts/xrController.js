@@ -55,7 +55,7 @@ function createVRButton() {
 
 function xrOnSessionEnded(event) {
   closeInteractions(event.session);
-  if (event.session == XR.session) XR.session = null;
+  if (event.session === XR.session) XR.session = null;
 
   if (event.session.renderState.outputContext) {
     // Not sure why it wasn't on the body element, but this should remove it no matter where it is.

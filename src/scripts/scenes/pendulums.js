@@ -17,13 +17,13 @@ const savedMaterials = new Map();
 function yellowOnHover(object) {
   return {
     hover_start() {
-      // console.log(object.material == selectedMaterial);
       savedMaterials.set(object, object.material);
+      console.log('Saved material', object.material);
       object.material = selectedMaterial;
     },
     hover_end() {
-      //      console.log(savedMaterials.get(object) == selectedMaterial);
       object.material = savedMaterials.get(object);
+      console.log('Restored material', object.material);
       savedMaterials.delete(object);
     }
   };
@@ -55,19 +55,18 @@ function calculateMotion(pendulum_swing, length, gravity) {
       const y = length * Math.cos(i);
 
       const quat = new Quaternion(x, y, 0, 0);
+      quat.normalize();
       const position = new Vector3();
       const scale = new Vector3();
       pendulum_swing.matrix.decompose(position, new Quaternion(), scale);
       pendulum_swing.matrix.compose(position, quat, scale);
       pendulum_swing.updateMatrixWorld(true);
     };
-  } else {
-    // TODO: Reset the pendulum's orientation to a zeroed Quaternion
-    return () => undefined;
   }
+  // TODO: Reset the pendulum's orientation to a zeroed Quaternion
+  return () => undefined;
 }
 
-const pendulumMotion = Symbol('Symbol storing the data for the pendulums');
 export default class PendulumScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
@@ -114,7 +113,7 @@ export default class PendulumScene extends XrScene {
       snappingPoints.push(snappingPoint);
     }
     function getSnappingObj(objPos) {
-      const THRESHHOLD = .7;
+      const THRESHHOLD = 0.7;
       for (const snappingPoint of snappingPoints) {
         const snappingPointPos = new Vector3().setFromMatrixPosition(snappingPoint.matrixWorld);
         const distance = snappingPointPos.distanceTo(objPos);
@@ -122,16 +121,16 @@ export default class PendulumScene extends XrScene {
           return snappingPoint;
         }
       }
+      return null;
     }
-    function getGravity(obj) {
-      const snap = getSnappingObj(new Vector3().setFromMatrixPosition(obj.matrixWorld));
+    function getGravity(swing) {
+      const snap = getSnappingObj(new Vector3().setFromMatrixPosition(swing.parent.matrixWorld));
       if (snap) {
         return snap.gravity;
-      } else {
-        return 0;
       }
+      return 0;
     }
-    function dragWithSnapping(object, snappingPoints) {
+    function dragWithSnapping(object) {
       return {
         // For an object to be dragable at least one of drag, drag_start, or
         // drag_end must exist in the interactions
@@ -182,7 +181,7 @@ export default class PendulumScene extends XrScene {
     }
 
     // Interactions for the pendulum swings
-    const pendulumLengths = [.5, 0.801];
+    const pendulumLengths = [0.5, 0.801];
     const pendulumNames = ['Pendulum_Swing', 'Pendulum_Swing_Tall'];
     for (let i = 0; i < pendulumNames.length; ++i) {
       const pendulum_swing = importedScene.getObjectByName(pendulumNames[i]);
@@ -195,7 +194,7 @@ export default class PendulumScene extends XrScene {
           // this.paused = true;
           // TODO: Stop the swing connected to this pendulum
           const transformMatrix = new Matrix4().makeTranslation(intersection.point.x, intersection.point.y, intersection.point.z);
-          transformMatrix.multiply(new Matrix4().getInverse(pointerMatrix, true));
+          transformMatrix.premultiply(new Matrix4().getInverse(pointerMatrix, true));
           // const movement = new Vector3().copy(intersection.point);
           // movement.sub(new Vector3().setFromMatrixPosition(pointerMatrix));
           // const transformMatrix = new Matrix4().makeTranslation(movement.x, movement.y, movement.z);
@@ -251,13 +250,12 @@ export default class PendulumScene extends XrScene {
     // Interactions for the floor + surfaces (Teleport);
     const floor = importedScene.getObjectByName('Floor');
     floor[Interactions] = Object.assign(yellowOnHover(floor), teleportOnSelect());
-    const surfaces = ['Lunar', 'Martian', 'Mystery'].map(room => importedScene.getObjectByName(room + '_Surface'));
+    const surfaces = ['Lunar', 'Martian', 'Mystery'].map(room => importedScene.getObjectByName(`${room}_Surface`));
     for (const surface of surfaces) {
       surface[Interactions] = teleportOnSelect();
     }
 
     this.scene.add(importedScene);
-    console.log(importedScene);
 
     this.paused = false;
   }

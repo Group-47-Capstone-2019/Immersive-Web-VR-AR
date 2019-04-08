@@ -1,4 +1,4 @@
-import {bindControllers} from './interactions';
+import { bindControllers } from './interactions';
 
 export let currentScene;
 export function getCurrentScene() {

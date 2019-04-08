@@ -1,5 +1,5 @@
 import {
-  Scene, Quaternion, Matrix4, Vector3, Clock, Group
+  Scene, Matrix4, Clock, Group
 } from 'three';
 import { World } from 'cannon';
 
@@ -13,8 +13,7 @@ import {
 } from '../controls/keyboard-controls';
 import { Loader } from '../loader';
 
-import controllerGlb from '../../assets/controller/controller.glb';
-import {loadControllerMeshes} from './controllers';
+import { loadControllerMeshes } from './controllers';
 
 import { handleInteractions } from '../interactions';
 
@@ -216,12 +215,11 @@ export default class XrScene {
       let pose;
       try {
         pose = xrFrame.getViewerPose(XR.refSpace);
-      } catch(e) {
-        if (e instanceof DOMException)
+      } catch (e) {
+        if (e instanceof DOMException) {
           // Sometimes a frame is called after the session has changed but the reference space hasn't been updated which results in a DOMException.
           console.warn('TODO: Fix this error', e);
-        else
-          throw e;
+        } else { throw e; }
       }
 
       if (pose) {
@@ -239,7 +237,7 @@ export default class XrScene {
           this.renderer.context.FRAMEBUFFER,
           XR.session.renderState.baseLayer.framebuffer
         );
-        
+
         handleInteractions(timestamp, xrFrame);
 
         for (let i = 0; i < pose.views.length; i++) {

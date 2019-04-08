@@ -7,7 +7,7 @@ import {
   Mesh, BoxGeometry, MeshBasicMaterial
 } from 'three';
 import controllerGlb from '../../../assets/controller/controller.glb';
-import {Loader} from '../../loader';
+import { Loader } from '../../loader';
 import { getCurrentScene } from '../../currentScene';
 import { XR } from '../../xrController';
 
@@ -34,36 +34,39 @@ export default class Controller {
     this.inputSource = inputSource;
     switch (this.inputSource.targetRayMode) {
       case 'gaze':
-      this.createCursor();
-      this.createLaser();
-      this.createController();
-      break;
+        this.createCursor();
+        // this.createLaser();
+        // this.createController();
+        break;
       case 'tracked-pointer':
-      this.createCursor();
-      this.createLaser();
-      this.createController();
-      break;
+        this.createCursor();
+        this.createLaser();
+        this.createController();
+        break;
       case 'screen':
       default:
     }
     this.bind(getCurrentScene().scene);
   }
+
   bind(scene) {
-    ['cursor', 'laser', 'controller'].forEach(item => {
+    ['cursor', 'laser', 'controller'].forEach((item) => {
       if (this[item]) {
         scene.add(this[item]);
       }
     });
   }
+
   unbind() {
-    ['cursor', 'laser', 'controller'].forEach(item => {
+    ['cursor', 'laser', 'controller'].forEach((item) => {
       if (this[item] && this[item].parent) {
         this[item].parent.remove(this[item]);
       }
     });
   }
+
   createCursor() {
-    this.cursor = new Mesh(new BoxGeometry(.2, .2, .2), new MeshBasicMaterial({
+    this.cursor = new Mesh(new BoxGeometry(0.2, 0.2, 0.2), new MeshBasicMaterial({
       color: this.color
     }));
     this.cursor.matrixAutoUpdate = false;
@@ -85,8 +88,9 @@ export default class Controller {
     this.laser = new Line(geometry, material);
     this.laser.raycast = () => null; // Disable raycast intersections
   }
+
   createController() {
-    this.controller = meshCache['controller'].scene.children[0].clone();
+    this.controller = meshCache.controller.scene.children[0].clone();
     this.controller.matrixAutoUpdate = false;
     this.controller.raycast = () => null; // Disable raycast intersections
   }
@@ -110,6 +114,7 @@ export default class Controller {
 
     if (this.laser && this.inputSource.targetRaySpace) {
       const rayPose = xrFrame.getPose(this.inputSource.targetRaySpace, XR.refSpace);
+      /* global XRRay */
       const ray = new XRRay(rayPose.transform);
       if (rayPose) {
         // If there was an intersection, get the intersection length else default laser to 100
@@ -125,7 +130,7 @@ export default class Controller {
         this.updateLaser(rayOrigin, rayDirection, rayLength);
       }
     }
-    
+
     if (this.cursor && intersection) {
       this.cursor.matrix.setPosition(intersection.point);
       this.cursor.updateMatrixWorld(true);

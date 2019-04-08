@@ -4,6 +4,7 @@ import { Interactions } from './interactions';
 export default class TriggerMesh extends Mesh {
     // True if raycaster intersects this object
     isIntersected = false;
+
     _isActuallyIntersected = false;
 
     // True if raycaster selected this object
@@ -17,11 +18,11 @@ export default class TriggerMesh extends Mesh {
     // Trigger functions - Override these
     hover() {}
 
-    exit() {};
+    exit() {}
 
-    select() {};
+    select() {}
 
-    release() {};
+    release() {}
 
     functions = {};
 

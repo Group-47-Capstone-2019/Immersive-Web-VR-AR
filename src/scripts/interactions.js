@@ -1,10 +1,9 @@
 import {
   Raycaster,
-  Vector3, Matrix4, Quaternion
+  Vector3, Matrix4
 } from 'three';
 import { getCurrentScene } from './currentScene';
 import { XR } from './xrController';
-import { camera } from './renderer/camera';
 import Controller from './scenes/controllers';
 
 // TODO: Split Interactions into indevidual interfaces:
@@ -35,8 +34,7 @@ const handleInputSourcesChange = ({ session }) => {
   for (const old of inputSources.values()) {
     if (!newSources.has(old)) {
       const controller = controllers.get(old);
-      if (controller)
-        controller.unbind();
+      if (controller) { controller.unbind(); }
     }
   }
   inputSources = newSources;
@@ -110,8 +108,7 @@ const handleSelectEnd = handlerCommon((_, inputSource) => {
     if (dragend) {
       console.log('Calling drag_end');
       dragend();
-    } else
-      console.log('Using default drag_end implementation');
+    } else { console.log('Using default drag_end implementation'); }
   }
 
   const selectedObject = selectedObjects.get(inputSource);
@@ -121,8 +118,7 @@ const handleSelectEnd = handlerCommon((_, inputSource) => {
     if (interactions.select_end) {
       console.log('Calling select_end');
       interactions.select_end();
-    } else
-      console.log('Using default select_end implementation');
+    } else { console.log('Using default select_end implementation'); }
   }
   selectedObjects.delete(inputSource);
 });
@@ -132,15 +128,14 @@ const handleSelect = handlerCommon((intersection) => {
     if (interactions.select) {
       console.log('Calling select');
       interactions.select(intersection);
-    } else
-      console.log('Using default select implementation');
+    } else { console.log('Using default select implementation'); }
   }
 });
 
 // Called when a session is created:
 export function setupInteractions() {
   console.log('Setting up interactions');
-  handleInputSourcesChange({session: XR.session});
+  handleInputSourcesChange({ session: XR.session });
   XR.session.addEventListener('inputsourceschange', handleInputSourcesChange);
 
   XR.session.addEventListener('select', handleSelect);
@@ -169,7 +164,7 @@ function raycast(xrRay) {
   //   intersection.point.applyMatrix4(scene.matrixWorld);
   // }
   if (intersections) return intersections;
-  else return [];
+  return [];
 }
 
 export function bindControllers(scene) {
@@ -209,15 +204,13 @@ function updateInputSource(inputSource, ray, frame) {
       if (lastHovered && lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
         console.log('Calling hover_end');
         lastHovered[Interactions].hover_end();
-      } else
-        console.log('Using default hover_end implementation');
+      } else { console.log('Using default hover_end implementation'); }
 
       // Hover the new Object
       if (interactions && interactions.hover_start) {
         console.log('Calling hover_start');
         interactions.hover_start(intersection);
-      } else
-        console.log('Using default hover_start implementation')
+      } else { console.log('Using default hover_start implementation'); }
 
       // Mark the object as the one hovered by this input source
       hoveredObjects.set(inputSource, intersection.object);
@@ -227,7 +220,7 @@ function updateInputSource(inputSource, ray, frame) {
     if (interactions && interactions.hover) {
       // console.log('Calling hover');
       interactions.hover(intersection);
-    } 
+    }
     // else console.log('Using default hover implementation');
     break;
   }
@@ -236,12 +229,12 @@ function updateInputSource(inputSource, ray, frame) {
   controller.update(frame, intersections[0]);
 
   // Handle if there are no objects to be intersected with
-  if (intersections.length == 0) {
-    if (hoveredObject) {
-      if (hoveredObject[Interactions] && hoveredObject[Interactions].hover_end) {
-        hoveredObject[Interactions].hover_end();
+  if (intersections.length === 0) {
+    if (lastHovered) {
+      if (lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
+        lastHovered[Interactions].hover_end();
       }
-      hoveredObjects.delete(inputSource);
+      lastHovered.delete(inputSource);
     }
   }
 }
