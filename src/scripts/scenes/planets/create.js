@@ -4,12 +4,10 @@ import {
   MeshLambertMaterial,
   Vector3,
   MeshPhongMaterial,
-  MeshBasicMaterial,
+  MeshBasicMaterial
 } from 'three';
-import planets from './planets';
 
-export const DISTANCE_MULTIPLIER = 100;
-export const MASS_MULTIPLIER = 1e-24;
+export const DISTANCE_DIVIDER = 1e6;
 
 function randomColor() {
   return '#000000'.replace(/0/g, () =>
@@ -65,7 +63,7 @@ const randBetween = (low, high) =>
 /**
  * build planets, with mesh and randomized position
  *
- * @returns {Planet[]} created planets
+ * @returns {Mesh[]} created planets
  */
 export function createPlanets(planetData, cache) {
   return Object.keys(planetData).map(planetName => {
@@ -82,19 +80,14 @@ export function createPlanets(planetData, cache) {
 
     const mesh = new Mesh(geo, material);
 
-    mesh.position
-      .fromArray(planet.initialPosition)
-      .multiplyScalar(DISTANCE_MULTIPLIER);
+    mesh.position.setFromSphericalCoords(
+      planet.orbitDistance / DISTANCE_DIVIDER,
+      Math.PI / 2,
+      Math.random() * Math.PI
+    );
     mesh.name = planetName;
 
-    return {
-      mesh,
-      velocity: new Vector3()
-        .fromArray(planet.initialVelocity)
-        .multiplyScalar(DISTANCE_MULTIPLIER),
-      name: planetName,
-      mass: planet.mass * MASS_MULTIPLIER
-    };
+    return mesh;
   });
 }
 

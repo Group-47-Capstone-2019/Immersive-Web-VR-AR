@@ -7,13 +7,16 @@ import {
   MeshBasicMaterial,
   Mesh,
   RingGeometry,
-  DoubleSide
+  DoubleSide,
+  Spherical
 } from 'three';
 import XrScene from '../xr-scene';
 import { createPlanets } from './create';
 import { movePlanets } from './orbit';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
+
+const EARTH_YEAR_SECONDS = 120;
 
 export default class PlanetsScene extends XrScene {
   /**
@@ -41,11 +44,11 @@ export default class PlanetsScene extends XrScene {
     super.onAssetsLoaded(cache);
 
     this.planets = createPlanets(planetData, cache);
-    this.planets.forEach(p => this.scene.add(p.mesh));
+    this.planets.forEach(p => this.scene.add(p));
 
     // saturn's rings
     const saturn = this.scene.getObjectByName('Saturn');
-    const saturnRingGeo = new RingGeometry(6, 9, 50);
+    const saturnRingGeo = new RingGeometry(2.5, 3.5, 50);
     const saturnRingMat = new MeshPhongMaterial({
       map: cache['rings-texture'],
       side: DoubleSide,
@@ -58,7 +61,7 @@ export default class PlanetsScene extends XrScene {
 
     // uranus's rings
     const uranus = this.scene.getObjectByName('Uranus');
-    const uranusRingGeo = new RingGeometry(6, 9, 50);
+    const uranusRingGeo = new RingGeometry(2.5, 3.5, 50);
     const uranusRingMat = new MeshPhongMaterial({
       map: cache['rings-texture'],
       side: DoubleSide,
@@ -78,9 +81,15 @@ export default class PlanetsScene extends XrScene {
   /**
    * animation function - called each frame
    *
-   * @param {number} delta
+   * @param {number} deltaSeconds
    */
-  animate(delta) {
-    movePlanets(this.planets, delta);
+  animate(deltaSeconds) {
+    this.planets.forEach(mesh => {
+      const spherical = new Spherical().setFromVector3(mesh.position);
+      const angularVel = 2 * Math.PI / planetData[mesh.name].orbitYears / EARTH_YEAR_SECONDS;
+      spherical.theta += angularVel * deltaSeconds;
+      mesh.position.setFromSpherical(spherical);
+    });
+    //movePlanets(this.planets, deltaSeconds);
   }
 }
