@@ -71,7 +71,10 @@ function xrOnSessionEnded(event) {
 }
 
 async function xrOnSessionStarted(context) {
-  XR.session.addEventListener('end', xrOnSessionEnded);
+  // I'm seeing xrOnSessionEnded being called twice.  I'm going to see if using once fixes this / causes other problems.
+  XR.session.addEventListener('end', xrOnSessionEnded, {
+    once: true
+  });
 
   setupInteractions();
 
