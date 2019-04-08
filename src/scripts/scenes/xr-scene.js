@@ -214,8 +214,16 @@ export default class XrScene {
       const immersive = (XR.session.mode === 'immersive-vr');
 
       // Get the correct reference space for the session.
-
-      const pose = xrFrame.getViewerPose(XR.refSpace);
+      let pose;
+      try {
+        pose = xrFrame.getViewerPose(XR.refSpace);
+      } catch(e) {
+        if (e instanceof DOMException)
+          // Sometimes a frame is called after the session has changed but the reference space hasn't been updated which results in a DOMException.
+          console.warn('TODO: Fix this error', e);
+        else
+          throw e;
+      }
 
       if (pose) {
         this.scene.matrixAutoUpdate = false;
@@ -238,7 +246,7 @@ export default class XrScene {
         for (let i = 0; i < pose.views.length; i++) {
           const view = pose.views[i];
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
-          const viewMatrix = new Matrix4().fromArray(view.transform.inverse().matrix);
+          const viewMatrix = new Matrix4().fromArray(view.transform.inverse.matrix);
 
           this.renderer.context.viewport(
             viewport.x,
