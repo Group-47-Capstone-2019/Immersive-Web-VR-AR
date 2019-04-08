@@ -31,13 +31,12 @@ export default class LaserScene extends XrScene {
     this.width = 64;
     this.height = 16;
     this._createRoom();
-    this._addMirror45();
-    this._addMirror135();
+    this._addMirrors();
 
     this._addLight();
   }
 
-  _addMirror45() {
+  _addMirrors() {
     const geo = new THREE.BoxGeometry(3, 3, 0.1);
     const mat = new THREE.MeshPhongMaterial( {color: 0xfff000});
     const mirror = new THREE.Mesh(geo, mat);
@@ -45,16 +44,24 @@ export default class LaserScene extends XrScene {
     mirror.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
     mirror.name = "mirror";
     this.mirrors.add(mirror);
-  }
 
-  _addMirror135() {
-    const geo = new THREE.BoxGeometry(3, 3, 0.1);
-    const mat = new THREE.MeshPhongMaterial( {color: 0xfff000});
-    const mirror = new THREE.Mesh(geo, mat);
-    mirror.position.set(10, -2, 0);
-    mirror.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
-    mirror.name = "mirror";
-    this.mirrors.add(mirror);
+    const mirror2 = mirror.clone();
+    mirror2.position.set(10, -2, 0);
+    mirror2.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
+    mirror2.name = "mirror2";
+    this.mirrors.add(mirror2);
+
+    const mirror3 = mirror2.clone();
+    mirror3.position.set(10, -2, 10);
+    mirror3.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
+    mirror3.name = "mirror3";
+    this.mirrors.add(mirror3);
+
+    const mirror4 = mirror3.clone();
+    mirror4.position.set(-20, -2, 10);
+    mirror4.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
+    mirror4.name = "mirror4";
+    this.mirrors.add(mirror4);
   }
 
   _createLaser() {
