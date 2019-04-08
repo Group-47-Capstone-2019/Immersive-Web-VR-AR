@@ -1,10 +1,7 @@
 import {
   AmbientLight,
   PointLight,
-  Color,
-  SphereGeometry,
   MeshPhongMaterial,
-  MeshBasicMaterial,
   Mesh,
   RingGeometry,
   DoubleSide,
@@ -12,7 +9,6 @@ import {
 } from 'three';
 import XrScene from '../xr-scene';
 import { createPlanets } from './create';
-import { movePlanets } from './orbit';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
 
@@ -46,6 +42,11 @@ export default class PlanetsScene extends XrScene {
     this.planets = createPlanets(planetData, cache);
     this.planets.forEach(p => this.scene.add(p));
 
+    this.addPlanetRings(cache);
+    this.addSunLight();
+  }
+
+  addPlanetRings(cache) {
     // saturn's rings
     const saturn = this.scene.getObjectByName('Saturn');
     const saturnRingGeo = new RingGeometry(2.5, 3.5, 50);
@@ -71,8 +72,9 @@ export default class PlanetsScene extends XrScene {
     const uranusRingMesh = new Mesh(uranusRingGeo, uranusRingMat);
     uranusRingMesh.rotateX(Math.PI / 2);
     uranus.add(uranusRingMesh);
+  }
 
-    // add light to the sun
+  addSunLight() {
     const sun = this.scene.getObjectByName('Sun');
     const pointLight = new PointLight('white', 0.8, 1000);
     sun.add(pointLight);
@@ -90,6 +92,5 @@ export default class PlanetsScene extends XrScene {
       spherical.theta += angularVel * deltaSeconds;
       mesh.position.setFromSpherical(spherical);
     });
-    //movePlanets(this.planets, deltaSeconds);
   }
 }
