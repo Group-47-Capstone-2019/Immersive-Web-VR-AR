@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 import { Planet } from './create'; // eslint-disable-line
 
-export const G = 0.05;// 6.673e-11;
+export const G = 0.000005;// 6.673e-11;
 
 /**
  * returns force of gravity on p1 and p2 from the other

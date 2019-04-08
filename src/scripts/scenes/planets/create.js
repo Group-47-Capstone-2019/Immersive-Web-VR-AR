@@ -1,9 +1,20 @@
 import {
-  SphereGeometry, Mesh, MeshLambertMaterial, Vector3
+  SphereGeometry,
+  Mesh,
+  MeshLambertMaterial,
+  Vector3,
+  MeshPhongMaterial,
+  MeshBasicMaterial,
 } from 'three';
+import planets from './planets';
+
+export const DISTANCE_MULTIPLIER = 100;
+export const MASS_MULTIPLIER = 1e-24;
 
 function randomColor() {
-  return '#000000'.replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
+  return '#000000'.replace(/0/g, () =>
+    Math.floor(Math.random() * 16).toString(16)
+  );
 }
 
 /**
@@ -40,7 +51,8 @@ const randBetweenPos = (low, high) => Math.random() * (high - low) + low;
  * @param {number} low
  * @param {number} high
  */
-const randBetween = (low, high) => randBetweenPos(low, high) * (Math.random() > 0.5 ? -1 : 1);
+const randBetween = (low, high) =>
+  randBetweenPos(low, high) * (Math.random() > 0.5 ? -1 : 1);
 
 /**
  * @typedef Planet
@@ -55,20 +67,33 @@ const randBetween = (low, high) => randBetweenPos(low, high) * (Math.random() > 
  *
  * @returns {Planet[]} created planets
  */
-export function createPlanets() {
-  const sizes = [0.5, 0.75, 1, 0.5, 1, 0.75, 1, 0.5];
-  return sizes.map((radius) => {
-    const x = randBetween(4, 10);
-    const y = randBetween(4, 10);
-    const z = randBetween(4, 10);
+export function createPlanets(planetData, cache) {
+  return Object.keys(planetData).map(planetName => {
+    const texture = cache[planetName];
+    const planet = planetData[planetName];
+    const geo = new SphereGeometry(2, 20, 20);
 
-    const velocity = new Vector3(0, 0, 0);
+    let material;
+    if (planetName === 'Sun') {
+      material = new MeshBasicMaterial({ map: texture });
+    } else {
+      material = new MeshPhongMaterial({ map: texture });
+    }
+
+    const mesh = new Mesh(geo, material);
+
+    mesh.position
+      .fromArray(planet.initialPosition)
+      .multiplyScalar(DISTANCE_MULTIPLIER);
+    mesh.name = planetName;
 
     return {
-      velocity,
-      radius,
-      mass: Math.PI * (4 / 3) * (radius ** 3),
-      mesh: createPlanetMesh(radius, x, y, z)
+      mesh,
+      velocity: new Vector3()
+        .fromArray(planet.initialVelocity)
+        .multiplyScalar(DISTANCE_MULTIPLIER),
+      name: planetName,
+      mass: planet.mass * MASS_MULTIPLIER
     };
   });
 }
