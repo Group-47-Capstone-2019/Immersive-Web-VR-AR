@@ -4,6 +4,7 @@ import { Interactions } from './interactions';
 export default class TriggerMesh extends Mesh {
     // True if raycaster intersects this object
     isIntersected = false;
+    _isActuallyIntersected = false;
 
     // True if raycaster selected this object
     isSelected = false;
@@ -28,16 +29,36 @@ export default class TriggerMesh extends Mesh {
       const self = this;
       return {
         select_start(intersection) {
+          if (!self.isIntersected) {
+            this.hover_start(intersection);
+          }
+          self.isSelected = true;
+          console.log('Trigger: select');
           self.select(intersection);
         },
-        select_end(intersection) { // This doesn't actually receive an intersection
-          self.release(intersection);
+        select_end() {
+          self.isSelected = false;
+          console.log('Trigger: release');
+          self.release();
+          if (!self._isActuallyIntersected) {
+            this.hover_end();
+          }
         },
         hover_start(intersection) {
-          self.hover(intersection);
+          if (!self.isIntersected) {
+            self.isIntersected = true;
+            console.log('Trigger: hover');
+            self.hover(intersection);
+          }
+          self._isActuallyIntersected = true;
         },
-        hover_end(intersection) { // This doesn't actually receive an intersection
-          self.exit(intersection);
+        hover_end() {
+          if (self.isIntersected && !self.isSelected) {
+            self.isIntersected = false;
+            console.log('Trigger: exit');
+            self.exit();
+          }
+          self._isActuallyIntersected = false;
         }
       };
     }
