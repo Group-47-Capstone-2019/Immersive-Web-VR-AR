@@ -14,7 +14,7 @@ import {
 import { Loader } from '../loader';
 
 import controllerGlb from '../../assets/controller/controller.glb';
-import Controller from './controllers';
+import {loadControllerMeshes} from './controllers';
 
 import { handleInteractions } from '../interactions';
 
@@ -58,7 +58,7 @@ export default class XrScene {
     }
     this.pause = false;
 
-    this.loader.addGltfToQueue(controllerGlb, 'controller');
+    this.loader.depend(loadControllerMeshes());
     this.scene.add(this.triggers);
 
     this._checkForKeyboardMouse();
@@ -126,7 +126,6 @@ export default class XrScene {
    * @param {object} assetCache cache with all assets, accessible by their `id`
    */
   onAssetsLoaded(assetCache) {
-    this.controllerMesh = assetCache.controller.scene;
     return assetCache;
   }
 

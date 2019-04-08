@@ -5,6 +5,7 @@ import {
 import { getCurrentScene } from './currentScene';
 import { XR } from './xrController';
 import { camera } from './renderer/camera';
+import Controller from './scenes/controllers';
 
 // TODO: Split Interactions into indevidual interfaces:
 // - HoverInteraction
@@ -18,12 +19,31 @@ import { camera } from './renderer/camera';
 // so that we don't get confused with things on the three Object
 export const Interactions = Symbol('Symbol Interactions');
 
-let inputSources = [];
+// Everything needs to be a map.  If there was a single hoveredObject or selectedObject, then we wouldn't be able to have more than a single input source.
+// This maps input sources -> controllers
+const controllers = new Map();
+const hoveredObjects = new Map();
+const selectedObjects = new Map();
+// Each input source can only be dragging one thing at a time, so:
+// dragAndDrop is a map from inputSource -> {offset, transformMatrix, matrixAutoUpdate}
+const dragAndDrop = new Map();
+
+let inputSources = new Set();
+// Maintain a list of input sources
 const handleInputSourcesChange = ({ session }) => {
-  inputSources = session.getInputSources();
-  console.log('Input Sources Changed.');
+  const newSources = new Set(session.getInputSources());
+  for (const old of inputSources.values()) {
+    if (!newSources.has(old)) {
+      const controller = controllers.get(old);
+      if (controller)
+        controller.unbind();
+    }
+  }
+  inputSources = newSources;
+  console.log('Input Sources Changed.', inputSources);
 };
 
+// Create a ray from the input source.  Used in the event listeners as well as handle interactions
 function createRay(inputSource, xrFrame) {
   if (inputSource.targetRaySpace) {
     const rayPose = xrFrame.getPose(inputSource.targetRaySpace, XR.refSpace);
@@ -36,6 +56,7 @@ function createRay(inputSource, xrFrame) {
   return null;
 }
 
+// Higher order function to reduce code duplication in the XR event handlers
 function handlerCommon(func) {
   return function ({ frame, inputSource }) {
     const ray = createRay(inputSource, frame);
@@ -47,18 +68,18 @@ function handlerCommon(func) {
     }
   };
 }
-// Each input source can only be dragging one thing at a time, so:
-// dragAndDrop is a map from inputSource -> {offset}
-const dragAndDrop = new Map();
 const handleSelectStart = handlerCommon((intersection, inputSource, pointerMatrix) => {
   const interactions = intersection.object[Interactions];
   if (interactions) {
+    // If there are any drag interactions then handle dragging
     if (interactions.drag_start || interactions.drag_end || interactions.drag) {
-      // TODO: Apply rotation
       let data;
       if (interactions.drag_start) {
+        console.log('Calling drag_start');
         data = interactions.drag_start(intersection, pointerMatrix);
       } else {
+        console.log('Using default drag_start implementation');
+        // This is the default implementation for drag_start
         const pointerInverse = new Matrix4().getInverse(pointerMatrix, true);
         const target = new Matrix4().copy(intersection.object.matrixWorld);
         const transformMatrix = new Matrix4().multiplyMatrices(pointerInverse, target);
@@ -70,12 +91,16 @@ const handleSelectStart = handlerCommon((intersection, inputSource, pointerMatri
       }
       intersection.object.matrixAutoUpdate = false;
       dragAndDrop.set(inputSource, data);
-    } else if (interactions.select_start) {
+    }
+    // Handle select_start
+    if (interactions.select_start) {
+      console.log('Calling select_start');
       interactions.select_start(intersection);
     }
   }
+  selectedObjects.set(inputSource, intersection.object);
 });
-const handleSelectEnd = handlerCommon((intersection, inputSource) => {
+const handleSelectEnd = handlerCommon((_, inputSource) => {
   // Handle the end of dragging
   const data = dragAndDrop.get(inputSource);
   if (data) {
@@ -83,30 +108,39 @@ const handleSelectEnd = handlerCommon((intersection, inputSource) => {
     data.object.matrixAutoUpdate = data.matrixAutoUpdate;
     dragAndDrop.delete(inputSource);
     if (dragend) {
+      console.log('Calling drag_end');
       dragend();
-    }
+    } else
+      console.log('Using default drag_end implementation');
   }
 
-  const interactions = intersection.object[Interactions];
+  const selectedObject = selectedObjects.get(inputSource);
+  const interactions = selectedObject[Interactions];
   if (interactions) {
     // Handle the end of selection
     if (interactions.select_end) {
-      interactions.select_end(intersection);
-    }
+      console.log('Calling select_end');
+      interactions.select_end();
+    } else
+      console.log('Using default select_end implementation');
   }
+  selectedObjects.delete(inputSource);
 });
 const handleSelect = handlerCommon((intersection) => {
   const interactions = intersection.object[Interactions];
   if (interactions) {
     if (interactions.select) {
+      console.log('Calling select');
       interactions.select(intersection);
-    }
+    } else
+      console.log('Using default select implementation');
   }
 });
 
+// Called when a session is created:
 export function setupInteractions() {
-  inputSources = XR.session.getInputSources();
-  console.log(inputSources);
+  console.log('Setting up interactions');
+  handleInputSourcesChange({session: XR.session});
   XR.session.addEventListener('inputsourceschange', handleInputSourcesChange);
 
   XR.session.addEventListener('select', handleSelect);
@@ -114,6 +148,7 @@ export function setupInteractions() {
   XR.session.addEventListener('selectend', handleSelectEnd);
 }
 
+// Only have one Raycaster
 const raycaster = new Raycaster();
 function raycast(xrRay) {
   const { scene } = getCurrentScene();
@@ -121,6 +156,7 @@ function raycast(xrRay) {
   const trMatrix = new Matrix4().fromArray(xrRay.matrix);
 
   // Transformed ray matrix from the current scene matrix world
+  // Actually, with originOffset, I don't think this is neccessary:
   const rMatrix = new Matrix4().multiplyMatrices(scene.matrixWorld, trMatrix);
 
   raycaster.set(
@@ -129,86 +165,128 @@ function raycast(xrRay) {
       .normalize()
   );
   const intersections = raycaster.intersectObjects(scene.children, true);
-  for (const intersection of intersections) {
-    intersection.point.applyMatrix4(scene.matrixWorld);
-  }
-  return intersections;
+  // for (const intersection of intersections) {
+  //   intersection.point.applyMatrix4(scene.matrixWorld);
+  // }
+  if (intersections) return intersections;
+  else return [];
 }
 
-const lastObjects = new Map();
-function updateInputSource(inputSource, ray) {
+export function bindControllers(scene) {
+  for (const controller of controllers.values()) {
+    controller.bind(scene);
+  }
+}
+export function unbindControllers() {
+  for (const controller of controllers.values()) {
+    controller.unbind();
+  }
+}
+function updateInputSource(inputSource, ray, frame) {
+  if (!controllers.has(inputSource)) {
+    controllers.set(inputSource, new Controller(inputSource));
+  }
+  const controller = controllers.get(inputSource);
   // Handle Drag and Drop
   if (dragAndDrop.has(inputSource)) {
     const { object, transformMatrix } = dragAndDrop.get(inputSource);
     const newMatrix = new Matrix4().multiplyMatrices(new Matrix4().fromArray(ray.matrix), transformMatrix);
     if (object[Interactions].drag) {
+      // console.log('Calling drag');
       object[Interactions].drag(newMatrix);
     } else {
+      // console.log('Using default drag implementation');
       object.matrix = newMatrix;
       object.updateMatrixWorld(true);
     }
   }
+  const lastHovered = hoveredObjects.get(inputSource);
+  const intersections = raycast(ray);
+  for (const intersection of intersections) {
+    const interactions = intersection.object[Interactions];
+    if (lastHovered !== intersection.object) {
+      // End the hover of the previous object
+      if (lastHovered && lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
+        console.log('Calling hover_end');
+        lastHovered[Interactions].hover_end();
+      } else
+        console.log('Using default hover_end implementation');
 
-  for (const intersection of raycast(ray)) {
-    const lastObject = lastObjects.get(inputSource);
-    if (intersection) {
-      if (lastObject !== intersection.object) {
-        if (lastObject && lastObject[Interactions] && lastObject[Interactions].hover_end) {
-          lastObject[Interactions].hover_end();
-        }
-        if (intersection.object[Interactions] && intersection.object[Interactions].hover_start) {
-          intersection.object[Interactions].hover_start(intersection);
-        }
-        lastObjects.set(inputSource, intersection.object);
+      // Hover the new Object
+      if (interactions && interactions.hover_start) {
+        console.log('Calling hover_start');
+        interactions.hover_start(intersection);
+      } else
+        console.log('Using default hover_start implementation')
+
+      // Mark the object as the one hovered by this input source
+      hoveredObjects.set(inputSource, intersection.object);
+    }
+
+    // Call the hover method for every frame as lon as the same object is hovered
+    if (interactions && interactions.hover) {
+      // console.log('Calling hover');
+      interactions.hover(intersection);
+    } 
+    // else console.log('Using default hover implementation');
+    break;
+  }
+
+  // Update the controller for the current frame
+  controller.update(frame, intersections[0]);
+
+  // Handle if there are no objects to be intersected with
+  if (intersections.length == 0) {
+    if (hoveredObject) {
+      if (hoveredObject[Interactions] && hoveredObject[Interactions].hover_end) {
+        hoveredObject[Interactions].hover_end();
       }
-      if (intersection.object[Interactions] && intersection.object[Interactions].hover) {
-        intersection.object[Interactions].hover(intersection);
-      }
-      break; // MAYBE: Handle more than the closest object?
-    } else {
-      if (lastObject) {
-        if (lastObject[Interactions] && lastObject[Interactions].hover_end) {
-          lastObject[Interactions].hover_end();
-        }
-        lastObjects.delete(inputSource);
-      }
+      hoveredObjects.delete(inputSource);
     }
   }
 }
-const psuedoInputSource = Symbol('Psydo InputSource')
+// Called every frame.
 export function handleInteractions(timestamp, frame) {
   if (frame) {
-    if (inputSources.length > 0) {
-      for (const inputSource of inputSources) {
+    if (inputSources.size > 0) {
+      for (const inputSource of inputSources.values()) {
         const ray = createRay(inputSource, frame);
-        updateInputSource(inputSource, ray);
+        updateInputSource(inputSource, ray, frame);
       }
-    } else {
-      // Psuedo input source for hover using magic window (mostly);
-      // This projects a ray from the last rendered eye
-      const cameraPosition = new Vector3();
-      const cameraOrientation = new Quaternion()
-      camera.matrixWorld.decompose(cameraPosition, cameraOrientation, new Vector3());
-      const pseudoRay = new XRRay(new XRRigidTransform(
-        new DOMPoint(cameraPosition.x, cameraPosition.y, cameraPosition.z, 1),
-        new DOMPoint(cameraOrientation.x, cameraOrientation.y, cameraOrientation.z, cameraOrientation.w)
-        ));
-      updateInputSource(psuedoInputSource, pseudoRay);
     }
   }
 }
 
-
+// Called when the session ends:
 export function closeInteractions(session) {
-  for (const [inputSource, lastObject] of lastObjects.entries()) {
-    if (lastObject) {
-      if (lastObject[Interactions] && lastObject[Interactions].hover_end) {
-        lastObject[Interactions].hover_end();
+  function cleanupHelper(map, interactions) {
+    for (const [inputSource, object] of map.entries()) {
+      if (object) {
+        if (object[Interactions]) {
+          for (const interaction of interactions) {
+            if (object[Interactions][interaction]) {
+              console.log(`Calling ${interaction}`);
+              object[Interactions][interaction]();
+            }
+          }
+        }
       }
-      lastObjects.delete(inputSource);
+      map.delete(inputSource);
     }
   }
+  // Make sure that we call hover_end, select_end, and select on any objects that we would have if the person hadn't exited their session
+  cleanupHelper(hoveredObjects, ['hover_end']);
+  cleanupHelper(selectedObjects, ['select_end', 'select']);
+  cleanupHelper(dragAndDrop, ['drag_end']);
+
+  console.log('Closing interactions');
+  // console.trace();
   session.removeEventListener('inputsourceschange', handleInputSourcesChange);
+  for (const [inputSource, controller] of controllers.entries()) {
+    inputSources.delete(inputSource);
+    controller.unbind();
+    controllers.delete(inputSource);
+  }
 
   session.removeEventListener('select', handleSelect);
   session.removeEventListener('selectstart', handleSelectStart);
