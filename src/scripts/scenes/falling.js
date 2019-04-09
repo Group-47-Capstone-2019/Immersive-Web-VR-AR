@@ -38,15 +38,6 @@ export default class FallingScene extends XrScene {
       .name('Gravity')
       .listen();
 
-    // const state = {
-    //   reset = () => {
-    //     this.world.gravity.set(0, 0, 0);
-    //   }
-    // };
-    // const newFolder = dat.GUIVR.create('Reset');
-    // this.menu = newFolder.add(state, 'reset')
-    //   .name('Turn Off Gravity');
-
     this.camera = camera;
 
     // Objects
@@ -116,10 +107,6 @@ export default class FallingScene extends XrScene {
     createFolder.add(context.material, 'wireframe')
       .name('Wireframe')
       .listen();
-
-    // this.menu.add(object.material, 'wireframe')
-    //   .name('Wireframe')
-    //   .listen();
   }
 
   _spawnBall = () => {
