@@ -1,6 +1,7 @@
 import THREE from '../three';
 import XrScene from './xr-scene';
 import { keyboard } from '../controls/keyboard-controls';
+import { initialAspect } from '../renderer/canvas';
 
 
 export default class LaserScene extends XrScene {
@@ -38,8 +39,9 @@ export default class LaserScene extends XrScene {
 
   _addMirrors() {
     const geo = new THREE.BoxGeometry(3, 3, 0.1);
-    const mat = new THREE.MeshPhongMaterial( {color: 0xfff000});
+    const mat = new THREE.MeshPhongMaterial( {color: 0xfafafa});
     const mirror = new THREE.Mesh(geo, mat);
+    
     mirror.position.set(0, -2, 0);
     mirror.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
     mirror.name = "mirror";
@@ -85,20 +87,20 @@ export default class LaserScene extends XrScene {
     lineOrigin.copy(this.laser.geometry.vertices[numVertices - 1]);
     const newDirection = direction.clone();
     const newPoint = newDirection.multiplyScalar(length).add(lineOrigin);
+
     this.laser.geometry.vertices.push(newPoint);
     this.laser.geometry.computeBoundingSphere();
     this.laser.geometry.verticesNeedUpdate = true;
-    console.log(this.laser);
   }
 
-  _reflect(res, incomingDirection) {
+  _reflect(res, incomingDirection, otherRay) {
     let normal = new THREE.Vector3();
     normal = res.face.normal.clone();
     normal.applyMatrix4(new THREE.Matrix4().extractRotation(res.object.matrixWorld));
     let direction = new THREE.Vector3();
     direction = incomingDirection.clone();
     direction.reflect(normal);
-
+    console.log("direction", direction);
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
     this.laserRays.push(newRay);
@@ -107,20 +109,14 @@ export default class LaserScene extends XrScene {
 
   _updateLaserRays() {
     for (let i = 0; i  < this.laserRays.length; i++) {
-      let raycasterOrigin = new THREE.Vector3(0, -2, 32);
-      let raycasterDestination = new THREE.Vector3();
-      raycasterDestination = this.laserRays[i].ray.direction.clone();
+      let laserDirection = this.laserRays[i].ray.direction.clone();
+      let raycasterDestination = laserDirection.clone();
+
       if (!keyboard) {
-        let rayMatrixWorld = new THREE.Matrix4();
-        console.log("before");
-        console.log(raycasterOrigin);
-        rayMatrixWorld.multiplyMatrices(this.scene.matrixWorld, this.laser.matrix);
-        raycasterOrigin.setFromMatrixPosition(rayMatrixWorld);
-        console.log("raycasterOrigin");
-        console.log(raycasterOrigin);
-        this.laserRays[i].set(raycasterOrigin, raycasterDestination.transformDirection(rayMatrixWorld).normalize());
+        let matrixWorld = this.scene.matrixWorld.clone();
+        laserDirection.transformDirection(matrixWorld.getInverse(matrixWorld));
       }
-      
+
       const intersect = this.laserRays[i].intersectObject(this.intersects, true);
       
       if (intersect.length > 0) {
@@ -130,14 +126,11 @@ export default class LaserScene extends XrScene {
 
         if (res && res.object) {
           if (res.object != this.laser) {
-            console.log("hit object, updating laser");
-            console.log(res.object);
-            console.log("num raycasters");
-            console.log(this.laserRays.length);
-            this._updateLaser(raycasterDestination, res.distance);
+            this._updateLaser(laserDirection, res.distance);
+
             if (res.object.parent === this.mirrors) {
               console.log("intersected");
-              this._reflect(res, raycasterDestination);
+              this._reflect(res, raycasterDestination, this.laserRays[i]);
             }
           }
         }
@@ -180,10 +173,31 @@ export default class LaserScene extends XrScene {
     this.scene.add(pointLight);
   }
 
+  _copyRay(ray) {
+    let newRay = new THREE.Raycaster();
+    newRay.set(ray.ray.origin.clone(), ray.ray.direction.clone());
+    return newRay;
+  }
+
+  _setupInitialRayMatrix() {
+    let rayMatrixWorld = new THREE.Matrix4();
+    let raycasterOrigin = this.laserRays[0].ray.origin.clone();
+    let laserDirection = this.laserRays[0].ray.direction.clone();
+    let raycasterDestination = laserDirection.clone();
+    rayMatrixWorld.multiplyMatrices(this.scene.matrixWorld, this.laser.matrix);
+
+    raycasterOrigin.applyMatrix4(rayMatrixWorld);
+
+    this.laserRays[0].set(raycasterOrigin, raycasterDestination.transformDirection(rayMatrixWorld));
+  }
+
   animate(delta) {
     this._createLaser();
     this.laserRays = [];
-    this.laserRays.push(this.laserRay);
+    this.laserRays.push(this._copyRay(this.laserRay));
+    if(!keyboard) {
+      this._setupInitialRayMatrix();
+    }
     this._updateLaserRays();
   }
 }
