@@ -80,6 +80,16 @@ export default class LaserScene extends XrScene {
     this.scene.add(this.laser);
   }
 
+  getRandomPosition() {
+    const x = Math.ceil((Math.random() * 56) - 28);
+    const z = Math.ceil((Math.random() * 56) - 28);
+    return new THREE.Vector3(x, -2, z);
+  }
+
+  getRandNum() {
+    return Math.ceil((Math.random() * 8));
+  }
+
   _createGoal() {
     const goalBoxGeo = new THREE.BoxGeometry(1, 1, 1);
     const goalBoxMat = new THREE.MeshPhongMaterial({color: 0x111111});
@@ -91,15 +101,17 @@ export default class LaserScene extends XrScene {
     const group = new THREE.Object3D();
     group.add(goalBox);
     group.add(goal);
-    group.position.set(-20, -2, -30);
+    const position = this.getRandomPosition();
+    console.log(position);
+    group.position.copy(position);
+    group.rotateOnAxis(new THREE.Vector3(0, 1, 0), (this.getRandNum() * Math.PI / 4));
     group.name = "group";
     
     this.intersects.add(group);
     goal.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
     goal.position.set(0, 0, 0.5);
     goal.name = "goal";
-    console.log(goal);
-    console.log(group);
+    goalBox.name = "goalBox";
   }
 
   _updateLaser(direction, length) {
@@ -148,8 +160,11 @@ export default class LaserScene extends XrScene {
           if (res.object != this.laser) {
             this._updateLaser(laserDirection, res.distance);
 
+            const goal = this.scene.getObjectByName("goalBox");
             if (res.object === this.scene.getObjectByName("goal")) {
-              res.object.material.color.set('red');
+              goal.material.color.set('green');
+            } else {
+              goal.material.color.set(0x111111);
             }
 
             if (res.object.parent === this.mirrors) {
