@@ -1,8 +1,6 @@
 import THREE from '../three';
 import XrScene from './xr-scene';
 import { keyboard } from '../controls/keyboard-controls';
-import { initialAspect } from '../renderer/canvas';
-
 
 export default class LaserScene extends XrScene {
   /**
@@ -33,6 +31,7 @@ export default class LaserScene extends XrScene {
     this.height = 16;
     this._createRoom();
     this._addMirrors();
+    this._createGoal();
 
     this._addLight();
   }
@@ -81,6 +80,28 @@ export default class LaserScene extends XrScene {
     this.scene.add(this.laser);
   }
 
+  _createGoal() {
+    const goalBoxGeo = new THREE.BoxGeometry(1, 1, 1);
+    const goalBoxMat = new THREE.MeshPhongMaterial({color: 0x111111});
+    const goalBox = new THREE.Mesh(goalBoxGeo, goalBoxMat);
+    const goalGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.50, 50, 50);
+    const goalMat = new THREE.MeshPhongMaterial({color: 'white'});
+    const goal = new THREE.Mesh(goalGeo, goalMat);
+
+    const group = new THREE.Object3D();
+    group.add(goalBox);
+    group.add(goal);
+    group.position.set(-20, -2, -30);
+    group.name = "group";
+    
+    this.intersects.add(group);
+    goal.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    goal.position.set(0, 0, 0.5);
+    goal.name = "goal";
+    console.log(goal);
+    console.log(group);
+  }
+
   _updateLaser(direction, length) {
     const numVertices = this.laser.geometry.vertices.length;
     let lineOrigin = new THREE.Vector3();
@@ -100,7 +121,6 @@ export default class LaserScene extends XrScene {
     let direction = new THREE.Vector3();
     direction = incomingDirection.clone();
     direction.reflect(normal);
-    console.log("direction", direction);
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
     this.laserRays.push(newRay);
@@ -128,8 +148,11 @@ export default class LaserScene extends XrScene {
           if (res.object != this.laser) {
             this._updateLaser(laserDirection, res.distance);
 
+            if (res.object === this.scene.getObjectByName("goal")) {
+              res.object.material.color.set('red');
+            }
+
             if (res.object.parent === this.mirrors) {
-              console.log("intersected");
               this._reflect(res, raycasterDestination, this.laserRays[i]);
             }
           }
