@@ -5,8 +5,6 @@ export default class TriggerMesh extends Mesh {
     // True if raycaster intersects this object
     isIntersected = false;
 
-    _isActuallyIntersected = false;
-
     // True if raycaster selected this object
     isSelected = false;
 
@@ -28,10 +26,13 @@ export default class TriggerMesh extends Mesh {
 
     get [Interactions]() {
       const self = this;
+      let _isActuallyIntersected = false;
       return {
         select_start(intersection) {
           if (!self.isIntersected) {
-            this.hover_start(intersection);
+            self.isIntersected = true;
+            console.log('Trigger: hover');
+            self.hover(intersection);
           }
           self.isSelected = true;
           console.log('Trigger: select');
@@ -41,8 +42,10 @@ export default class TriggerMesh extends Mesh {
           self.isSelected = false;
           console.log('Trigger: release');
           self.release();
-          if (!self._isActuallyIntersected) {
-            this.hover_end();
+          if (!_isActuallyIntersected) {
+            self.isSelected = false;
+            console.log('Trigger: exit');
+            self.exit();
           }
         },
         hover_start(intersection) {
@@ -51,7 +54,7 @@ export default class TriggerMesh extends Mesh {
             console.log('Trigger: hover');
             self.hover(intersection);
           }
-          self._isActuallyIntersected = true;
+          _isActuallyIntersected = true;
         },
         hover_end() {
           if (self.isIntersected && !self.isSelected) {
@@ -59,7 +62,7 @@ export default class TriggerMesh extends Mesh {
             console.log('Trigger: exit');
             self.exit();
           }
-          self._isActuallyIntersected = false;
+          _isActuallyIntersected = false;
         }
       };
     }

@@ -86,13 +86,14 @@ export default class Controller {
     const material = new LineBasicMaterial({ color: this.color });
 
     this.laser = new Line(geometry, material);
-    this.laser.raycast = () => null; // Disable raycast intersections
+    this.laser.raycast = () => []; // Disable raycast intersections
   }
 
   createController() {
-    this.controller = meshCache.controller.scene.children[0].clone();
+    this.controller = meshCache.controller.scene.clone();
     this.controller.matrixAutoUpdate = false;
-    this.controller.raycast = () => null; // Disable raycast intersections
+    this.controller.name = 'controller';
+    this.controller.raycast = () => []; // Disable raycast intersections
   }
 
   /**
@@ -104,12 +105,19 @@ export default class Controller {
 
   update(xrFrame, intersection) {
     if (this.controller && this.inputSource.gripSpace) {
+      this.controller.matrixAutoUpdate = false;
       // Get grip space pose for controller
       const gripPose = xrFrame.getPose(this.inputSource.gripSpace, XR.refSpace);
 
-      // Get the grip transform matrix
-      this.controller.matrix.fromArray(gripPose.transform.matrix);
-      this.controller.updateMatrixWorld(true);
+      if (gripPose) {
+        // Get the grip transform matrix
+        this.controller.matrix.fromArray(gripPose.transform.matrix);
+        // this.controller.matrix.setPosition(new Vector3(0, 0, 0));
+        console.log(gripPose.transform);
+        this.controller.updateMatrixWorld(true);
+        console.log(new Vector3().setFromMatrixPosition(this.controller.matrixWorld));
+        console.log(new Vector3().setFromMatrixPosition(XR.getOffsetMatrix()));
+      }
     }
 
     if (this.laser && this.inputSource.targetRaySpace) {
