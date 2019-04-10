@@ -11,6 +11,7 @@ import XrScene from '../xr-scene';
 import { createPlanets } from './create';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
+import { createTextSprite } from './text';
 
 const EARTH_YEAR_SECONDS = 120;
 
@@ -29,6 +30,13 @@ export default class PlanetsScene extends XrScene {
 
     this.loader.addTextureToQueue(ringTextureUrl, 'rings-texture');
     this.addLighting();
+    this.addGui();
+  }
+
+  addGui() {
+    const nextButton = createTextSprite("Next Planet");
+    nextButton.position.z = -5;
+    this.camera.add(nextButton);
   }
 
   addLighting() {
