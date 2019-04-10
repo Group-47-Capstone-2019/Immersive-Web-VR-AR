@@ -133,6 +133,13 @@ export default class LaserScene extends XrScene {
     let direction = new THREE.Vector3();
     direction = incomingDirection.clone();
     direction.reflect(normal);
+
+    const radAngle = Math.acos((normal.clone().dot(direction)) / (normal.length() * direction.length()));
+    let angle = radAngle / Math.PI * 180;
+    angle = Math.round(angle * 10) / 10;
+    
+    console.log(angle);
+
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
     this.laserRays.push(newRay);
