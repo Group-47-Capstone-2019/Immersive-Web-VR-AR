@@ -2,10 +2,12 @@ import {
   SphereGeometry,
   Mesh,
   MeshPhongMaterial,
-  MeshBasicMaterial
+  MeshBasicMaterial,
+  Object3D
 } from 'three';
 
 const DISTANCE_DIVIDER = 1e6;
+export const cameraPointName = (planetName) => `CameraPoint${planetName}`;
 
 /**
  * build planets, with mesh and randomized position
@@ -33,6 +35,11 @@ export function createPlanets(planetData, cache) {
       Math.random() * Math.PI
     );
     mesh.name = planetName;
+
+    const cameraPoint = new Object3D();
+    mesh.add(cameraPoint);
+    cameraPoint.position.set(10, 10, 10);
+    cameraPoint.name = cameraPointName(planetName);
 
     return mesh;
   });
