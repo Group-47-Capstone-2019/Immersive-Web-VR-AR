@@ -2,6 +2,8 @@ import THREE from '../three';
 import XrScene from './xr-scene';
 import { keyboard } from '../controls/keyboard-controls';
 import TriggerMesh from '../trigger';
+import wallTxUrl from '../../assets/textures/laser-room/wall/wall_diff.jpg';
+import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
 
 const mode = {
   SELECT: "select",
@@ -22,6 +24,9 @@ export default class LaserScene extends XrScene {
     this.camera = camera;
     this.renderer = renderer;
 
+    this.loader.addTextureToQueue(wallTxUrl, 'laser-wall');
+    this.loader.addTextureToQueue(floorTxUrl, 'laser-floor');
+
     this.laserRays = [];
     this.laserRay = new THREE.Raycaster();
     this.laserOrigin = new THREE.Vector3(0, -2, 32);
@@ -37,12 +42,12 @@ export default class LaserScene extends XrScene {
     this.length = 64;
     this.width = 64;
     this.height = 16;
-    this._initScene();
   }
 
-  _initScene() {
-    this._initRoom();
+  _initScene(cache) {
+    this._initRoom(cache);
     this._addMirrors();
+    this._createLaserBox();
     this._initGoal();
     this._initMenu();
     this._addLight();
@@ -53,13 +58,15 @@ export default class LaserScene extends XrScene {
     const buttonMat = new THREE.MeshPhongMaterial({color: 0x222222});
     const selectButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const deleteButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
+    const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const menu = new THREE.Object3D();
-    menu.add(selectButton, deleteButton);
+    menu.add(selectButton, deleteButton, createButton);
     this.scene.add(menu);
     menu.position.set(-10, -4, 32);
     selectButton.material.color.set(0x666666);
-    selectButton.position.set(2, 0, 0.125);
-    deleteButton.position.set(-2, 0, -0.25);
+    createButton.position.set(4, 0, -0.25);
+    selectButton.position.set(0, 0, 0.125);
+    deleteButton.position.set(-4, 0, -0.25);
 
     console.log(setting);
 
@@ -75,14 +82,16 @@ export default class LaserScene extends XrScene {
       this.material.color.set(0x666666);
       deleteButton.position.z = -0.25;
       deleteButton.material.color.set(0x222222);
+      createButton.position.z = -0.25;
+      createButton.material.color.set(0x222222);
     };
 
     selectButton.exit = function () {
       console.log(setting);
-      if (setting === mode.DELETE) {
-        this.material.color.set(0x222222);
-      } else {
+      if (setting === mode.SELECT) {
         this.material.color.set(0x666666);
+      } else {
+        this.material.color.set(0x222222);
       }
     };
 
@@ -98,15 +107,33 @@ export default class LaserScene extends XrScene {
       this.material.color.set(0x666666);
       selectButton.position.z = -0.25;
       selectButton.material.color.set(0x222222);
+      createButton.position.z = -0.25;
+      createButton.material.color.set(0x222222);
     };
 
     deleteButton.exit = function () {
       console.log(setting);
-      if (setting === mode.SELECT) {
-        this.material.color.set(0x222222);
-      } else {
+      if (setting === mode.DELETE) {
         this.material.color.set(0x666666);
+      } else {
+        this.material.color.set(0x222222);
       }
+    };
+
+    createButton.hover = function () {
+      if (!this.isSelected) {
+        this.position.z = -0.25;
+        this.material.color.set(0x454545);
+      }
+    };
+
+    createButton.select = function () {
+      this.position.z = 0.125;
+      this.material.color.set(0x666666);
+    };
+
+    createButton.exit = function () {
+      this.material.color.set(0x222222);
     };
 
     this.triggers.add(menu);
@@ -184,6 +211,29 @@ export default class LaserScene extends XrScene {
 
   getRandNum() {
     return Math.ceil((Math.random() * 8));
+  }
+
+  _createLaserBox() {
+    const goalBoxGeo = new THREE.BoxGeometry(1, 1, 1);
+    const goalBoxMat = new THREE.MeshPhongMaterial({color: 0x111111});
+    const goalBox = new THREE.Mesh(goalBoxGeo, goalBoxMat);
+    const goalGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.50, 50, 50);
+    const goalMat = new THREE.MeshPhongMaterial({color: 'red'});
+    const goal = new THREE.Mesh(goalGeo, goalMat);
+
+    const group = new THREE.Object3D();
+    group.add(goalBox);
+    group.add(goal);
+    group.position.set(0, -2, 32);
+    group.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
+    group.name = "laserBox";
+    
+    console.log(group);
+
+    this.scene.add(group);
+    console.log(this.intersects);
+    goal.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    goal.position.set(0, 0, 0.5);
   }
 
   _initGoal() {
@@ -279,10 +329,30 @@ export default class LaserScene extends XrScene {
     }
   }
 
-  _initRoom() {
+  _initRoom(cache) {
+    let wallTx = cache['laser-wall'];
+    wallTx.repeat.set( 3, 3 );
+    wallTx.wrapS = THREE.RepeatWrapping;
+    wallTx.wrapT = THREE.RepeatWrapping;
+    let floorTx = cache['laser-floor'];
+    floorTx.repeat.set( 10, 10 );
+    floorTx.wrapS = THREE.RepeatWrapping;
+    floorTx.wrapT = THREE.RepeatWrapping;
+    const wallMat = new THREE.MeshPhongMaterial({map: wallTx, side: THREE.BackSide});
+    const floorMat = new THREE.MeshPhongMaterial({map: floorTx, side: THREE.BackSide, });
+    console.log(wallMat);
+    const roomMaterials = [
+      wallMat,
+      wallMat,
+      wallMat,
+      floorMat,
+      wallMat,
+      wallMat
+    ];
+
     // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
-    const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
+    //const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
     this.room = new THREE.Mesh(roomGeometry, roomMaterials);
     this.room.receiveShadow = true;
     this.room.castShadow = true;
@@ -293,21 +363,6 @@ export default class LaserScene extends XrScene {
   _addLight() {
     const ambientLight = new THREE.AmbientLight('white', 0.5);
     this.scene.add(ambientLight);
-
-    const keyLight = new THREE.DirectionalLight('white', 1.0, 1000);
-    keyLight.position.set(-100, 0, 100);
-    keyLight.position.set(0, 100, 0);
-    keyLight.decay = 1;
-
-    const fillLight = new THREE.DirectionalLight('white', 0.75, 1000);
-    fillLight.position.set(100, 0, 100);
-
-    const backLight = new THREE.DirectionalLight('white', 0.5, 1000);
-    backLight.position.set(100, 0, -100).normalize();
-
-    this.scene.add(keyLight);
-    this.scene.add(fillLight);
-    this.scene.add(backLight);
 
     const pointLight = new THREE.PointLight('white', 0.8, 500);
 
@@ -330,6 +385,12 @@ export default class LaserScene extends XrScene {
     raycasterOrigin.applyMatrix4(rayMatrixWorld);
 
     this.laserRays[0].set(raycasterOrigin, raycasterDestination.transformDirection(rayMatrixWorld));
+  }
+
+  onAssetsLoaded(cache) {
+    super.onAssetsLoaded(cache);
+
+    this._initScene(cache);
   }
 
   animate(delta) {
