@@ -33,6 +33,7 @@ export default class FallingScene extends XrScene {
     // Create Gui Menu
     this.menu = createGUI(this.scene, this.camera, this.renderer);
     this.menu.position.set(3, 1.2, -13);
+
     // Add Global Gravity
     this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
       .name('Gravity')
@@ -120,6 +121,19 @@ export default class FallingScene extends XrScene {
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
+    const direction = new THREE.Vector3(0, 0, 0);
+    const origin = new THREE.Vector3(0, 0, 0);
+
+    // ArrowHelper
+    const arrowHelper = new THREE.ArrowHelper(
+      direction,
+      origin,
+      4,
+      'red'
+    );
+
+    ball.add(arrowHelper);
+
     ball.addFunction('_initGui', this._initGui);
 
     ball.hover = function () {
@@ -134,7 +148,6 @@ export default class FallingScene extends XrScene {
       this.functions._initGui(this);
       this.material.color.set('white');
     };
-
 
     ball.exit = function () {
       this.material.color.set('red');
@@ -161,6 +174,18 @@ export default class FallingScene extends XrScene {
     box.castShadow = true;
     box.receiveShadow = true;
     this.world.addBody(boxBody);
+
+    const direction = new THREE.Vector3(0, 0, 0);
+    const origin = new THREE.Vector3(0, 0, 0);
+
+    // ArrowHelper
+    const arrowHelper = new THREE.ArrowHelper(
+      direction,
+      origin,
+      4,
+      'red'
+    );
+    box.add(arrowHelper);
 
     box.addFunction('_initGui', this._initGui);
 
