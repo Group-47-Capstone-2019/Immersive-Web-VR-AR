@@ -49,6 +49,14 @@ export default class XrScene {
   constructor(renderer, camera) {
     this.renderer = renderer;
     this.camera = camera;
+    this.controls = controls;
+
+    // reset camera
+    if (this.controls != null) {
+      this.controls.getObject().position.set(0, 0, 0);
+      this.controls.getObject().rotation.y = 0;
+      this.controls.getObject().children[0].rotation.x = 0;
+    }
     this.pause = false;
 
     this.loader.addGltfToQueue(controllerGlb, 'controller');
@@ -70,6 +78,8 @@ export default class XrScene {
 
   _onMouseUp = () => {
     if (controls && controls.enabled) {
+      if (this.selected) this.selected.onTriggerRelease();
+      this.selected = null;
       this.buttonPressed = false;
     }
   }
@@ -256,7 +266,8 @@ export default class XrScene {
         for (let i = 0; i < pose.views.length; i++) {
           const view = pose.views[i];
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
-          const viewMatrix = new Matrix4().fromArray(view.viewMatrix);
+          const viewMatrix = new Matrix4().fromArray(view.transform.matrix);
+          viewMatrix.getInverse(viewMatrix);
 
           this.renderer.context.viewport(
             viewport.x,
@@ -312,6 +323,7 @@ export default class XrScene {
         if (isTrackedPointer && inputSource.gripSpace) {
           // Get grip space pose for controller
           const gripPose = xrFrame.getPose(inputSource.gripSpace, xrRefSpace);
+          if (!gripPose) continue;
 
           // Is the number of controllers we know of less than the number of input sources?
           if (this.controllers.length > inputSources.length) {

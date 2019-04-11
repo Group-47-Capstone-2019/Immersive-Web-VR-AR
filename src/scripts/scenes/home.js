@@ -27,7 +27,6 @@ export default class HomeScene extends XrScene {
    */
   constructor(renderer, camera) {
     super(renderer, camera);
-
     // Basic lighting
     if (settings.global.lights.ambient) {
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -41,7 +40,10 @@ export default class HomeScene extends XrScene {
     }
 
     // Generate room geometry
-    const roomGeometry = new THREE.BoxGeometry(24, 16, 24);
+    this.length = 24;
+    this.width = 24;
+    this.height = 16;
+    const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
 
     let roomMaterials;
 
@@ -98,7 +100,9 @@ export default class HomeScene extends XrScene {
       console.error('Error creating room mesh.');
     }
 
+    this.createDoors();
     this._boxTest();
+    this._addEventListener(window, 'mousedown', this.onClick);
   }
 
   onAssetsLoaded(cache) {
@@ -111,6 +115,120 @@ export default class HomeScene extends XrScene {
     box.rotateX(0.01);
     box.rotateY(0.01);
     box.rotateZ(0.03);
+  }
+
+  changeRoom(newPath) {
+    const event = new CustomEvent('changeRoom', { detail: { newPath } });
+    window.dispatchEvent(event);
+  }
+
+  createDoors() {
+    const doorHeight = 12;
+    const doorWidth = 7;
+    const doorLength = 1;
+    const geometry = new THREE.BoxGeometry(doorLength, doorHeight, doorWidth);
+    const fallingMaterial = new THREE.MeshPhongMaterial({
+      color: 0x402f00
+    });
+    const fallingDoor = new TriggerMesh(geometry, fallingMaterial);
+    fallingDoor.name = 'fallingDoor';
+    fallingDoor.position.set(
+      (doorLength / 2) - (this.length / 2),
+      (doorHeight / 2) - (this.height / 2),
+      0
+    );
+
+    fallingDoor.addFunction('changeRoom', this.changeRoom);
+
+    fallingDoor.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    fallingDoor.select = function () {
+      this.onTriggerRelease();
+      this.functions.changeRoom('/falling');
+    };
+
+    fallingDoor.exit = function () {
+      this.material.color.set(0x402f00);
+    };
+
+    this.triggers.add(fallingDoor);
+
+    const planetsMaterial = new THREE.MeshPhongMaterial({
+      color: '#402f00'
+    });
+    const planetsDoor = new TriggerMesh(geometry, planetsMaterial);
+    planetsDoor.name = 'planetsDoor';
+    planetsDoor.position.set(
+      (this.length / 2) - (doorLength / 2),
+      (doorHeight / 2) - (this.height / 2),
+      0
+    );
+
+    planetsDoor.addFunction('changeRoom', this.changeRoom);
+
+    planetsDoor.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    planetsDoor.select = function () {
+      this.onTriggerRelease();
+      this.functions.changeRoom('/planets');
+    };
+
+    planetsDoor.exit = function () {
+      this.material.color.set(0x402f00);
+    };
+
+    this.triggers.add(planetsDoor);
+
+    const pendulumMaterial = new THREE.MeshPhongMaterial({
+      color: 0x402f00
+    });
+    const pendulumDoor = new TriggerMesh(geometry, pendulumMaterial);
+    pendulumDoor.rotateY(Math.PI / 2);
+    pendulumDoor.name = 'pendulumDoor';
+    pendulumDoor.position.set(
+      0,
+      (doorHeight / 2) - (this.height / 2),
+      (doorLength / 2) - (this.length / 2)
+    );
+
+    pendulumDoor.addFunction('changeRoom', this.changeRoom);
+
+    pendulumDoor.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    pendulumDoor.select = function () {
+      this.functions.changeRoom('/pendulum');
+    };
+
+    pendulumDoor.exit = function () {
+      this.material.color.set(0x402f00);
+    };
+
+    this.triggers.add(pendulumDoor);
+
+    const laserMaterial = new THREE.MeshPhongMaterial({
+      color: 0x402f00
+    });
+    const laserDoor = new TriggerMesh(geometry, laserMaterial);
+    laserDoor.rotateY(Math.PI / 2);
+    laserDoor.name = 'laserDoor';
+    laserDoor.position.set(
+      0,
+      (doorHeight / 2) - (this.height / 2),
+      (this.length / 2) - (doorLength / 2)
+    );
+    this.triggers.add(laserDoor);
   }
 
   _boxTest() {
