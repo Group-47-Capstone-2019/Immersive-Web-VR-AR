@@ -6,6 +6,7 @@
 
 export default {
   Sun: {
+    name: "Sun",
     texture: require('../../../assets/planets/sunmap.jpg'),
     realRadius: 695700,
     gravity: 274.0,
@@ -15,6 +16,7 @@ export default {
     fakeRadius: 15
   },
   Mercury: {
+    name: "Mercury",
     texture: require('../../../assets/planets/mercurymap.jpg'),
     realRadius: 2440,
     gravity: 3.701,
@@ -24,6 +26,7 @@ export default {
     fakeRadius: 2
   },
   Venus: {
+    name: "Venus",
     texture: require('../../../assets/planets/venusmap.jpg'),
     realRadius: 6051.84,
     gravity: 8.87,
@@ -33,6 +36,7 @@ export default {
     fakeRadius: 3
   },
   Earth: {
+    name: "Earth",
     texture: require('../../../assets/planets/earthmap.jpg'),
     realRadius: 6371.01,
     gravity: 9.81,
@@ -42,6 +46,7 @@ export default {
     fakeRadius: 3
   },
   Mars: {
+    name: "Mars",
     texture: require('../../../assets/planets/marsmap.jpg'),
     realRadius: 3389.92,
     gravity: 3.71,
@@ -51,6 +56,7 @@ export default {
     fakeRadius: 2
   },
   Jupiter: {
+    name: "Jupiter",
     texture: require('../../../assets/planets/jupitermap.jpg'),
     realRadius: 71492,
     gravity: 24.79,
@@ -60,6 +66,7 @@ export default {
     fakeRadius: 12
   },
   Saturn: {
+    name: "Saturn",
     texture: require('../../../assets/planets/saturnmap.jpg'),
     realRadius: 60268,
     gravity: 10.44,
@@ -69,6 +76,7 @@ export default {
     fakeRadius: 10
   },
   Uranus: {
+    name: "Uranus",
     texture: require('../../../assets/planets/uranusmap.jpg'),
     realRadius: 25559,
     gravity: 8.87,
@@ -78,6 +86,7 @@ export default {
     fakeRadius: 8
   },
   Neptune: {
+    name: "Neptune",
     texture: require('../../../assets/planets/neptunemap.jpg'),
     realRadius: 24766,
     gravity: 11.15,

@@ -5,11 +5,14 @@ import {
   MeshBasicMaterial,
   Object3D
 } from 'three';
+import { createPlanetText } from './ui';
 
 const DISTANCE_DIVIDER = 1e6;
-const CAMERA_VIEW_DISTANCE = 10;
 
 export const cameraPointName = planetName => `CameraPoint${planetName}`;
+export const planetTextName = planetName => `TextPoint${planetName}`;
+export const nextPointName = planetName => `NextPoint${planetName}`;
+export const prevPointName = planetName => `PrevPoint${planetName}`;
 
 /**
  * build planets, with mesh and randomized position
@@ -38,11 +41,19 @@ export function createPlanets(planetData, cache) {
     );
     mesh.name = planetName;
 
+    // camera point
     const cameraPoint = new Object3D();
     mesh.add(cameraPoint);
-    const cameraDist = CAMERA_VIEW_DISTANCE + planet.fakeRadius;
+    const cameraDist = 10 + planet.fakeRadius;
     cameraPoint.position.set(cameraDist, cameraDist, cameraDist);
     cameraPoint.name = cameraPointName(planetName);
+
+    // text description
+    const text = createPlanetText(planet);
+    mesh.add(text);
+    text.position.set(planet.fakeRadius + 5, 0, 0);
+    text.name = planetTextName(planetName);
+    text.visible = false;
 
     return mesh;
   });

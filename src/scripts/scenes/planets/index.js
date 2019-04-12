@@ -8,7 +8,7 @@ import {
   Spherical
 } from 'three';
 import XrScene from '../xr-scene';
-import { createPlanets } from './create';
+import { createPlanets, planetTextName } from './create';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
 import { createTextSprite } from './text';
@@ -16,6 +16,8 @@ import { createTextSprite } from './text';
 const EARTH_YEAR_SECONDS = 120;
 
 export default class PlanetsScene extends XrScene {
+  currentPlanet = planetData.Sun;
+
   /**
    *
    * @param {THREE.Renderer} renderer
@@ -30,13 +32,18 @@ export default class PlanetsScene extends XrScene {
 
     this.loader.addTextureToQueue(ringTextureUrl, 'rings-texture');
     this.addLighting();
-    this.addGui();
+    
   }
 
   addGui() {
-    const nextButton = createTextSprite("Next Planet");
+    const nextButton = createTextSprite('Next Planet');
     nextButton.position.z = -5;
     this.camera.add(nextButton);
+
+    const sunText = this.planets
+      .find(p => p.name === 'Sun')
+      .getObjectByName(planetTextName('Sun'));
+    sunText.visible = true;
   }
 
   addLighting() {
@@ -52,6 +59,7 @@ export default class PlanetsScene extends XrScene {
 
     this.addPlanetRings(cache);
     this.addSunLight();
+    this.addGui();
   }
 
   addPlanetRings(cache) {
@@ -82,6 +90,21 @@ export default class PlanetsScene extends XrScene {
     uranus.add(uranusRingMesh);
   }
 
+  nextPlanet = () => {
+    const index = this.planets.findIndex(
+      p => p.name === this.currentPlanet.name
+    );
+    const nextPlanet = this.planets[index + 1];
+    this.planets[index].getObjectByName(
+      planetTextName(this.currentPlanet.name)
+    ).visible = false;
+
+    this.currentPlanet = planetData[nextPlanet.name];
+    nextPlanet.getObjectByName(
+      planetTextName(this.currentPlanet.name)
+    ).visible = true;
+  };
+
   addSunLight() {
     const sun = this.scene.getObjectByName('Sun');
     const pointLight = new PointLight('white', 0.8, 1000);
@@ -96,7 +119,8 @@ export default class PlanetsScene extends XrScene {
   animate(deltaSeconds) {
     this.planets.forEach(mesh => {
       const spherical = new Spherical().setFromVector3(mesh.position);
-      const angularVel = 2 * Math.PI / planetData[mesh.name].orbitYears / EARTH_YEAR_SECONDS;
+      const angularVel =
+        (2 * Math.PI) / planetData[mesh.name].orbitYears / EARTH_YEAR_SECONDS;
       spherical.theta += angularVel * deltaSeconds;
       mesh.position.setFromSpherical(spherical);
     });
