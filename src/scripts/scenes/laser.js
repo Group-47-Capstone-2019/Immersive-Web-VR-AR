@@ -4,6 +4,8 @@ import { keyboard } from '../controls/keyboard-controls';
 import TriggerMesh from '../trigger';
 import wallTxUrl from '../../assets/textures/laser-room/wall/wall_diff.jpg';
 import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
+import { Interactions } from '../interactions';
+import { settings } from 'cluster';
 
 const mode = {
   SELECT: "select",
@@ -120,6 +122,8 @@ export default class LaserScene extends XrScene {
       }
     };
 
+    createButton.addFunction('spawnMirror', this._addMirrors);
+
     createButton.hover = function () {
       if (!this.isSelected) {
         this.position.z = -0.25;
@@ -128,6 +132,7 @@ export default class LaserScene extends XrScene {
     };
 
     createButton.select = function () {
+      this.functions.spawnMirror();
       this.position.z = 0.125;
       this.material.color.set(0x666666);
     };
@@ -139,51 +144,80 @@ export default class LaserScene extends XrScene {
     this.triggers.add(menu);
   }
 
-  _addMirrors() {
+  _addMirrors = () => {
     const geo = new THREE.BoxGeometry(3, 3, 0.1);
     const mat = new THREE.MeshPhongMaterial({color: 0xfafafa});
-    const mirror = new TriggerMesh(geo, mat);
+    const mirror = new THREE.Mesh(geo, mat);
 
-    mirror.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set(0x454545);
+    mirror[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          mirror.material.color.set(0x454545);
+        }
+        console.log(this);
+      },
+      hover_end() {
+        mirror.material.color.set(0xfafafa);
+      },
+      select_start() {
+        if (setting === mode.DELETE) {
+          mirror.parent.remove(mirror);
+        }
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag(matrix) {
+        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+
+        //ROTATION CODE
+        const ratio = 0.01;
+        const radians = new THREE.Vector3().subVectors(pos, mirror.position).length() * ratio;
+        const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
+        mirror.matrix.multiply(rotMatrix);
+        mirror.rotateY(radians);
+
+
+        pos.y = -2;
+        mirror.matrix.setPosition(pos);
+        mirror.position.x = pos.x;
+        mirror.position.z = pos.z;
+        mirror.position.y = pos.y;
+        mirror.updateMatrixWorld(true);
       }
     };
 
-    mirror.select = function () {
-      if (setting === mode.DELETE) {
-        this.parent.remove(this);
-      }
-    };
-
-    mirror.exit = function () {
-      if (this) {
-        this.material.color.set(0xfafafa);
-      } 
-    };
-    
-    mirror.position.set(0, -2, 0);
+    const randPos = this.getRandomPosition();
+    mirror.position.x = randPos.x;
+    mirror.position.y = randPos.y;
+    mirror.position.z = randPos.z;
     mirror.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
-    mirror.name = "mirror";
     this.mirrors.add(mirror);
 
-    const mirror2 = mirror.clone();
-    mirror2.position.set(10, -2, 0);
-    mirror2.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
-    mirror2.name = "mirror2";
-    this.mirrors.add(mirror2);
+    // const mirror2 = mirror.clone();
+    // mirror2.position.set(10, -2, 0);
+    // mirror2.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
+    // mirror2.name = "mirror2";
+    // this.mirrors.add(mirror2);
 
-    const mirror3 = mirror2.clone();
-    mirror3.position.set(10, -2, 10);
-    mirror3.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
-    mirror3.name = "mirror3";
-    this.mirrors.add(mirror3);
+    // const mirror3 = mirror2.clone();
+    // mirror3.position.set(10, -2, 10);
+    // mirror3.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
+    // mirror3.name = "mirror3";
+    // this.mirrors.add(mirror3);
 
-    const mirror4 = mirror3.clone();
-    mirror4.position.set(-20, -2, 10);
-    mirror4.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
-    mirror4.name = "mirror4";
-    this.mirrors.add(mirror4);
+    // const mirror4 = mirror3.clone();
+    // mirror4.position.set(-20, -2, 10);
+    // mirror4.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
+    // mirror4.name = "mirror4";
+    // this.mirrors.add(mirror4);
 
     this.triggers.add(this.mirrors);
   }
@@ -192,6 +226,7 @@ export default class LaserScene extends XrScene {
     if (this.laser) {
       this.scene.remove(this.laser);
     }
+
     const geometry = new THREE.Geometry();
     geometry.vertices.push(
       new THREE.Vector3(0, -2, 32),
@@ -200,6 +235,8 @@ export default class LaserScene extends XrScene {
     const material = new THREE.LineBasicMaterial({ color: 'red' });
 
     this.laser = new THREE.Line(geometry, material);
+    this.laser.raycast = (function(){return null});
+
     this.scene.add(this.laser);
   }
 
@@ -227,11 +264,8 @@ export default class LaserScene extends XrScene {
     group.position.set(0, -2, 32);
     group.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
     group.name = "laserBox";
-    
-    console.log(group);
 
     this.scene.add(group);
-    console.log(this.intersects);
     goal.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
     goal.position.set(0, 0, 0.5);
   }
@@ -248,7 +282,6 @@ export default class LaserScene extends XrScene {
     group.add(goalBox);
     group.add(goal);
     const position = this.getRandomPosition();
-    console.log(position);
     group.position.copy(position);
     group.rotateOnAxis(new THREE.Vector3(0, 1, 0), (this.getRandNum() * Math.PI / 4));
     group.name = "group";

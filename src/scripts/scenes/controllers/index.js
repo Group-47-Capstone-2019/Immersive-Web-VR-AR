@@ -113,10 +113,10 @@ export default class Controller {
         // Get the grip transform matrix
         this.controller.matrix.fromArray(gripPose.transform.matrix);
         // this.controller.matrix.setPosition(new Vector3(0, 0, 0));
-        console.log(gripPose.transform);
+        // console.log(gripPose.transform);
         this.controller.updateMatrixWorld(true);
-        console.log(new Vector3().setFromMatrixPosition(this.controller.matrixWorld));
-        console.log(new Vector3().setFromMatrixPosition(XR.getOffsetMatrix()));
+        // console.log(new Vector3().setFromMatrixPosition(this.controller.matrixWorld));
+        // console.log(new Vector3().setFromMatrixPosition(XR.getOffsetMatrix()));
       }
     }
 
