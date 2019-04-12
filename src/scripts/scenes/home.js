@@ -147,7 +147,6 @@ export default class HomeScene extends XrScene {
     };
 
     fallingDoor.select = function () {
-      this.onTriggerRelease();
       this.functions.changeRoom('/falling');
     };
 
@@ -177,7 +176,6 @@ export default class HomeScene extends XrScene {
     };
 
     planetsDoor.select = function () {
-      this.onTriggerRelease();
       this.functions.changeRoom('/planets');
     };
 
@@ -208,7 +206,7 @@ export default class HomeScene extends XrScene {
     };
 
     pendulumDoor.select = function () {
-      this.functions.changeRoom('/pendulum');
+      this.functions.changeRoom('/pendulums');
     };
 
     pendulumDoor.exit = function () {

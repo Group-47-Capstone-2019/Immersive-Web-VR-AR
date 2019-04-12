@@ -2,8 +2,21 @@ import {
   Line,
   LineBasicMaterial,
   Vector3,
-  Geometry
+  Geometry,
+  Color,
+  Mesh, BoxGeometry, MeshBasicMaterial
 } from 'three';
+import controllerGlb from '../../../assets/controller/controller.glb';
+import { Loader } from '../../loader';
+import { getCurrentScene } from '../../currentScene';
+import { XR } from '../../xrController';
+
+const controllerMeshLoader = new Loader();
+let meshCache;
+export async function loadControllerMeshes() {
+  controllerMeshLoader.addGltfToQueue(controllerGlb, 'controller');
+  meshCache = await controllerMeshLoader.waitForCache();
+}
 
 /**
  * The purpose of this class is to hold onto references
@@ -15,15 +28,49 @@ export default class Controller {
 
   laser;
 
-  constructor(mesh) {
-    this.controller = mesh;
+  constructor(inputSource) {
+    // Used for the controller's laser and cursor material color
+    this.color = new Color(Math.random(), Math.random(), Math.random());
+    this.inputSource = inputSource;
+    switch (this.inputSource.targetRayMode) {
+      case 'gaze':
+        this.createCursor();
+        // this.createLaser();
+        // this.createController();
+        break;
+      case 'tracked-pointer':
+        this.createCursor();
+        this.createLaser();
+        this.createController();
+        break;
+      case 'screen':
+      default:
+    }
+    this.bind(getCurrentScene().scene);
   }
 
-  /**
-     * Returns controller mesh
-     */
-  get mesh() {
-    return this.controller;
+  bind(scene) {
+    ['cursor', 'laser', 'controller'].forEach((item) => {
+      if (this[item]) {
+        scene.add(this[item]);
+      }
+    });
+  }
+
+  unbind() {
+    ['cursor', 'laser', 'controller'].forEach((item) => {
+      if (this[item] && this[item].parent) {
+        this[item].parent.remove(this[item]);
+      }
+    });
+  }
+
+  createCursor() {
+    this.cursor = new Mesh(new BoxGeometry(0.2, 0.2, 0.2), new MeshBasicMaterial({
+      color: this.color
+    }));
+    this.cursor.matrixAutoUpdate = false;
+    this.cursor.raycast = () => null; // Disable raycast intersection
   }
 
   /**
@@ -36,24 +83,66 @@ export default class Controller {
       new Vector3(0, 0, 0)
     );
 
-    const material = new LineBasicMaterial({ color: 0xffffff });
+    const material = new LineBasicMaterial({ color: this.color });
 
     this.laser = new Line(geometry, material);
+    this.laser.raycast = () => []; // Disable raycast intersections
+  }
+
+  createController() {
+    this.controller = meshCache.controller.scene.clone();
+    this.controller.matrixAutoUpdate = false;
+    this.controller.name = 'controller';
+    this.controller.raycast = () => []; // Disable raycast intersections
   }
 
   /**
-     * Gets a grip matrix in three.js friendly Matrix4 format
-     * and indexed position of controller in controllers array.
-     * Applies the passed in matrix to the controller model
-     * in the list.
-     * @param {THREE.Matrix4} matrix
-     * @param {Number} index
-     */
-  updateControllerPosition(matrix) {
-    // Disable auto update so it doesn't update before we are done
-    this.controller.matrixAutoUpdate = false;
-    this.controller.matrix.copy(matrix);
-    this.controller.updateMatrixWorld(true);
+   * Returns controller mesh
+   */
+  get mesh() {
+    return this.controller;
+  }
+
+  update(xrFrame, intersection) {
+    if (this.controller && this.inputSource.gripSpace) {
+      this.controller.matrixAutoUpdate = false;
+      // Get grip space pose for controller
+      const gripPose = xrFrame.getPose(this.inputSource.gripSpace, XR.refSpace);
+
+      if (gripPose) {
+        // Get the grip transform matrix
+        this.controller.matrix.fromArray(gripPose.transform.matrix);
+        // this.controller.matrix.setPosition(new Vector3(0, 0, 0));
+        console.log(gripPose.transform);
+        this.controller.updateMatrixWorld(true);
+        console.log(new Vector3().setFromMatrixPosition(this.controller.matrixWorld));
+        console.log(new Vector3().setFromMatrixPosition(XR.getOffsetMatrix()));
+      }
+    }
+
+    if (this.laser && this.inputSource.targetRaySpace) {
+      const rayPose = xrFrame.getPose(this.inputSource.targetRaySpace, XR.refSpace);
+      /* global XRRay */
+      const ray = new XRRay(rayPose.transform);
+      if (rayPose) {
+        // If there was an intersection, get the intersection length else default laser to 100
+        const rayLength = intersection ? intersection.distance : 100;
+        const rayOrigin = new Vector3(
+          ray.origin.x, ray.origin.y, ray.origin.z
+        );
+        const rayDirection = new Vector3(
+          ray.direction.x,
+          ray.direction.y,
+          ray.direction.z
+        );
+        this.updateLaser(rayOrigin, rayDirection, rayLength);
+      }
+    }
+
+    if (this.cursor && intersection) {
+      this.cursor.matrix.setPosition(intersection.point);
+      this.cursor.updateMatrixWorld(true);
+    }
   }
 
   /**
