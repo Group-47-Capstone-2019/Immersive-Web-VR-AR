@@ -200,34 +200,31 @@ function updateInputSource(inputSource, ray, frame) {
   if (!selectedObjects.get(inputSource)) {
     for (const intersection of intersections) {
       console.log(intersection);
-      if (intersection.object.name === 'controller') {
-        continue;
+      if (intersection.object.name !== 'controller') {
+        const interactions = intersection.object[Interactions];
+        if (lastHovered !== intersection.object) {
+          // End the hover of the previous object
+          if (lastHovered && lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
+            console.log('Calling hover_end');
+            lastHovered[Interactions].hover_end();
+          } else { console.log('Using default hover_end implementation'); }
+
+          // Hover the new Object
+          if (interactions && interactions.hover_start) {
+            console.log('Calling hover_start');
+            interactions.hover_start(intersection);
+          } else { console.log('Using default hover_start implementation'); }
+
+          // Mark the object as the one hovered by this input source
+          hoveredObjects.set(inputSource, intersection.object);
+        }
+        // Call the hover method for every frame as long as the same object is hovered
+        if (interactions && interactions.hover) {
+          interactions.hover(intersection);
+        }
+        // else console.log('Using default hover implementation');
+        break;
       }
-      const interactions = intersection.object[Interactions];
-      if (lastHovered !== intersection.object) {
-        // End the hover of the previous object
-        if (lastHovered && lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
-          console.log('Calling hover_end');
-          lastHovered[Interactions].hover_end();
-        } else { console.log('Using default hover_end implementation'); }
-  
-        // Hover the new Object
-        if (interactions && interactions.hover_start) {
-          console.log('Calling hover_start');
-          interactions.hover_start(intersection);
-        } else { console.log('Using default hover_start implementation'); }
-  
-        // Mark the object as the one hovered by this input source
-        hoveredObjects.set(inputSource, intersection.object);
-      }
-  
-      // Call the hover method for every frame as lon as the same object is hovered
-      if (interactions && interactions.hover) {
-        // console.log('Calling hover');
-        interactions.hover(intersection);
-      }
-      // else console.log('Using default hover implementation');
-      break;
     }
   }
 
