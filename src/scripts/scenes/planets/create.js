@@ -7,7 +7,9 @@ import {
 } from 'three';
 
 const DISTANCE_DIVIDER = 1e6;
-export const cameraPointName = (planetName) => `CameraPoint${planetName}`;
+const CAMERA_VIEW_DISTANCE = 10;
+
+export const cameraPointName = planetName => `CameraPoint${planetName}`;
 
 /**
  * build planets, with mesh and randomized position
@@ -18,7 +20,7 @@ export function createPlanets(planetData, cache) {
   return Object.keys(planetData).map(planetName => {
     const texture = cache[planetName];
     const planet = planetData[planetName];
-    const geo = new SphereGeometry(2, 20, 20);
+    const geo = new SphereGeometry(planet.fakeRadius, 20, 20);
 
     let material;
     if (planetName === 'Sun') {
@@ -38,7 +40,8 @@ export function createPlanets(planetData, cache) {
 
     const cameraPoint = new Object3D();
     mesh.add(cameraPoint);
-    cameraPoint.position.set(10, 10, 10);
+    const cameraDist = CAMERA_VIEW_DISTANCE + planet.fakeRadius;
+    cameraPoint.position.set(cameraDist, cameraDist, cameraDist);
     cameraPoint.name = cameraPointName(planetName);
 
     return mesh;

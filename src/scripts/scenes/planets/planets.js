@@ -11,7 +11,8 @@ export default {
     gravity: 274.0,
     mass: 1988500e24,
     orbitDistance: 0,
-    orbitYears: 1
+    orbitYears: 1,
+    fakeRadius: 15
   },
   Mercury: {
     texture: require('../../../assets/planets/mercurymap.jpg'),
@@ -19,7 +20,8 @@ export default {
     gravity: 3.701,
     mass: 3.302e23,
     orbitDistance: 36e6,
-    orbitYears: .25
+    orbitYears: .25,
+    fakeRadius: 2
   },
   Venus: {
     texture: require('../../../assets/planets/venusmap.jpg'),
@@ -27,7 +29,8 @@ export default {
     gravity: 8.87,
     mass: 48.685e23,
     orbitDistance: 67e6,
-    orbitYears: 7/12
+    orbitYears: 7/12,
+    fakeRadius: 3
   },
   Earth: {
     texture: require('../../../assets/planets/earthmap.jpg'),
@@ -35,7 +38,8 @@ export default {
     gravity: 9.81,
     mass: 5.97219e24,
     orbitDistance: 93e6,
-    orbitYears: 1
+    orbitYears: 1,
+    fakeRadius: 3
   },
   Mars: {
     texture: require('../../../assets/planets/marsmap.jpg'),
@@ -43,7 +47,8 @@ export default {
     gravity: 3.71,
     mass: 6.4171e23,
     orbitDistance: 141e6,
-    orbitYears: 23/12
+    orbitYears: 23/12,
+    fakeRadius: 2
   },
   Jupiter: {
     texture: require('../../../assets/planets/jupitermap.jpg'),
@@ -51,7 +56,8 @@ export default {
     gravity: 24.79,
     mass: 1898.13e24,
     orbitDistance: 483e6,
-    orbitYears: 142/12
+    orbitYears: 142/12,
+    fakeRadius: 12
   },
   Saturn: {
     texture: require('../../../assets/planets/saturnmap.jpg'),
@@ -59,7 +65,8 @@ export default {
     gravity: 10.44,
     mass: 5.6834e26,
     orbitDistance: 886e6,
-    orbitYears: 29.5
+    orbitYears: 29.5,
+    fakeRadius: 10
   },
   Uranus: {
     texture: require('../../../assets/planets/uranusmap.jpg'),
@@ -67,7 +74,8 @@ export default {
     gravity: 8.87,
     mass: 86.813e24,
     orbitDistance: 1783e6,
-    orbitYears: 84
+    orbitYears: 84,
+    fakeRadius: 8
   },
   Neptune: {
     texture: require('../../../assets/planets/neptunemap.jpg'),
@@ -75,6 +83,7 @@ export default {
     gravity: 11.15,
     mass: 102.413e24,
     orbitDistance: 2795e6,
-    orbitYears: 165
+    orbitYears: 165,
+    fakeRadius: 8
   }
 };
