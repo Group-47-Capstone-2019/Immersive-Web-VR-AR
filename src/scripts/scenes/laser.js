@@ -5,7 +5,7 @@ import TriggerMesh from '../trigger';
 import wallTxUrl from '../../assets/textures/laser-room/wall/wall_diff.jpg';
 import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
 import { Interactions } from '../interactions';
-import { settings } from 'cluster';
+import { XR } from '../xrController';
 
 const mode = {
   SELECT: "select",
@@ -31,7 +31,7 @@ export default class LaserScene extends XrScene {
 
     this.laserRays = [];
     this.laserRay = new THREE.Raycaster();
-    this.laserOrigin = new THREE.Vector3(0, -2, 32);
+    this.laserOrigin = new THREE.Vector3(0, -5, 32);
     this.laserDirection = new THREE.Vector3(0, 0, -1);
     this.laserRay.set(this.laserOrigin, this.laserDirection);
     this.laserRays.push(this.laserRay);
@@ -44,6 +44,19 @@ export default class LaserScene extends XrScene {
     this.length = 64;
     this.width = 64;
     this.height = 16;
+  }
+
+  teleportOnSelect() {
+    return {
+      select_start({ point }) {
+        console.log('Teleporting to:', point);
+        const offsetMatrix = XR.getOffsetMatrix();
+        point.y = 0;
+        point.multiplyScalar(-1);
+        offsetMatrix.setPosition(point);
+        XR.setOffsetMatrix(offsetMatrix);
+      }
+    };
   }
 
   _initScene(cache) {
@@ -74,7 +87,7 @@ export default class LaserScene extends XrScene {
 
     selectButton.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0x454545);
+        this.material.color.set(0x999999);
       }
     };
 
@@ -99,7 +112,7 @@ export default class LaserScene extends XrScene {
 
     deleteButton.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0x454545);
+        this.material.color.set(0x999999);
       }
     };
 
@@ -127,7 +140,7 @@ export default class LaserScene extends XrScene {
     createButton.hover = function () {
       if (!this.isSelected) {
         this.position.z = -0.25;
-        this.material.color.set(0x454545);
+        this.material.color.set(0x999999);
       }
     };
 
@@ -145,16 +158,20 @@ export default class LaserScene extends XrScene {
   }
 
   _addMirrors = () => {
-    const geo = new THREE.BoxGeometry(3, 3, 0.1);
+    const geo = new THREE.BoxGeometry(3, 4, 0.1);
     const mat = new THREE.MeshPhongMaterial({color: 0xfafafa});
     const mirror = new THREE.Mesh(geo, mat);
+    const baseGeo = new THREE.CylinderGeometry(1, 1, 0.75, 50);
+    const baseMat = new THREE.MeshPhongMaterial({color: 0x383838});
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    mirror.add(base);
+    base.position.set(0, -2.325, 0);
 
     mirror[Interactions] = {
       hover_start() {
         if (!this.isSelected) {
-          mirror.material.color.set(0x454545);
+          mirror.material.color.set(0x999999);
         }
-        console.log(this);
       },
       hover_end() {
         mirror.material.color.set(0xfafafa);
@@ -177,19 +194,43 @@ export default class LaserScene extends XrScene {
       drag(matrix) {
         const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
 
-        //ROTATION CODE
-        const ratio = 0.01;
-        const radians = new THREE.Vector3().subVectors(pos, mirror.position).length() * ratio;
-        const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
-        mirror.matrix.multiply(rotMatrix);
-        mirror.rotateY(radians);
-
-
-        pos.y = -2;
+        pos.y = -5;
         mirror.matrix.setPosition(pos);
         mirror.position.x = pos.x;
         mirror.position.z = pos.z;
         mirror.position.y = pos.y;
+        mirror.updateMatrixWorld(true);
+      }
+    };
+
+    base[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          base.material.color.set(0x999999);
+        }
+      },
+      hover_end() {
+        base.material.color.set(0x383838);
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag(matrix) {
+        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+      
+        const ratio = 0.003;
+        const radians = pos.distanceTo(mirror.position) * ratio;
+        const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
+        mirror.matrix.multiply(rotMatrix);
+        mirror.rotateY(radians);
+        
         mirror.updateMatrixWorld(true);
       }
     };
@@ -201,24 +242,6 @@ export default class LaserScene extends XrScene {
     mirror.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
     this.mirrors.add(mirror);
 
-    // const mirror2 = mirror.clone();
-    // mirror2.position.set(10, -2, 0);
-    // mirror2.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
-    // mirror2.name = "mirror2";
-    // this.mirrors.add(mirror2);
-
-    // const mirror3 = mirror2.clone();
-    // mirror3.position.set(10, -2, 10);
-    // mirror3.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
-    // mirror3.name = "mirror3";
-    // this.mirrors.add(mirror3);
-
-    // const mirror4 = mirror3.clone();
-    // mirror4.position.set(-20, -2, 10);
-    // mirror4.rotateOnAxis(new THREE.Vector3(0, 1, 0),  (Math.PI) / 2);
-    // mirror4.name = "mirror4";
-    // this.mirrors.add(mirror4);
-
     this.triggers.add(this.mirrors);
   }
 
@@ -229,7 +252,7 @@ export default class LaserScene extends XrScene {
 
     const geometry = new THREE.Geometry();
     geometry.vertices.push(
-      new THREE.Vector3(0, -2, 32),
+      new THREE.Vector3(0, -5, 32),
     );
 
     const material = new THREE.LineBasicMaterial({ color: 'red' });
@@ -243,7 +266,7 @@ export default class LaserScene extends XrScene {
   getRandomPosition() {
     const x = Math.ceil((Math.random() * 56) - 28);
     const z = Math.ceil((Math.random() * 56) - 28);
-    return new THREE.Vector3(x, -2, z);
+    return new THREE.Vector3(x, -5, z);
   }
 
   getRandNum() {
@@ -261,7 +284,7 @@ export default class LaserScene extends XrScene {
     const group = new THREE.Object3D();
     group.add(goalBox);
     group.add(goal);
-    group.position.set(0, -2, 32);
+    group.position.set(0, -5, 32);
     group.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
     group.name = "laserBox";
 
@@ -278,9 +301,29 @@ export default class LaserScene extends XrScene {
     const goalMat = new THREE.MeshPhongMaterial({color: 'white'});
     const goal = new THREE.Mesh(goalGeo, goalMat);
 
+    const lineGeo = new THREE.Geometry();
+    lineGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+    const lineMat = new THREE.LineBasicMaterial({color: 0x111111});
+
+    const goalLegL = new THREE.Line(lineGeo, lineMat);
+    const goalLegR = new THREE.Line(lineGeo.clone(), lineMat.clone());
+    const goalLegF = new THREE.Line(lineGeo.clone(), lineMat.clone());
+    const goalLegB = new THREE.Line(lineGeo.clone(), lineMat.clone());
+
+    goalLegL.geometry.vertices.push(new THREE.Vector3(1.5, -3, 0));
+    goalLegL.raycast = (function(){return null});
+    goalLegR.geometry.vertices.push(new THREE.Vector3(-1.5, -3, 0));
+    goalLegR.raycast = (function(){return null});
+    goalLegF.geometry.vertices.push(new THREE.Vector3(0, -3, 1.5));
+    goalLegF.raycast = (function(){return null});
+    goalLegB.geometry.vertices.push(new THREE.Vector3(0, -3, -1.5));
+    goalLegB.raycast = (function(){return null});
+
+    const goalLegs = new THREE.Object3D();
+    goalLegs.add(goalLegL, goalLegR, goalLegF, goalLegB);
+
     const group = new THREE.Object3D();
-    group.add(goalBox);
-    group.add(goal);
+    group.add(goalBox, goal, goalLegs);
     const position = this.getRandomPosition();
     group.position.copy(position);
     group.rotateOnAxis(new THREE.Vector3(0, 1, 0), (this.getRandNum() * Math.PI / 4));
@@ -313,11 +356,11 @@ export default class LaserScene extends XrScene {
     direction = incomingDirection.clone();
     direction.reflect(normal);
 
-    const radAngle = Math.acos((normal.clone().dot(direction)) / (normal.length() * direction.length()));
+    const radAngle = normal.angleTo(direction);
     let angle = radAngle / Math.PI * 180;
     angle = Math.round(angle * 10) / 10;
     
-    //console.log(angle);
+    console.log(angle);
 
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
@@ -385,11 +428,19 @@ export default class LaserScene extends XrScene {
 
     // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
-    //const roomMaterials = new THREE.MeshPhongMaterial({ color: 0x003050, side: THREE.BackSide });
+
+    const floorGeo = new THREE.PlaneGeometry(this.length, this.width);
+    const floor = new THREE.Mesh(floorGeo, floorMat.clone());
+    floor.rotateX(Math.PI / 2);
+    floor.position.y = -7.999999;
+    
     this.room = new THREE.Mesh(roomGeometry, roomMaterials);
     this.room.receiveShadow = true;
     this.room.castShadow = true;
     this.room.name = "room";
+    this.room.add(floor);
+    console.log(this.room);
+    floor[Interactions] = this.teleportOnSelect();
     this.intersects.add(this.room);
   }
 
