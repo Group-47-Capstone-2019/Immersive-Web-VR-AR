@@ -21,5 +21,6 @@ export const camera = new PerspectiveCamera(
  */
 export const updateAspectRatio = (ratio) => {
   camera.aspect = ratio;
+  camera.matrixAutoUpdate = false;
   camera.updateProjectionMatrix();
 };

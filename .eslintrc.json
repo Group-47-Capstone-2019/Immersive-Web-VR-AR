@@ -14,7 +14,9 @@
     "no-use-before-define": ["warn", { "functions": true, "classes": true }],
     "no-restricted-syntax": "warn",
     "prefer-destructuring": "warn",
-    "no-param-reassign": "warn"
+    "no-param-reassign": "warn",
+    "max-len": "warn",
+    "camelcase": "warn"
   },
   "env": {
     "browser": true
