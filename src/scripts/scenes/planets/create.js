@@ -51,19 +51,20 @@ export function createPlanets(planetData, cache) {
     // text description
     const text = createPlanetText(planet);
     mesh.add(text);
-    text.position.set(planet.fakeRadius + 5, 0, 0);
+    text.position.set(planet.fakeRadius + 8, planet.fakeRadius + 8, 0);
+
     text.name = planetTextName(planetName);
     text.visible = false;
 
     // next button
     const nextButtonPoint = new Object3D();
-    nextButtonPoint.position.set(planet.fakeRadius + 5, 5, 0);
+    nextButtonPoint.position.set(planet.fakeRadius + 5, 10, 0);
     nextButtonPoint.name = nextPointName(planetName);
     mesh.add(nextButtonPoint);
 
     // prev button
     const prevButtonPoint = new Object3D();
-    prevButtonPoint.position.set(planet.fakeRadius + 7, 5, 0);
+    prevButtonPoint.position.set(planet.fakeRadius + 7, 10, 0);
     prevButtonPoint.name = prevPointName(planetName);
     mesh.add(prevButtonPoint);
 

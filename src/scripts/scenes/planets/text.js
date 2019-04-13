@@ -3,7 +3,11 @@ import {
   Sprite,
   SpriteMaterial,
   LinearFilter,
-  ClampToEdgeWrapping
+  ClampToEdgeWrapping,
+  PlaneBufferGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  DoubleSide
 } from 'three';
 
 function createTextCanvas(text, textColor, backgroundColor) {
@@ -43,10 +47,18 @@ export function createTextSprite(
   texture.wrapS = ClampToEdgeWrapping;
   texture.wrapT = ClampToEdgeWrapping;
 
-  const mat = new SpriteMaterial({ map: texture, depthTest: false });
-  // mat.sizeAttenuation = false;
+  const mat = new MeshBasicMaterial({
+    map: texture,
+    depthTest: false,
+    transparent: true,
+    side: DoubleSide
+  });
 
-  const sprite = new Sprite(mat);
-  sprite.scale.set(canvas.width, canvas.height, 1).divideScalar(160);
-  return sprite;
+  const plane = new PlaneBufferGeometry(
+    canvas.width / 160,
+    canvas.height / 160
+  );
+  const mesh = new Mesh(plane, mat);
+
+  return mesh; 
 }
