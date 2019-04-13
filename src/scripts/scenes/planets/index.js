@@ -20,7 +20,7 @@ import {
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
 import { createTextPlane } from './text';
-import { Tween, Easing, update } from '@tweenjs/tween.js';
+import TWEEN from '@tweenjs/tween.js';
 
 const EARTH_YEAR_SECONDS = 120;
 const TWEEN_SECONDS = 5;
@@ -48,6 +48,8 @@ export default class PlanetsScene extends XrScene {
   addGui() {
     this.nextButton = createTextPlane('Next Planet', 'white', 'gray');
     this.prevButton = createTextPlane('Previous Planet', 'white', 'gray');
+    this.nextButton.select = this.nextPlanet;
+    this.prevButton.select = this.prevButton;
 
     const sun = this.planets.find(p => p.name === 'Sun');
 
@@ -185,7 +187,7 @@ export default class PlanetsScene extends XrScene {
     );
     nextPlanetPos.theta += angularVel * TWEEN_SECONDS;
     const endVec = new Vector3().setFromSpherical(nextPlanetPos);
-    const to = {
+    const coords = {
       x: endVec.x,
       y: endVec.y,
       z: endVec.z
@@ -198,13 +200,13 @@ export default class PlanetsScene extends XrScene {
       z: this.cameraPoint.position.z
     };
 
-    new Tween(from)
+    new TWEEN.Tween(from)
       .to(to, TWEEN_SECONDS * 1000)
-      .easing(Easing.Quadratic.InOut)
-      .onUpdate(coords =>
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .onUpdate(() =>
         this.cameraPoint.position.set(coords.x, coords.y, coords.z)
       )
-      .onComplete(coords => {
+      .onComplete(() => {
         this.camera.lookAt(coords.x, coords.y, coords.z);
 
         // add camera to next planet and reset to local coords
@@ -229,8 +231,8 @@ export default class PlanetsScene extends XrScene {
    * @param {number} deltaSeconds
    */
   animate(deltaSeconds) {
-    update();
-    
+    TWEEN.update();
+
     this.planets.forEach(mesh => {
       const spherical = new Spherical().setFromVector3(mesh.position);
       const angularVel =

@@ -4,9 +4,9 @@ import {
   ClampToEdgeWrapping,
   PlaneBufferGeometry,
   MeshBasicMaterial,
-  Mesh,
   DoubleSide
 } from 'three';
+import TriggerMesh from '../../trigger';
 
 function createTextCanvas(text, textColor, backgroundColor) {
   const canvas = document.createElement('canvas');
@@ -56,7 +56,7 @@ export function createTextPlane(
     canvas.width / 160,
     canvas.height / 160
   );
-  const mesh = new Mesh(plane, mat);
+  const mesh = new TriggerMesh(plane, mat);
 
   return mesh; 
 }
