@@ -6,6 +6,7 @@ import wallTxUrl from '../../assets/textures/laser-room/wall/wall_diff.jpg';
 import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
 import { Interactions } from '../interactions';
 import { XR } from '../xrController';
+import { createTextSprite, createTextPlane } from './planets/text';
 
 const mode = {
   SELECT: 'select',
@@ -80,6 +81,18 @@ export default class LaserScene extends XrScene {
     deleteButton.position.set(-10, 0, 0.25);
 
     console.log(setting);
+
+    const selectLabel = createTextPlane('SELECT', 'white', 'black');
+    selectButton.add(selectLabel);
+    selectLabel.position.set(0, 3, 0);
+
+    const deleteLabel = createTextPlane('DELETE', 'white', 'black');
+    deleteButton.add(deleteLabel);
+    deleteLabel.position.set(0, 3, 0);
+
+    const createLabel = createTextPlane('CREATE', 'white', 'black');
+    createButton.add(createLabel);
+    createLabel.position.set(0, 3, 0);
 
     selectButton.hover = function () {
       if (!this.isSelected) {
@@ -169,7 +182,7 @@ export default class LaserScene extends XrScene {
     const baseMat = new THREE.MeshPhongMaterial({ color: 0x383838 });
     const base = new THREE.Mesh(baseGeo, baseMat);
     mirror.add(base);
-    base.position.set(0, -2.325, 0);
+    base.position.set(0, -2.375, 0);
 
     mirror[Interactions] = {
       hover_start() {
@@ -361,11 +374,15 @@ export default class LaserScene extends XrScene {
     direction = incomingDirection.clone();
     direction.reflect(normal);
 
-    const radAngle = normal.angleTo(direction);
-    let angle = radAngle / Math.PI * 180;
-    angle = Math.round(angle * 10) / 10;
+    // const radAngle = normal.angleTo(direction) * 2;
+    // let angle = radAngle / Math.PI * 180;
+    // angle = Math.round(angle * 10) / 10;
 
-    console.log(angle);
+    // const angleLabel = createTextPlane(angle.toString(), 'white');
+    // angleLabel.raycast = () => [];
+    // res.object.add(angleLabel);
+    // angleLabel.position.set(0, 3, 0);
+    // angleLabel.lookAt(this.camera.position);
 
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
@@ -419,7 +436,7 @@ export default class LaserScene extends XrScene {
     const baseMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
     const base = new THREE.Mesh(baseGeo, baseMat);
     base.raycast = (function () { return null; });
-    base.position.set(0, -2.325, 0);
+    base.position.set(0, -2.375, 0);
 
     this.mirrorOutline.add(base);
     this.scene.add(this.mirrorOutline);
@@ -528,6 +545,15 @@ export default class LaserScene extends XrScene {
     this.laserRays[0].set(raycasterOrigin, raycasterDestination.transformDirection(rayMatrixWorld));
   }
 
+  _resetMirrors() {
+    const mirror = this.mirrors.children;
+    for (let i = 0; i < mirror.length; i++) {
+      if (mirror[i].children.length > 1) {
+        mirror[i].remove(mirror[i].children[1]);
+      }
+    }
+  }
+  
   _initScene(cache) {
     this._initRoom(cache);
     this._createLaserBox();
@@ -544,6 +570,7 @@ export default class LaserScene extends XrScene {
   }
 
   animate() {
+    // this._resetMirrors();
     this._createLaser();
     this.laserRays = [];
     this.laserRays.push(this._copyRay(this.laserRay));
