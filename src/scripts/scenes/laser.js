@@ -8,9 +8,9 @@ import { Interactions } from '../interactions';
 import { XR } from '../xrController';
 
 const mode = {
-  SELECT: "select",
-  DELETE: "delete",
-  CREATE: "create"
+  SELECT: 'select',
+  DELETE: 'delete',
+  CREATE: 'create'
 };
 
 let setting = mode.SELECT;
@@ -66,7 +66,7 @@ export default class LaserScene extends XrScene {
 
   _initMenu() {
     const buttonGeo = new THREE.BoxGeometry(4, 3, 0.5);
-    const buttonMat = new THREE.MeshPhongMaterial({color: 0x222222});
+    const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
     const selectButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const deleteButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
@@ -140,7 +140,7 @@ export default class LaserScene extends XrScene {
     };
 
     createButton.select = function () {
-      //this.functions.spawnMirror();
+      // this.functions.spawnMirror();
       setting = mode.CREATE;
       this.position.z = -0.125;
       this.material.color.set(0x666666);
@@ -163,10 +163,10 @@ export default class LaserScene extends XrScene {
 
   _addMirrors = (point) => {
     const geo = new THREE.BoxGeometry(3, 4, 0.1);
-    const mat = new THREE.MeshPhongMaterial({color: 0xfafafa});
+    const mat = new THREE.MeshPhongMaterial({ color: 0xfafafa });
     const mirror = new THREE.Mesh(geo, mat);
     const baseGeo = new THREE.CylinderGeometry(1, 1, 0.75, 50);
-    const baseMat = new THREE.MeshPhongMaterial({color: 0x383838});
+    const baseMat = new THREE.MeshPhongMaterial({ color: 0x383838 });
     const base = new THREE.Mesh(baseGeo, baseMat);
     mirror.add(base);
     base.position.set(0, -2.325, 0);
@@ -228,18 +228,18 @@ export default class LaserScene extends XrScene {
       },
       drag(matrix) {
         const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
-      
+
         const ratio = 0.003;
         const radians = pos.distanceTo(mirror.position) * ratio;
         const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
         mirror.matrix.multiply(rotMatrix);
         mirror.rotateY(radians);
-        
+
         mirror.updateMatrixWorld(true);
       }
     };
 
-    //const randPos = this.getRandomPosition();
+    // const randPos = this.getRandomPosition();
     console.log(point);
     mirror.position.x = point.x;
     mirror.position.y = -5;
@@ -263,7 +263,7 @@ export default class LaserScene extends XrScene {
     const material = new THREE.LineBasicMaterial({ color: 'red' });
 
     this.laser = new THREE.Line(geometry, material);
-    this.laser.raycast = (function(){return null});
+    this.laser.raycast = (function () { return null; });
 
     this.scene.add(this.laser);
   }
@@ -280,10 +280,10 @@ export default class LaserScene extends XrScene {
 
   _createLaserBox() {
     const goalBoxGeo = new THREE.BoxGeometry(1, 1, 1);
-    const goalBoxMat = new THREE.MeshPhongMaterial({color: 0x111111});
+    const goalBoxMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
     const goalBox = new THREE.Mesh(goalBoxGeo, goalBoxMat);
     const goalGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.50, 50, 50);
-    const goalMat = new THREE.MeshPhongMaterial({color: 'red'});
+    const goalMat = new THREE.MeshPhongMaterial({ color: 'red' });
     const goal = new THREE.Mesh(goalGeo, goalMat);
 
     const group = new THREE.Object3D();
@@ -291,7 +291,7 @@ export default class LaserScene extends XrScene {
     group.add(goal);
     group.position.set(0, -5, 32);
     group.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI);
-    group.name = "laserBox";
+    group.name = 'laserBox';
 
     this.scene.add(group);
     goal.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
@@ -300,15 +300,15 @@ export default class LaserScene extends XrScene {
 
   _initGoal() {
     const goalBoxGeo = new THREE.BoxGeometry(1, 1, 1);
-    const goalBoxMat = new THREE.MeshPhongMaterial({color: 0x111111});
+    const goalBoxMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
     const goalBox = new THREE.Mesh(goalBoxGeo, goalBoxMat);
     const goalGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.50, 50, 50);
-    const goalMat = new THREE.MeshPhongMaterial({color: 'white'});
+    const goalMat = new THREE.MeshPhongMaterial({ color: 'white' });
     const goal = new THREE.Mesh(goalGeo, goalMat);
 
     const lineGeo = new THREE.Geometry();
     lineGeo.vertices.push(new THREE.Vector3(0, 0, 0));
-    const lineMat = new THREE.LineBasicMaterial({color: 0x111111});
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x111111 });
 
     const goalLegL = new THREE.Line(lineGeo, lineMat);
     const goalLegR = new THREE.Line(lineGeo.clone(), lineMat.clone());
@@ -316,13 +316,13 @@ export default class LaserScene extends XrScene {
     const goalLegB = new THREE.Line(lineGeo.clone(), lineMat.clone());
 
     goalLegL.geometry.vertices.push(new THREE.Vector3(1.5, -3, 0));
-    goalLegL.raycast = (function(){return null});
+    goalLegL.raycast = (function () { return null; });
     goalLegR.geometry.vertices.push(new THREE.Vector3(-1.5, -3, 0));
-    goalLegR.raycast = (function(){return null});
+    goalLegR.raycast = (function () { return null; });
     goalLegF.geometry.vertices.push(new THREE.Vector3(0, -3, 1.5));
-    goalLegF.raycast = (function(){return null});
+    goalLegF.raycast = (function () { return null; });
     goalLegB.geometry.vertices.push(new THREE.Vector3(0, -3, -1.5));
-    goalLegB.raycast = (function(){return null});
+    goalLegB.raycast = (function () { return null; });
 
     const goalLegs = new THREE.Object3D();
     goalLegs.add(goalLegL, goalLegR, goalLegF, goalLegB);
@@ -332,18 +332,18 @@ export default class LaserScene extends XrScene {
     const position = this.getRandomPosition();
     group.position.copy(position);
     group.rotateOnAxis(new THREE.Vector3(0, 1, 0), (this.getRandNum() * Math.PI / 4));
-    group.name = "group";
-    
+    group.name = 'group';
+
     this.intersects.add(group);
     goal.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
     goal.position.set(0, 0, 0.5);
-    goal.name = "goal";
-    goalBox.name = "goalBox";
+    goal.name = 'goal';
+    goalBox.name = 'goalBox';
   }
 
   _updateLaser(direction, length) {
     const numVertices = this.laser.geometry.vertices.length;
-    let lineOrigin = new THREE.Vector3();
+    const lineOrigin = new THREE.Vector3();
     lineOrigin.copy(this.laser.geometry.vertices[numVertices - 1]);
     const newDirection = direction.clone();
     const newPoint = newDirection.multiplyScalar(length).add(lineOrigin);
@@ -353,7 +353,7 @@ export default class LaserScene extends XrScene {
     this.laser.geometry.verticesNeedUpdate = true;
   }
 
-  _reflect(res, incomingDirection, otherRay) {
+  _reflect(res, incomingDirection) {
     let normal = new THREE.Vector3();
     normal = res.face.normal.clone();
     normal.applyMatrix4(new THREE.Matrix4().extractRotation(res.object.matrixWorld));
@@ -364,45 +364,42 @@ export default class LaserScene extends XrScene {
     const radAngle = normal.angleTo(direction);
     let angle = radAngle / Math.PI * 180;
     angle = Math.round(angle * 10) / 10;
-    
+
     console.log(angle);
 
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
     this.laserRays.push(newRay);
-
   }
 
   _updateLaserRays() {
-    for (let i = 0; i  < this.laserRays.length; i++) {
-      let laserDirection = this.laserRays[i].ray.direction.clone();
-      let raycasterDestination = laserDirection.clone();
+    for (let i = 0; i < this.laserRays.length; i++) {
+      const laserDirection = this.laserRays[i].ray.direction.clone();
+      const raycasterDestination = laserDirection.clone();
 
       if (!keyboard) {
-        let matrixWorld = this.scene.matrixWorld.clone();
+        const matrixWorld = this.scene.matrixWorld.clone();
         laserDirection.transformDirection(matrixWorld.getInverse(matrixWorld));
       }
 
       const intersect = this.laserRays[i].intersectObject(this.intersects, true);
-      
+
       if (intersect.length > 0) {
-        let res = intersect.filter(function(res) {
-          return res && res.object;
-        })[0];
+        const result = intersect.filter(res => res && res.object)[0];
 
-        if (res && res.object) {
-          if (res.object != this.laser) {
-            this._updateLaser(laserDirection, res.distance);
+        if (result && result.object) {
+          if (result.object !== this.laser) {
+            this._updateLaser(laserDirection, result.distance);
 
-            const goal = this.scene.getObjectByName("goalBox");
-            if (res.object === this.scene.getObjectByName("goal")) {
+            const goal = this.scene.getObjectByName('goalBox');
+            if (result.object === this.scene.getObjectByName('goal')) {
               goal.material.color.set('green');
             } else {
               goal.material.color.set(0x111111);
             }
 
-            if (res.object.parent === this.mirrors) {
-              this._reflect(res, raycasterDestination, this.laserRays[i]);
+            if (result.object.parent === this.mirrors) {
+              this._reflect(result, raycasterDestination);
             }
           }
         }
@@ -412,16 +409,16 @@ export default class LaserScene extends XrScene {
 
   _createMirrorOutline() {
     const mirrorOutlineGeo = new THREE.BoxGeometry(3, 4, 0.1);
-    const mirrorOutlineMat = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true});
+    const mirrorOutlineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
     this.mirrorOutline = new THREE.Mesh(mirrorOutlineGeo, mirrorOutlineMat);
     this.mirrorOutline.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
     this.mirrorOutline.visible = false;
-    this.mirrorOutline.raycast = (function(){return null});
+    this.mirrorOutline.raycast = (function () { return null; });
 
     const baseGeo = new THREE.CylinderGeometry(1, 1, 0.75, 50);
-    const baseMat = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true});
+    const baseMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
     const base = new THREE.Mesh(baseGeo, baseMat);
-    base.raycast = (function(){return null});
+    base.raycast = (function () { return null; });
     base.position.set(0, -2.325, 0);
 
     this.mirrorOutline.add(base);
@@ -441,16 +438,16 @@ export default class LaserScene extends XrScene {
   }
 
   _initRoom(cache) {
-    let wallTx = cache['laser-wall'];
-    wallTx.repeat.set( 3, 3 );
+    const wallTx = cache['laser-wall'];
+    wallTx.repeat.set(3, 3);
     wallTx.wrapS = THREE.RepeatWrapping;
     wallTx.wrapT = THREE.RepeatWrapping;
-    let floorTx = cache['laser-floor'];
-    floorTx.repeat.set( 10, 10 );
+    const floorTx = cache['laser-floor'];
+    floorTx.repeat.set(10, 10);
     floorTx.wrapS = THREE.RepeatWrapping;
     floorTx.wrapT = THREE.RepeatWrapping;
-    const wallMat = new THREE.MeshPhongMaterial({map: wallTx, side: THREE.BackSide});
-    const floorMat = new THREE.MeshPhongMaterial({map: floorTx, side: THREE.BackSide, });
+    const wallMat = new THREE.MeshPhongMaterial({ map: wallTx, side: THREE.BackSide });
+    const floorMat = new THREE.MeshPhongMaterial({ map: floorTx, side: THREE.BackSide });
     console.log(wallMat);
     const roomMaterials = [
       wallMat,
@@ -468,19 +465,19 @@ export default class LaserScene extends XrScene {
     const floor = new THREE.Mesh(floorGeo, floorMat.clone());
     floor.rotateX(Math.PI / 2);
     floor.position.y = -7.999999;
-    
+
     this.room = new THREE.Mesh(roomGeometry, roomMaterials);
     this.room.receiveShadow = true;
     this.room.castShadow = true;
-    this.room.name = "room";
+    this.room.name = 'room';
     this.room.add(floor);
 
     floor.functions = {};
-    floor.functions['addMirror'] = this._addMirrors;
-    floor.functions['displayMirrorOutline'] = this.displayMirrorOutline;
-    floor.functions['noMirrorOutline'] = this.noMirrorOutline;
+    floor.functions.addMirror = this._addMirrors;
+    floor.functions.displayMirrorOutline = this.displayMirrorOutline;
+    floor.functions.noMirrorOutline = this.noMirrorOutline;
     floor[Interactions] = {
-      hover({point}) {
+      hover({ point }) {
         if (setting === mode.CREATE) {
           floor.functions.displayMirrorOutline(point);
         }
@@ -488,7 +485,7 @@ export default class LaserScene extends XrScene {
       hover_end() {
         floor.functions.noMirrorOutline();
       },
-      select_start({point}) {
+      select_start({ point }) {
         if (setting === mode.CREATE) {
           floor.functions.addMirror(point);
         } else {
@@ -500,7 +497,7 @@ export default class LaserScene extends XrScene {
           XR.setOffsetMatrix(offsetMatrix);
         }
       }
-    }
+    };
     this.intersects.add(this.room);
   }
 
@@ -514,16 +511,16 @@ export default class LaserScene extends XrScene {
   }
 
   _copyRay(ray) {
-    let newRay = new THREE.Raycaster();
+    const newRay = new THREE.Raycaster();
     newRay.set(ray.ray.origin.clone(), ray.ray.direction.clone());
     return newRay;
   }
 
   _setupInitialRayMatrix() {
-    let rayMatrixWorld = new THREE.Matrix4();
-    let raycasterOrigin = this.laserRays[0].ray.origin.clone();
-    let laserDirection = this.laserRays[0].ray.direction.clone();
-    let raycasterDestination = laserDirection.clone();
+    const rayMatrixWorld = new THREE.Matrix4();
+    const raycasterOrigin = this.laserRays[0].ray.origin.clone();
+    const laserDirection = this.laserRays[0].ray.direction.clone();
+    const raycasterDestination = laserDirection.clone();
     rayMatrixWorld.multiplyMatrices(this.scene.matrixWorld, this.laser.matrix);
 
     raycasterOrigin.applyMatrix4(rayMatrixWorld);
@@ -546,11 +543,11 @@ export default class LaserScene extends XrScene {
     this._initScene(cache);
   }
 
-  animate(delta) {
+  animate() {
     this._createLaser();
     this.laserRays = [];
     this.laserRays.push(this._copyRay(this.laserRay));
-    if(!keyboard) {
+    if (!keyboard) {
       this._setupInitialRayMatrix();
     }
     this._updateLaserRays();

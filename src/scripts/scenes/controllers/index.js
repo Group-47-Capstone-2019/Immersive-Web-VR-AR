@@ -89,9 +89,9 @@ export default class Controller {
     this.laser.raycast = () => []; // Disable raycast intersections
   }
 
-  allDescendants (obj) {
+  allDescendants(obj) {
     for (let i = 0; i < obj.children.length; i++) {
-      let child = obj.children[i];
+      const child = obj.children[i];
       this.allDescendants(child);
       if (child.isObject3D === true) {
         child.raycast = () => [];

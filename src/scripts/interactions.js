@@ -108,7 +108,7 @@ const handleSelectEnd = handlerCommon((_, inputSource) => {
     if (dragend) {
       // console.log('Calling drag_end');
       dragend();
-    } else { }
+    }
   }
 
   const selectedObject = selectedObjects.get(inputSource);
@@ -118,7 +118,7 @@ const handleSelectEnd = handlerCommon((_, inputSource) => {
     if (interactions.select_end) {
       // console.log('Calling select_end');
       interactions.select_end();
-    } else { }
+    }
   }
   selectedObjects.delete(inputSource);
 });
@@ -128,7 +128,7 @@ const handleSelect = handlerCommon((intersection) => {
     if (interactions.select) {
       // console.log('Calling select');
       interactions.select(intersection);
-    } else { }
+    }
   }
 });
 
@@ -200,27 +200,27 @@ function updateInputSource(inputSource, ray, frame) {
   if (!selectedObjects.get(inputSource)) {
     for (const intersection of intersections) {
       // console.log(intersection);
-      if (intersection.object.name === 'controller') {
-        continue;
-      }
+      // if (intersection.object.name === 'controller') {
+      //   continue;
+      // }
       const interactions = intersection.object[Interactions];
       if (lastHovered !== intersection.object) {
         // End the hover of the previous object
         if (lastHovered && lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
           console.log('Calling hover_end');
           lastHovered[Interactions].hover_end();
-        } else { }
-  
+        }
+
         // Hover the new Object
         if (interactions && interactions.hover_start) {
           // console.log('Calling hover_start');
           interactions.hover_start(intersection);
-        } else { }
-  
+        }
+
         // Mark the object as the one hovered by this input source
         hoveredObjects.set(inputSource, intersection.object);
       }
-  
+
       // Call the hover method for every frame as lon as the same object is hovered
       if (interactions && interactions.hover) {
         // console.log('Calling hover');

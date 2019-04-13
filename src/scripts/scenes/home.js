@@ -242,7 +242,7 @@ export default class HomeScene extends XrScene {
     laserDoor.exit = function () {
       this.material.color.set(0x402f00);
     };
-    
+
     this.triggers.add(laserDoor);
   }
 
