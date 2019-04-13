@@ -5,18 +5,29 @@ import {
   Mesh,
   RingGeometry,
   DoubleSide,
-  Spherical
+  Spherical,
+  Object3D,
+  Vector3
 } from 'three';
 import XrScene from '../xr-scene';
-import { createPlanets, planetTextName, nextPointName, cameraPointName } from './create';
+import {
+  createPlanets,
+  planetTextName,
+  nextPointName,
+  cameraPointName,
+  prevPointName
+} from './create';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
-import { createTextSprite } from './text';
+import { createTextPlane } from './text';
+import { Tween, Easing, update } from '@tweenjs/tween.js';
 
 const EARTH_YEAR_SECONDS = 120;
+const TWEEN_SECONDS = 5;
 
 export default class PlanetsScene extends XrScene {
   currentPlanet = planetData.Sun;
+  cameraPoint = new Object3D();
 
   /**
    *
@@ -35,8 +46,8 @@ export default class PlanetsScene extends XrScene {
   }
 
   addGui() {
-    this.nextButton = createTextSprite('Next Planet', 'white', 'gray');
-    this.prevButton = createTextSprite('Previous Planet', 'white', 'gray');
+    this.nextButton = createTextPlane('Next Planet', 'white', 'gray');
+    this.prevButton = createTextPlane('Previous Planet', 'white', 'gray');
 
     const sun = this.planets.find(p => p.name === 'Sun');
 
@@ -46,8 +57,10 @@ export default class PlanetsScene extends XrScene {
     const sunNext = sun.getObjectByName(nextPointName('Sun'));
     sunNext.add(this.nextButton);
 
-    const cameraPoint = sun.getObjectByName(cameraPointName('Sun'));
-    cameraPoint.add(this.controls.getObject());
+    const sunCamera = sun.getObjectByName(cameraPointName('Sun'));
+
+    this.cameraPoint.add(this.controls.getObject());
+    sunCamera.add(this.cameraPoint);
   }
 
   addLighting() {
@@ -95,19 +108,112 @@ export default class PlanetsScene extends XrScene {
   }
 
   nextPlanet = () => {
+    this.movePlanets(1);
+  };
+
+  prevPlanet = () => {
+    this.movePlanets(-1);
+  };
+
+  movePlanets(offset) {
+    // index of current planet
     const index = this.planets.findIndex(
       p => p.name === this.currentPlanet.name
     );
-    const nextPlanet = this.planets[index + 1];
-    this.planets[index].getObjectByName(
-      planetTextName(this.currentPlanet.name)
+    const nextIndex = index + offset;
+
+    const currPlanetMesh = this.planets[index];
+    const currPlanetName = currPlanetMesh.name;
+    const nextPlanetMesh = this.planets[nextIndex];
+    const nextPlanetName = nextPlanetMesh.name;
+
+    // hide current planets text
+    currPlanetMesh.getObjectByName(
+      planetTextName(currPlanetName)
     ).visible = false;
 
-    this.currentPlanet = planetData[nextPlanet.name];
-    nextPlanet.getObjectByName(
-      planetTextName(this.currentPlanet.name)
+    // show next planets text
+    nextPlanetMesh.getObjectByName(
+      planetTextName(nextPlanetName)
     ).visible = true;
-  };
+
+    this.startTween(nextIndex);
+
+    // move next button and hide it if needed
+    if (nextIndex < this.planets.length - 2) {
+      const nextPlanetNextButton = nextPlanetMesh.getObjectByName(
+        nextPointName(nextPlanetName)
+      );
+      nextPlanetNextButton.add(this.nextButton);
+      this.nextButton.visible = true;
+    } else {
+      this.nextButton.visible = false;
+    }
+
+    // move prev button and hide it if needed
+    if (nextIndex > 0) {
+      const nextPlanetPrevButton = nextPlanetMesh.getObjectByName(
+        prevPointName(nextPlanetName)
+      );
+      nextPlanetPrevButton.add(this.prevButton);
+      this.prevButton.visible = true;
+    } else {
+      this.prevButton.visible = false;
+    }
+
+    // update currentPlanet with next planet's data
+    this.currentPlanet = planetData[nextPlanetName];
+  }
+
+  startTween(nextIndex) {
+    // unlock cameraPoint from current planet, keep in same position
+    this.cameraPoint.localToWorld(this.cameraPoint.position);
+    this.scene.add(this.cameraPoint);
+
+    // angular velocity of second planet
+    const nextPlanetName = this.planets[nextIndex].name;
+    const angularVel =
+      (2 * Math.PI) /
+      planetData[nextPlanetName].orbitYears /
+      EARTH_YEAR_SECONDS;
+
+    // final position of next planet we're tweening to
+    const nextPlanetPos = new Spherical().setFromVector3(
+      this.planets[nextIndex].position
+    );
+    nextPlanetPos.theta += angularVel * TWEEN_SECONDS;
+    const endVec = new Vector3().setFromSpherical(nextPlanetPos);
+    const to = {
+      x: endVec.x,
+      y: endVec.y,
+      z: endVec.z
+    };
+
+    // start tween from position of current planet (now in world coords)
+    const from = {
+      x: this.cameraPoint.position.x,
+      y: this.cameraPoint.position.y,
+      z: this.cameraPoint.position.z
+    };
+
+    new Tween(from)
+      .to(to, TWEEN_SECONDS * 1000)
+      .easing(Easing.Quadratic.InOut)
+      .onUpdate(coords =>
+        this.cameraPoint.position.set(coords.x, coords.y, coords.z)
+      )
+      .onComplete(coords => {
+        this.camera.lookAt(coords.x, coords.y, coords.z);
+
+        // add camera to next planet and reset to local coords
+        this.cameraPoint.position.set(0, 0, 0);
+        const nextPlanetCamera = this.planets[nextIndex].getObjectByName(
+          cameraPointName(nextPlanetName)
+        );
+        nextPlanetCamera.add(this.cameraPoint);
+      })
+      .start();
+  }
 
   addSunLight() {
     const sun = this.scene.getObjectByName('Sun');

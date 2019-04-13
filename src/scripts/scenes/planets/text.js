@@ -36,7 +36,7 @@ function createTextCanvas(text, textColor, backgroundColor) {
   return canvas;
 }
 
-export function createTextSprite(
+export function createTextPlane(
   text,
   textColor = 'white',
   backgroundColor = undefined
