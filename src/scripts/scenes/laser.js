@@ -75,7 +75,7 @@ export default class LaserScene extends XrScene {
     menu.add(selectButton, deleteButton, createButton);
     this.scene.add(menu);
     menu.position.set(0, -2, -32);
-    selectButton.material.color.set(0x666666);
+    selectButton.material.color.set(0x999999);
     createButton.position.set(10, 0, 0.25);
     selectButton.position.set(0, 0, -0.125);
     deleteButton.position.set(-10, 0, 0.25);
@@ -103,7 +103,7 @@ export default class LaserScene extends XrScene {
     selectButton.select = function () {
       setting = mode.SELECT;
       this.position.z = -0.125;
-      this.material.color.set(0x666666);
+      this.material.color.set(0x999999);
       deleteButton.position.z = 0.25;
       deleteButton.material.color.set(0x222222);
       createButton.position.z = 0.25;
@@ -113,7 +113,7 @@ export default class LaserScene extends XrScene {
     selectButton.exit = function () {
       console.log(setting);
       if (setting === mode.SELECT) {
-        this.material.color.set(0x666666);
+        this.material.color.set(0x999999);
       } else {
         this.material.color.set(0x222222);
       }
@@ -128,7 +128,7 @@ export default class LaserScene extends XrScene {
     deleteButton.select = function () {
       setting = mode.DELETE;
       this.position.z = -0.125;
-      this.material.color.set(0x666666);
+      this.material.color.set(0x999999);
       selectButton.position.z = 0.25;
       selectButton.material.color.set(0x222222);
       createButton.position.z = 0.25;
@@ -138,7 +138,7 @@ export default class LaserScene extends XrScene {
     deleteButton.exit = function () {
       console.log(setting);
       if (setting === mode.DELETE) {
-        this.material.color.set(0x666666);
+        this.material.color.set(0x999999);
       } else {
         this.material.color.set(0x222222);
       }
@@ -156,7 +156,7 @@ export default class LaserScene extends XrScene {
       // this.functions.spawnMirror();
       setting = mode.CREATE;
       this.position.z = -0.125;
-      this.material.color.set(0x666666);
+      this.material.color.set(0x999999);
       selectButton.position.z = 0.25;
       selectButton.material.color.set(0x222222);
       deleteButton.position.z = 0.25;
@@ -164,8 +164,8 @@ export default class LaserScene extends XrScene {
     };
 
     createButton.exit = function () {
-      if (setting === mode.DELETE) {
-        this.material.color.set(0x666666);
+      if (setting === mode.CREATE) {
+        this.material.color.set(0x999999);
       } else {
         this.material.color.set(0x222222);
       }
