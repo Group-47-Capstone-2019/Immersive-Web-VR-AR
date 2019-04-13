@@ -82,7 +82,8 @@ export default class PlanetsScene extends XrScene {
   addPlanetRings(cache) {
     // saturn's rings
     const saturn = this.scene.getObjectByName('Saturn');
-    const saturnRingGeo = new RingGeometry(2.5, 3.5, 50);
+    const saturnRadius = planetData.Saturn.fakeRadius;
+    const saturnRingGeo = new RingGeometry(saturnRadius + .5, saturnRadius + 2.5, 50);
     const saturnRingMat = new MeshPhongMaterial({
       map: cache['rings-texture'],
       side: DoubleSide,
@@ -95,7 +96,8 @@ export default class PlanetsScene extends XrScene {
 
     // uranus's rings
     const uranus = this.scene.getObjectByName('Uranus');
-    const uranusRingGeo = new RingGeometry(2.5, 3.5, 50);
+    const uranusRadius = planetData.Uranus.fakeRadius;
+    const uranusRingGeo = new RingGeometry(uranusRadius + .5, uranusRadius + 2.5, 50);
     const uranusRingMat = new MeshPhongMaterial({
       map: cache['rings-texture'],
       side: DoubleSide,

@@ -1,7 +1,5 @@
 import {
   CanvasTexture,
-  Sprite,
-  SpriteMaterial,
   LinearFilter,
   ClampToEdgeWrapping,
   PlaneBufferGeometry,
