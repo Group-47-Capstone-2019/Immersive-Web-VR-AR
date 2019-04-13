@@ -55,6 +55,18 @@ export function createPlanets(planetData, cache) {
     text.name = planetTextName(planetName);
     text.visible = false;
 
+    // next button
+    const nextButtonPoint = new Object3D();
+    nextButtonPoint.position.set(planet.fakeRadius + 5, 5, 0);
+    nextButtonPoint.name = nextPointName(planetName);
+    mesh.add(nextButtonPoint);
+
+    // prev button
+    const prevButtonPoint = new Object3D();
+    prevButtonPoint.position.set(planet.fakeRadius + 7, 5, 0);
+    prevButtonPoint.name = prevPointName(planetName);
+    mesh.add(prevButtonPoint);
+
     return mesh;
   });
 }

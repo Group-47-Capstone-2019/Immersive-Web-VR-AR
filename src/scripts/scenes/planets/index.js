@@ -8,7 +8,7 @@ import {
   Spherical
 } from 'three';
 import XrScene from '../xr-scene';
-import { createPlanets, planetTextName } from './create';
+import { createPlanets, planetTextName, nextPointName, cameraPointName } from './create';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
 import { createTextSprite } from './text';
@@ -32,18 +32,22 @@ export default class PlanetsScene extends XrScene {
 
     this.loader.addTextureToQueue(ringTextureUrl, 'rings-texture');
     this.addLighting();
-    
   }
 
   addGui() {
-    const nextButton = createTextSprite('Next Planet');
-    nextButton.position.z = -5;
-    this.camera.add(nextButton);
+    this.nextButton = createTextSprite('Next Planet', 'white', 'gray');
+    this.prevButton = createTextSprite('Previous Planet', 'white', 'gray');
 
-    const sunText = this.planets
-      .find(p => p.name === 'Sun')
-      .getObjectByName(planetTextName('Sun'));
-    sunText.visible = true;
+    const sun = this.planets.find(p => p.name === 'Sun');
+
+    const sunDesc = sun.getObjectByName(planetTextName('Sun'));
+    sunDesc.visible = true;
+
+    const sunNext = sun.getObjectByName(nextPointName('Sun'));
+    sunNext.add(this.nextButton);
+
+    const cameraPoint = sun.getObjectByName(cameraPointName('Sun'));
+    cameraPoint.add(this.camera);
   }
 
   addLighting() {
