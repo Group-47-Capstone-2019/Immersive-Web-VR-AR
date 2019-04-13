@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/Group-47-Capstone-2019/Immersive-Web-VR-AR#readme",
   "dependencies": {
+    "@tweenjs/tween.js": "^17.3.0",
     "babel-polyfill": "^6.26.0",
     "cannon": "^0.6.2",
     "three": "^0.100.0"
