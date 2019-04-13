@@ -89,11 +89,23 @@ export default class Controller {
     this.laser.raycast = () => []; // Disable raycast intersections
   }
 
+  allDescendants (obj) {
+    for (let i = 0; i < obj.children.length; i++) {
+      let child = obj.children[i];
+      this.allDescendants(child);
+      if (child.isObject3D === true) {
+        child.raycast = () => [];
+      }
+    }
+  }
+
   createController() {
     this.controller = meshCache.controller.scene.clone();
     this.controller.matrixAutoUpdate = false;
     this.controller.name = 'controller';
+    this.allDescendants(this.controller);
     this.controller.raycast = () => []; // Disable raycast intersections
+    console.log(this.controller);
   }
 
   /**

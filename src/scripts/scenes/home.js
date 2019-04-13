@@ -236,7 +236,6 @@ export default class HomeScene extends XrScene {
     };
 
     laserDoor.select = function () {
-      this.onTriggerRelease();
       this.functions.changeRoom('/lasers');
     };
 
