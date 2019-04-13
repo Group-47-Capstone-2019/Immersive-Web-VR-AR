@@ -229,6 +229,8 @@ export default class PlanetsScene extends XrScene {
    * @param {number} deltaSeconds
    */
   animate(deltaSeconds) {
+    update();
+    
     this.planets.forEach(mesh => {
       const spherical = new Spherical().setFromVector3(mesh.position);
       const angularVel =
