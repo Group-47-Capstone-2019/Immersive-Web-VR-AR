@@ -2,7 +2,7 @@ import THREE from '../three';
 import XrScene from './xr-scene';
 import { keyboard } from '../controls/keyboard-controls';
 import TriggerMesh from '../trigger';
-import wallTxUrl from '../../assets/textures/laser-room/wall/wall_diff.jpg';
+import wallTxUrl from '../../assets/textures/laser-room/wall/wall.jpg';
 import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
 import { Interactions } from '../interactions';
 import { XR } from '../xrController';
@@ -522,7 +522,7 @@ export default class LaserScene extends XrScene {
     const ambientLight = new THREE.AmbientLight('white', 0.5);
     this.scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight('white', 0.8, 500);
+    const pointLight = new THREE.PointLight(0xfffccc, 0.3, 500);
 
     this.scene.add(pointLight);
   }
