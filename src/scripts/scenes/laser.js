@@ -195,6 +195,8 @@ export default class LaserScene extends XrScene {
       },
       select_start() {
         if (setting === mode.DELETE) {
+          mirror.material.dispose();
+          mirror.geometry.dispose();
           mirror.parent.remove(mirror);
         }
       },
@@ -220,6 +222,8 @@ export default class LaserScene extends XrScene {
       }
     };
 
+    base.camera = this.camera;
+
     base[Interactions] = {
       hover_start() {
         if (!this.isSelected) {
@@ -241,9 +245,23 @@ export default class LaserScene extends XrScene {
       },
       drag(matrix) {
         const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
-
+        const cameraPos = new THREE.Vector3();
+        const newPos = pos.clone();
+        base.camera.getWorldPosition(cameraPos);
+        console.log("cam", cameraPos);
+        console.log("pos", newPos);
+        console.log("subpos", newPos.sub(mirror.position).normalize());
+        console.log("sub", cameraPos.sub(mirror.position).normalize());
+        console.log("subsub", cameraPos.sub(newPos).normalize());
+        
+        newPos.x /= cameraPos.z;
+        newPos.z /= cameraPos.x;
         const ratio = 0.003;
-        const radians = pos.distanceTo(mirror.position) * ratio;
+        let radians = 0;
+        radians += newPos.x;
+        radians -= newPos.z;
+        radians *= ratio;
+        // const radians = pos.distanceTo(mirror.position) * ratio;
         const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
         mirror.matrix.multiply(rotMatrix);
         mirror.rotateY(radians);
@@ -265,6 +283,8 @@ export default class LaserScene extends XrScene {
 
   _createLaser() {
     if (this.laser) {
+      this.laser.material.dispose();
+      this.laser.geometry.dispose();
       this.scene.remove(this.laser);
     }
 
