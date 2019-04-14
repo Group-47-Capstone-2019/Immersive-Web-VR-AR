@@ -65,8 +65,8 @@ export default class PlanetsScene extends XrScene {
     this.cameraPoint.add(this.controls.getObject());
     sunCamera.add(this.cameraPoint);
 
-    //just for testing...
-    document.planets = this;
+    // just for testing...
+    // document.planets = this;
   }
 
   addLighting() {
