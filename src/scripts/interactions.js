@@ -68,13 +68,13 @@ function handlerCommon(func) {
 }
 const handleSelectStart = handlerCommon((intersection, inputSource, pointerMatrix) => {
   const interactions = intersection.object[Interactions];
-  // Handle select_start
-  if (interactions.select_start) {
-    console.log('Calling select_start');
-    interactions.select_start(intersection);
-  }
-  
   if (interactions) {
+    // Handle select_start
+    if (interactions.select_start) {
+      console.log('Calling select_start');
+      interactions.select_start(intersection);
+    }
+    
     // If there are any drag interactions then handle dragging
     if (interactions.drag_start || interactions.drag_end || interactions.drag) {
       let data;
