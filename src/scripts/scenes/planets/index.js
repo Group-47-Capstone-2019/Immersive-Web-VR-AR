@@ -62,7 +62,12 @@ export default class PlanetsScene extends XrScene {
 
     const sunCamera = sun.getObjectByName(cameraPointName('Sun'));
 
-    this.cameraPoint.add(this.controls.getObject());
+    if (this.controls) {
+      this.cameraPoint.add(this.controls.getObject());
+    } else {
+      this.cameraPoint.add(this.camera);
+    }
+    
     sunCamera.add(this.cameraPoint);
 
     // just for testing...
