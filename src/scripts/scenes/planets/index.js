@@ -215,8 +215,8 @@ export default class PlanetsScene extends XrScene {
     new TWEEN.Tween(from)
       .to(coords, TWEEN_SECONDS * 1000)
       .easing(TWEEN.Easing.Quadratic.InOut)
-      .onUpdate(() => {
-        this.cameraPoint.position.set(coords.x, coords.y, coords.z);
+      .onUpdate((a) => {
+        this.cameraPoint.position.set(a.x, a.y, a.z);
         // this.camera.lookAt(coords);
       })
       .onComplete(() => {
