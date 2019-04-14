@@ -11,5 +11,5 @@ Distance from sun: ${Number(info.orbitDistance * 1.60934).toPrecision(3)} km
 Year length: ${Number(info.orbitYears).toPrecision(3)} Earth years
 Gravity: ${info.gravity} m/s^2 (${earthGravities}x Earth gravity)`;
 
-  return createTextPlane(text);
+  return createTextPlane(text, 'white', 'steelblue');
 }

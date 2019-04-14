@@ -15,7 +15,8 @@ import {
   planetTextName,
   nextPointName,
   cameraPointName,
-  prevPointName
+  prevPointName,
+  CAMERA_OFFSET
 } from './create';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
@@ -63,6 +64,9 @@ export default class PlanetsScene extends XrScene {
 
     this.cameraPoint.add(this.controls.getObject());
     sunCamera.add(this.cameraPoint);
+
+    //just for testing...
+    document.planets = this;
   }
 
   addLighting() {
@@ -85,7 +89,11 @@ export default class PlanetsScene extends XrScene {
     // saturn's rings
     const saturn = this.scene.getObjectByName('Saturn');
     const saturnRadius = planetData.Saturn.fakeRadius;
-    const saturnRingGeo = new RingGeometry(saturnRadius + .5, saturnRadius + 2.5, 50);
+    const saturnRingGeo = new RingGeometry(
+      saturnRadius + 0.5,
+      saturnRadius + 2.5,
+      50
+    );
     const saturnRingMat = new MeshPhongMaterial({
       map: cache['rings-texture'],
       side: DoubleSide,
@@ -99,7 +107,11 @@ export default class PlanetsScene extends XrScene {
     // uranus's rings
     const uranus = this.scene.getObjectByName('Uranus');
     const uranusRadius = planetData.Uranus.fakeRadius;
-    const uranusRingGeo = new RingGeometry(uranusRadius + .5, uranusRadius + 2.5, 50);
+    const uranusRingGeo = new RingGeometry(
+      uranusRadius + 0.5,
+      uranusRadius + 2.5,
+      50
+    );
     const uranusRingMat = new MeshPhongMaterial({
       map: cache['rings-texture'],
       side: DoubleSide,
@@ -188,9 +200,9 @@ export default class PlanetsScene extends XrScene {
     nextPlanetPos.theta += angularVel * TWEEN_SECONDS;
     const endVec = new Vector3().setFromSpherical(nextPlanetPos);
     const coords = {
-      x: endVec.x,
-      y: endVec.y,
-      z: endVec.z
+      x: endVec.x + CAMERA_OFFSET.x,
+      y: endVec.y + CAMERA_OFFSET.y + planetData[nextPlanetName].fakeRadius,
+      z: endVec.z + CAMERA_OFFSET.z
     };
 
     // start tween from position of current planet (now in world coords)
@@ -201,13 +213,14 @@ export default class PlanetsScene extends XrScene {
     };
 
     new TWEEN.Tween(from)
-      .to(to, TWEEN_SECONDS * 1000)
+      .to(coords, TWEEN_SECONDS * 1000)
       .easing(TWEEN.Easing.Quadratic.InOut)
-      .onUpdate(() =>
-        this.cameraPoint.position.set(coords.x, coords.y, coords.z)
-      )
+      .onUpdate(() => {
+        this.cameraPoint.position.set(coords.x, coords.y, coords.z);
+        // this.camera.lookAt(coords);
+      })
       .onComplete(() => {
-        this.camera.lookAt(coords.x, coords.y, coords.z);
+        // this.camera.lookAt(coords.x, coords.y, coords.z);
 
         // add camera to next planet and reset to local coords
         this.cameraPoint.position.set(0, 0, 0);
