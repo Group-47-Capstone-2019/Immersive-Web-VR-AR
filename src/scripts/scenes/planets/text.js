@@ -15,7 +15,10 @@ function createTextCanvas(text, textColor, backgroundColor) {
   const lines = text.split('\n');
 
   context.font = '160px Georgia';
-  const width = context.measureText(text).width + 200;
+  let width = 0;
+  lines.forEach(
+    l => (width = Math.max(width, context.measureText(l).width + 200))
+  );
   const height = 160 * lines.length + 200;
 
   canvas.width = width;
@@ -58,5 +61,5 @@ export function createTextPlane(
   );
   const mesh = new TriggerMesh(plane, mat);
 
-  return mesh; 
+  return mesh;
 }
