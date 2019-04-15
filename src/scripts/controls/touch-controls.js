@@ -219,4 +219,6 @@ export function updateTouchPosition(viewMatrix) {
   XR.setOffsetMatrix(offsetMat);
 
   touchscreen.prevTime = time;
+
+  return userPosition;
 }
