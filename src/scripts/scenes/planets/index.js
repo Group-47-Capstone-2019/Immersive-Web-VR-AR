@@ -247,7 +247,7 @@ export default class PlanetsScene extends XrScene {
 
   updateXrCamera() {
     const offsetMatrix = XR.getOffsetMatrix();
-    offsetMatrix.setPosition(this.cameraPoint.position);
+    offsetMatrix.setPosition(this.cameraPoint.getWorldPosition());
     XR.setOffsetMatrix(offsetMatrix);
   }
 
