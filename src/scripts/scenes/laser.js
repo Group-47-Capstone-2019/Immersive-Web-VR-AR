@@ -185,6 +185,8 @@ export default class LaserScene extends XrScene {
     const base = new THREE.Mesh(baseGeo, baseMat);
     mirror.add(base);
     base.position.set(0, -2.375, 0);
+    mirror.reflectAngle = -1;
+    mirror.isReflecting = false;
 
     mirror[Interactions] = {
       hover_start() {
@@ -388,15 +390,19 @@ export default class LaserScene extends XrScene {
     direction = incomingDirection.clone();
     direction.reflect(normal);
 
-    // const radAngle = normal.angleTo(direction) * 2;
-    // let angle = radAngle / Math.PI * 180;
-    // angle = Math.round(angle * 10) / 10;
+    const radAngle = normal.angleTo(direction) * 2;
+    let angle = radAngle / Math.PI * 180;
+    angle = Math.round(angle * 10) / 10;
 
-    // const angleLabel = createTextPlane(angle.toString(), 'white');
-    // angleLabel.raycast = () => [];
-    // res.object.add(angleLabel);
-    // angleLabel.position.set(0, 3, 0);
-    // angleLabel.lookAt(this.camera.position);
+    if (angle !== res.object.reflectAngle) {
+      const angleLabel = createTextPlane(angle.toString(), 'white');
+      angleLabel.raycast = () => [];
+      res.object.add(angleLabel);
+      res.object.reflectAngle = angle;
+      res.object.isReflecting = true;
+      angleLabel.position.set(0, 3, 0);
+      angleLabel.lookAt(this.camera.position);
+    }
 
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
@@ -587,7 +593,7 @@ export default class LaserScene extends XrScene {
   _resetMirrors() {
     const mirror = this.mirrors.children;
     for (let i = 0; i < mirror.length; i++) {
-      if (mirror[i].children.length > 1) {
+      if (!mirror[i].isReflecting) {
         mirror[i].remove(mirror[i].children[1]);
       }
     }
@@ -609,7 +615,7 @@ export default class LaserScene extends XrScene {
   }
 
   animate() {
-    // this._resetMirrors();
+    this._resetMirrors();
     this._createLaser();
     this.laserRays = [];
     this.laserRays.push(this._copyRay(this.laserRay));
