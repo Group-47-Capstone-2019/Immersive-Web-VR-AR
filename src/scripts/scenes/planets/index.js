@@ -23,6 +23,7 @@ import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
 import { createTextPlane } from './text';
 import TWEEN from '@tweenjs/tween.js';
 import { XR } from '../../xrController';
+import { navigate } from '../../router';
 
 const EARTH_YEAR_SECONDS = 120;
 const TWEEN_SECONDS = 5;
@@ -51,8 +52,10 @@ export default class PlanetsScene extends XrScene {
   addGui() {
     this.nextButton = createTextPlane('Next Planet', 'white', 'gray');
     this.prevButton = createTextPlane('Previous Planet', 'white', 'gray');
+    this.exitButton = createTextPlane('Exit to Home', 'white', 'darkred');
     this.nextButton.select = this.nextPlanet;
-    this.prevButton.select = this.prevButton;
+    this.prevButton.select = this.prevPlanet;
+    this.exitButton.select = this.exitToHome;
 
     const sun = this.planets.find(p => p.name === 'Sun');
 
@@ -61,6 +64,9 @@ export default class PlanetsScene extends XrScene {
 
     const sunNext = sun.getObjectByName(nextPointName('Sun'));
     sunNext.add(this.nextButton);
+
+    const sunPrev = sun.getObjectByName(prevPointName('Sun'));
+    sunPrev.add(this.exitButton);
 
     const sunCamera = sun.getObjectByName(cameraPointName('Sun'));
 
@@ -138,6 +144,10 @@ export default class PlanetsScene extends XrScene {
     this.movePlanets(-1);
   };
 
+  exitToHome = () => {
+    navigate('/home');
+  }
+
   movePlanets(offset) {
     // index of current planet
     const index = this.planets.findIndex(
@@ -174,14 +184,23 @@ export default class PlanetsScene extends XrScene {
     }
 
     // move prev button and hide it if needed
+    const nextPlanetPrevButton = nextPlanetMesh.getObjectByName(
+      prevPointName(nextPlanetName)
+    );
     if (nextIndex > 0) {
-      const nextPlanetPrevButton = nextPlanetMesh.getObjectByName(
-        prevPointName(nextPlanetName)
-      );
       nextPlanetPrevButton.add(this.prevButton);
       this.prevButton.visible = true;
+      this.exitButton.visible = false;
     } else {
+      // show/hide exit button
       this.prevButton.visible = false;
+      this.exitButton.visible = true;
+      nextPlanetPrevButton.add(this.exitButton);
+    }
+
+    // show/hide exit button
+    if(nextIndex === 0) {
+
     }
 
     // update currentPlanet with next planet's data
