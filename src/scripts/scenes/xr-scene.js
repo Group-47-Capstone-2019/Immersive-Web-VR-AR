@@ -308,6 +308,15 @@ export default class XrScene {
   }
 
   /**
+   * Fires event to change room scene provided a path to it.
+   * @param {String} newPath 
+   */
+  changeRoom(newPath) {
+    const event = new CustomEvent('changeRoom', { detail: { newPath } });
+    window.dispatchEvent(event);
+  }
+
+  /**
    * Removes all event listeners associated with this room
    */
   removeEventListeners() {
