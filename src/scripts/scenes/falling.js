@@ -4,6 +4,7 @@ import THREE from '../three';
 import XrScene from './xr-scene';
 import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
+import { Interactions } from '../interactions';
 
 export default class FallingScene extends XrScene {
   /**
@@ -74,22 +75,58 @@ export default class FallingScene extends XrScene {
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
     const material = new THREE.MeshPhongMaterial({ color: 'orange' });
-    const ball = new TriggerMesh(this.ballGeo, material);
+    const ball = new THREE.Mesh(this.ballGeo, material);
     ball.castShadow = true;
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
-    ball.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+    let lastTime;
+    ball[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          ball.material.color.set(0xFF0000);
+        }
+      },
+      hover_end() {
+        ball.material.color.set('orange');
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        // this.paused = true;
+        // TODO: Stop associated pendulum swing's motion
+        lastTime = performance.now();
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag(matrix) {
+        const now = performance.now();
+        const diff = (now - lastTime) / 1000; // ms to s
+        lastTime = now;
+        ball.velocity = new THREE.Vector3().setFromMatrixPosition(matrix);
+        ball.velocity.sub(new THREE.Vector3().setFromMatrixPosition(ball.matrix));
+        ball.velocity.divideScalar(diff);
+        ball.matrix.copy(matrix);
+        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+        ballBody.position.x = pos.x;
+        ballBody.position.y = pos.y;
+        ballBody.position.z = pos.z;
+        ball.updateMatrixWorld(true);
+      },
+      drag_end: () => {
+        const instVel = ball.velocity;
+        delete ball.velocity;
+        ballBody.velocity.x = instVel.x;
+        ballBody.velocity.y = instVel.y;
+        ballBody.velocity.z = instVel.z;
       }
     };
 
-    ball.exit = function () {
-      this.material.color.set('orange');
-    };
-
-    this.triggers.add(ball);
+    this.scene.add(ball);
 
     this.bodies.push(ballBody);
     this.meshes.push(ball);
