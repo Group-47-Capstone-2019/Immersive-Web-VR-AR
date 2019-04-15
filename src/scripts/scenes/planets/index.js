@@ -28,7 +28,6 @@ import starsTextureUrl from '../../../assets/planets/stars.jpg';
 import { createTextPlane } from './text';
 import TWEEN from '@tweenjs/tween.js';
 import { XR } from '../../xrController';
-import { navigate } from '../../router';
 
 const EARTH_YEAR_SECONDS = 120;
 const TWEEN_SECONDS = 5;
@@ -177,7 +176,7 @@ export default class PlanetsScene extends XrScene {
 
   exitToHome = () => {
     if (this.buttonsEnabled) {
-      navigate('/home');
+      this.changeRoom('/home');
     }
   };
 
