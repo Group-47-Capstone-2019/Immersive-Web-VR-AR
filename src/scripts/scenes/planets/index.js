@@ -32,6 +32,7 @@ export default class PlanetsScene extends XrScene {
   currentPlanet = planetData.Sun;
   cameraPoint = new Object3D();
   isXr = false;
+  buttonsEnabled = true;
 
   /**
    *
@@ -137,15 +138,21 @@ export default class PlanetsScene extends XrScene {
   }
 
   nextPlanet = () => {
-    this.movePlanets(1);
+    if (this.buttonsEnabled) {
+      this.movePlanets(1);
+    }
   };
 
   prevPlanet = () => {
-    this.movePlanets(-1);
+    if (this.buttonsEnabled) {
+      this.movePlanets(-1);
+    }
   };
 
   exitToHome = () => {
-    navigate('/home');
+    if (this.buttonsEnabled) {
+      navigate('/home');
+    }
   }
 
   movePlanets(offset) {
@@ -208,6 +215,9 @@ export default class PlanetsScene extends XrScene {
   }
 
   startTween(nextIndex) {
+    // disable buttons
+    this.buttonsEnabled = false;
+
     // unlock cameraPoint from current planet, keep in same position
     this.cameraPoint.localToWorld(this.cameraPoint.position);
     this.scene.add(this.cameraPoint);
@@ -254,13 +264,16 @@ export default class PlanetsScene extends XrScene {
           cameraPointName(nextPlanetName)
         );
         nextPlanetCamera.add(this.cameraPoint);
+
+        // re-enable buttons
+        this.buttonsEnabled = true;
       })
       .start();
   }
 
   addSunLight() {
     const sun = this.scene.getObjectByName('Sun');
-    const pointLight = new PointLight('white', 0.8, 1000);
+    const pointLight = new PointLight('white', 0.8, 10000);
     sun.add(pointLight);
   }
 
@@ -268,6 +281,7 @@ export default class PlanetsScene extends XrScene {
     const offsetMatrix = XR.getOffsetMatrix();
     const cameraPos = new Vector3();
     this.cameraPoint.getWorldPosition(cameraPos);
+    cameraPos.multiplyScalar(-1);
     offsetMatrix.setPosition(cameraPos);
     XR.setOffsetMatrix(offsetMatrix);
   }
