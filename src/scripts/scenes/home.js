@@ -79,11 +79,6 @@ export default class HomeScene extends XrScene {
     box.rotateZ(0.03);
   }
 
-  changeRoom(newPath) {
-    const event = new CustomEvent('changeRoom', { detail: { newPath } });
-    window.dispatchEvent(event);
-  }
-
   createDoors() {
     const doorHeight = 12;
     const doorWidth = 7;
