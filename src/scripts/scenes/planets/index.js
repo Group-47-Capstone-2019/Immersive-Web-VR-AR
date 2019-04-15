@@ -110,7 +110,7 @@ export default class PlanetsScene extends XrScene {
     texture.repeat.set(10, 10);
     texture.wrapS = RepeatWrapping;
     texture.wrapT = RepeatWrapping;
-    const geo = new SphereBufferGeometry(10000, 25, 25);
+    const geo = new SphereBufferGeometry(5000, 25, 25);
     const material = new MeshBasicMaterial({
       map: texture,
       fog: false,
