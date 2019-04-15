@@ -4,6 +4,7 @@ import { keyboard } from '../controls/keyboard-controls';
 import TriggerMesh from '../trigger';
 import wallTxUrl from '../../assets/textures/laser-room/wall/wall.jpg';
 import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
+import doorUrl from '../../assets/door.glb';
 import { Interactions } from '../interactions';
 import { XR } from '../xrController';
 import { createTextSprite, createTextPlane } from './planets/text';
@@ -30,6 +31,7 @@ export default class LaserScene extends XrScene {
 
     this.loader.addTextureToQueue(wallTxUrl, 'laser-wall');
     this.loader.addTextureToQueue(floorTxUrl, 'laser-floor');
+    this.loader.addGltfToQueue(doorUrl, 'laser-door');
 
     this.laserRays = [];
     this.laserRay = new THREE.Raycaster();
@@ -508,6 +510,31 @@ export default class LaserScene extends XrScene {
     this.room.castShadow = true;
     this.room.name = 'room';
     this.room.add(floor);
+    
+    const doorScene = cache['laser-door'];
+    let door = doorScene.scene.getObjectByName('Door_Frame').clone();
+    door.scale.set(2.5, 2.5, 2.5);
+    door.position.set(4, -8, 32);
+    const doorMat = new THREE.MeshPhongMaterial({color: 0x7c5c3a});
+    const doorFrameMat = new THREE.MeshPhongMaterial({color: 0x543d25});
+    door.children[0].material = doorMat;
+    door.material = doorFrameMat;
+
+    door.children[0][Interactions] = {
+      hover() {
+        door.children[0].material.color.set('tan');
+      },
+      hover_end() {
+        door.children[0].material.color.set(0x7c5c3a);
+      },
+      select() {
+        let newPath = '/home';
+        const event = new CustomEvent('changeRoom', { detail: { newPath } });
+        window.dispatchEvent(event);
+      }
+    }
+
+    this.intersects.add(door);
 
     floor.functions = {};
     floor.functions.addMirror = this._addMirrors;
