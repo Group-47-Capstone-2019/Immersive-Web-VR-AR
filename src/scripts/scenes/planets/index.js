@@ -220,7 +220,7 @@ export default class PlanetsScene extends XrScene {
     this.startTween(nextIndex);
 
     // move next button and hide it if needed
-    if (nextIndex < this.planets.length - 2) {
+    if (nextIndex < this.planets.length - 1) {
       const nextPlanetNextButton = nextPlanetMesh.getObjectByName(
         nextPointName(nextPlanetName)
       );
@@ -243,10 +243,6 @@ export default class PlanetsScene extends XrScene {
       this.prevButton.visible = false;
       this.exitButton.visible = true;
       nextPlanetPrevButton.add(this.exitButton);
-    }
-
-    // show/hide exit button
-    if (nextIndex === 0) {
     }
 
     // update currentPlanet with next planet's data
