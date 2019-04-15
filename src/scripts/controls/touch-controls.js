@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Direction, createFullScreenButton } from './control-utils';
+import { XR } from '../xrController';
 
 /* eslint-disable prefer-const */
 
@@ -17,7 +18,6 @@ const joystick = document.querySelector('#joystick');
 const touchControls = document.querySelector('#joystick-controls');
 
 let velocity = new THREE.Vector3();
-export let userPosition = new THREE.Vector3();
 
 /* eslint-enable prefer-const */
 
@@ -212,22 +212,11 @@ export function updateTouchPosition(viewMatrix) {
 
   deltaPosition.applyQuaternion(invYawRotation);
 
-  userPosition.sub(deltaPosition);
-
-  // Temporary boundaries
-
-  if (userPosition.z > 11) {
-    userPosition.z = 11;
-  }
-  if (userPosition.z < -11) {
-    userPosition.z = -11;
-  }
-  if (userPosition.x > 11) {
-    userPosition.x = 11;
-  }
-  if (userPosition.x < -11) {
-    userPosition.x = -11;
-  }
+  const offsetMat = XR.getOffsetMatrix();
+  const userPosition = new THREE.Vector3().setFromMatrixPosition(offsetMat);
+  userPosition.add(deltaPosition);
+  offsetMat.setPosition(userPosition);
+  XR.setOffsetMatrix(offsetMat);
 
   touchscreen.prevTime = time;
 }

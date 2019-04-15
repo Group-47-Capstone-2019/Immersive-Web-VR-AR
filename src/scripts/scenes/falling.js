@@ -7,6 +7,7 @@ import THREE from '../three';
 import XrScene from './xr-scene';
 import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
+import { Interactions } from '../interactions';
 import createGUI from '../menuGUI';
 import 'datguivr';
 
@@ -116,31 +117,79 @@ export default class FallingScene extends XrScene {
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
     const material = new THREE.MeshPhongMaterial({ color: 'red' });
-    const ball = new TriggerMesh(this.ballGeo, material);
+    const ball = new THREE.Mesh(this.ballGeo, material);
     ball.castShadow = true;
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
-    ball.addFunction('_initGui', this._initGui);
+    // ball.addFunction('_initGui', this._initGui);
 
-    ball.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set('green');
+    // ball.hover = function () {
+    //   if (!this.isSelected) {
+    //     this.material.color.set('green');
+    //   }
+    // };
+
+    // // Select Ball
+    // ball.select = function () {
+    //   if (!this.debug) console.log('Add Menu Gui Ball Settings');
+    //   this.functions._initGui(this);
+    //   this.material.color.set('white');
+    // };
+
+    // ball.exit = function () {
+    //   this.material.color.set('red');
+    // };
+
+    // this.triggers.add(ball);
+
+    let lastTime;
+    ball[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          ball.material.color.set(0xFF0000);
+        }
+      },
+      hover_end() {
+        ball.material.color.set('orange');
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        // this.paused = true;
+        // TODO: Stop associated pendulum swing's motion
+        lastTime = performance.now();
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag(matrix) {
+        const now = performance.now();
+        const diff = (now - lastTime) / 1000; // ms to s
+        lastTime = now;
+        ball.velocity = new THREE.Vector3().setFromMatrixPosition(matrix);
+        ball.velocity.sub(new THREE.Vector3().setFromMatrixPosition(ball.matrix));
+        ball.velocity.divideScalar(diff);
+        ball.matrix.copy(matrix);
+        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+        ballBody.position.x = pos.x;
+        ballBody.position.y = pos.y;
+        ballBody.position.z = pos.z;
+        ball.updateMatrixWorld(true);
+      },
+      drag_end: () => {
+        const instVel = ball.velocity;
+        delete ball.velocity;
+        ballBody.velocity.x = instVel.x;
+        ballBody.velocity.y = instVel.y;
+        ballBody.velocity.z = instVel.z;
       }
     };
 
-    // Select Ball
-    ball.select = function () {
-      if (!this.debug) console.log('Add Menu Gui Ball Settings');
-      this.functions._initGui(this);
-      this.material.color.set('white');
-    };
-
-    ball.exit = function () {
-      this.material.color.set('red');
-    };
-
-    this.triggers.add(ball);
+    this.scene.add(ball);
 
     this.bodies.push(ballBody);
     this.meshes.push(ball);
@@ -162,7 +211,7 @@ export default class FallingScene extends XrScene {
     box.receiveShadow = true;
     this.world.addBody(boxBody);
 
-    box.addFunction('_initGui', this._initGui);
+    // box.addFunction('_initGui', this._initGui);
 
     box.hover = function () {
       if (!this.isSelected) {
@@ -171,11 +220,11 @@ export default class FallingScene extends XrScene {
     };
 
     // Select Box
-    box.select = function () {
-      if (!this.debug) console.log('Add Menu Gui Box Settings');
-      this.functions._initGui(this);
-      this.material.color.set('white');
-    };
+    // box.select = function () {
+    //   if (!this.debug) console.log('Add Menu Gui Box Settings');
+    //   this.functions._initGui(this);
+    //   this.material.color.set('white');
+    // };
 
     box.exit = function () {
       this.material.color.set('red');

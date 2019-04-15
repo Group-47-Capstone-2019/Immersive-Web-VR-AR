@@ -3,14 +3,15 @@ import { renderer } from './renderer';
 import { camera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import FallingScene from './scenes/falling';
+import PendulumScene from './scenes/pendulums';
 import {
   showWelcome, hideWelcome, showLoading, hideLoading
 } from './welcome';
+import { getCurrentScene, setCurrentScene } from './currentScene';
 
 /**
  * @type {XrScene}
  */
-let currentScene;
 const SavedStates = {};
 
 const Routes = {
@@ -22,6 +23,9 @@ const Routes = {
   },
   get '/falling'() {
     return new FallingScene(renderer, camera);
+  },
+  get '/pendulums'() {
+    return new PendulumScene(renderer, camera);
   }
 };
 
@@ -30,6 +34,7 @@ const Routes = {
  * @param {string} pathname
  */
 async function navigateToScene(pathname, oldPath) {
+  let currentScene = getCurrentScene();
   if (currentScene) {
     currentScene.isActive = false;
     // Save the state from the previous scene
@@ -41,7 +46,8 @@ async function navigateToScene(pathname, oldPath) {
     showWelcome();
   } else {
     hideWelcome();
-    currentScene = (pathname in Routes) ? Routes[pathname] : Routes['/home'];
+    setCurrentScene((pathname in Routes) ? Routes[pathname] : Routes['/home']);
+    currentScene = getCurrentScene();
     if (pathname in SavedStates) {
       // Reapply any state that was saved previously.
       currentScene.state = Object.assign(currentScene.state, SavedStates[pathname]);
