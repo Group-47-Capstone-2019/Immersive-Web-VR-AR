@@ -121,7 +121,6 @@ export default class FallingScene extends XrScene {
       setting = mode.CREATE;
       this.position.z = -0.125;
       this.material.color.set('green');
-      createLabelGravity.color('green');
     };
 
     createButton.exit = function () {
@@ -467,15 +466,15 @@ export default class FallingScene extends XrScene {
     if (this.world.gravity.y === -9.8) {
       console.log('Gravity off');
       this.world.gravity.y = 0;
-    } else {
-      console.log('Gravity on');
-      this.world.gravity.y = -9.8;
     }
   }
 
-  reverseGravity() {
+  reverseGravity = () => {
     console.log('Reverse gravity.');
-    this.world.gravity.y *= -1;
+    if (this.world.gravity.y === 0) {
+      console.log('Gravity on');
+      this.world.gravity.y = -9.8;
+    }
   }
 
   onKeyUp = (event) => {
