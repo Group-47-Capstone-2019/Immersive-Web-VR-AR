@@ -59,6 +59,12 @@ export class Loader {
     return promise;
   }
 
+  // This is to have one loader wait until another loader / task has finished before it finishes itself
+  depend(promise) {
+    this._queue.push(promise);
+    return promise;
+  }
+
   /**
    * add object to the queue, and return a promise with the object
    *
