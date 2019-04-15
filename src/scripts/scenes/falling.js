@@ -42,7 +42,7 @@ export default class FallingScene extends XrScene {
 
     // Create Gui Menu
     this.menu = createGUI(this.scene, this.camera, this.renderer);
-    this.menu.position.set(18, 0, -32);
+    this.menu.position.set(-15, 0, -32);
   
     // Add Global Gravity
     this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
@@ -86,16 +86,18 @@ export default class FallingScene extends XrScene {
     menu.add(createButton);
     menu2.add(createButton2);
     this.scene.add(menu);
+    this.scene.add(menu2);
     menu.position.set(1, -2, -32);
     menu2.position.set(8, -2, -32);
+
     createButton.position.set(10, 0, 0.25);
     createButton2.position.set(0, 0, 0.25);
 
     console.log(setting);
 
-    const createLabel = createTextPlane('Gravity', 'white', 'red');
-    createButton.add(createLabel);
-    createLabel.position.set(-1.5, 3, 0);
+    const createLabelGravity = createTextPlane('Gravity', 'white', 'red');
+    createButton.add(createLabelGravity);
+    createLabelGravity.position.set(-1.5, 3, 0);
 
     const createLabelOn = createTextPlane('On', 'white', 'green');
     createButton.add(createLabelOn);
@@ -119,7 +121,7 @@ export default class FallingScene extends XrScene {
       setting = mode.CREATE;
       this.position.z = -0.125;
       this.material.color.set('green');
-      createLabel.color('green');
+      createLabelGravity.color('green');
     };
 
     createButton.exit = function () {
@@ -212,6 +214,19 @@ export default class FallingScene extends XrScene {
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
+    // const direction = new THREE.Vector3(0, 0, 0);
+    // const origin = new THREE.Vector3(0, 0, 0);
+
+    // Ball ArrowHelper
+    // const arrowHelper = new THREE.ArrowHelper(
+    //   direction,
+    //   origin,
+    //   4,
+    //   'red'
+    // );
+
+    // ball.add(arrowHelper);
+
     // ball.addFunction('_initGui', this._initGui);
 
     // ball.hover = function () {
@@ -300,6 +315,18 @@ export default class FallingScene extends XrScene {
     box.castShadow = true;
     box.receiveShadow = true;
     this.world.addBody(boxBody);
+
+    // const direction = new THREE.Vector3(0, 0, 0);
+    // const origin = new THREE.Vector3(0, 0, 0);
+
+    // Box ArrowHelper
+    // const arrowHelper = new THREE.ArrowHelper(
+    //   direction,
+    //   origin,
+    //   4,
+    //   'red'
+    // );
+    // box.add(arrowHelper);
 
     // box.addFunction('_initGui', this._initGui);
 
