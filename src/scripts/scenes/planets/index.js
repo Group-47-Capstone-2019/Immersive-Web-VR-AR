@@ -88,9 +88,23 @@ export default class PlanetsScene extends XrScene {
     // document.planets = this;
   }
 
+  addPlanetClickHandlers() {
+    this.planets.forEach((mesh, idx) => {
+      mesh.select = () => {
+        if (this.buttonsEnabled) {
+          const currIdx = this.planets.findIndex(
+            p => p.name === this.currentPlanet.name
+          );
+          const offset = idx - currIdx;
+          this.movePlanets(offset);
+        }
+      };
+    });
+  }
+
   /**
-   * 
-   * @param {THREE.Texture} texture 
+   *
+   * @param {THREE.Texture} texture
    */
   addStars(texture) {
     texture.repeat.set(10, 10);
@@ -100,7 +114,7 @@ export default class PlanetsScene extends XrScene {
     const material = new MeshBasicMaterial({
       map: texture,
       fog: false,
-      side: BackSide,
+      side: BackSide
     });
 
     const mesh = new Mesh(geo, material);
@@ -122,6 +136,7 @@ export default class PlanetsScene extends XrScene {
     this.addSunLight();
     this.addGui();
     this.addStars(cache['stars-texture']);
+    this.addPlanetClickHandlers();
   }
 
   addPlanetRings(cache) {
