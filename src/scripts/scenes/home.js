@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import wallTexture from '../../assets/wall.png';
 import XrScene from './xr-scene';
 import TriggerMesh from '../trigger';
 
@@ -46,48 +45,11 @@ export default class HomeScene extends XrScene {
     const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
 
     let roomMaterials;
-
-    if (settings.room.textures.enabled) {
-      // Set room materials to an array such that it can hold a texture for each face
-      roomMaterials = [];
-
-      // Load texture images via path and converts them to THREE.Texture objects
-      const loader = new THREE.TextureLoader();
-
-      loader.load(
-        wallTexture,
-        (texture) => {
-          for (let i = 0; i < 6; i++) {
-            roomMaterials.push(
-              new THREE.MeshPhongMaterial({
-                map: texture,
-                side: THREE.BackSide
-              })
-            );
-          }
-        },
-        undefined,
-        () => {
-          console.error(
-            'Texture not loading properly, using default material.'
-          );
-          for (let i = 0; i < 6; i++) {
-            roomMaterials.push(
-              new THREE.MeshPhongMaterial({
-                color: 0x003050,
-                side: THREE.BackSide
-              })
-            );
-          }
-        }
-      );
-    } else {
-      // Set material to default if textures are not enabled
-      roomMaterials = new THREE.MeshPhongMaterial({
-        color: 0x003050,
-        side: THREE.BackSide
-      });
-    }
+    // Set material to default if textures are not enabled
+    roomMaterials = new THREE.MeshPhongMaterial({
+      color: 0x003050,
+      side: THREE.BackSide
+    });
 
     // Generate room mesh using geometry and materials
     const room = new THREE.Mesh(roomGeometry, roomMaterials);
