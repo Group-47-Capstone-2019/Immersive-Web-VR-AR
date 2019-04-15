@@ -54,7 +54,13 @@ export default class XrScene {
       this.controls.getObject().position.set(0, 0, 0);
       this.controls.getObject().rotation.y = 0;
       this.controls.getObject().children[0].rotation.x = 0;
+    } else {
+      this.camera.position.set(0, 0, 0);
+      const matrix = XR.getOffsetMatrix();
+      matrix.setPosition(this.camera.position);
+      XR.setOffsetMatrix(matrix);
     }
+
     this.pause = false;
 
     this.loader.depend(loadControllerMeshes());
