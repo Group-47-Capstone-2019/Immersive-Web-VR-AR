@@ -22,6 +22,7 @@ import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
 import { createTextPlane } from './text';
 import TWEEN from '@tweenjs/tween.js';
+import { XR } from '../../xrController';
 
 const EARTH_YEAR_SECONDS = 120;
 const TWEEN_SECONDS = 5;
@@ -29,6 +30,7 @@ const TWEEN_SECONDS = 5;
 export default class PlanetsScene extends XrScene {
   currentPlanet = planetData.Sun;
   cameraPoint = new Object3D();
+  isXr = false;
 
   /**
    *
@@ -65,7 +67,7 @@ export default class PlanetsScene extends XrScene {
     if (this.controls) {
       this.cameraPoint.add(this.controls.getObject());
     } else {
-      this.cameraPoint.add(this.camera);
+      this.isXr = true;
     }
     
     sunCamera.add(this.cameraPoint);
@@ -243,6 +245,12 @@ export default class PlanetsScene extends XrScene {
     sun.add(pointLight);
   }
 
+  updateXrCamera() {
+    const offsetMatrix = XR.getOffsetMatrix();
+    offsetMatrix.setPosition(this.cameraPoint.position);
+    XR.setOffsetMatrix(offsetMatrix);
+  }
+
   /**
    * animation function - called each frame
    *
@@ -250,6 +258,10 @@ export default class PlanetsScene extends XrScene {
    */
   animate(deltaSeconds) {
     TWEEN.update();
+
+    if (this.isXr) {
+      this.updateXrCamera();
+    }
 
     this.planets.forEach(mesh => {
       const spherical = new Spherical().setFromVector3(mesh.position);
