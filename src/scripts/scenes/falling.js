@@ -8,8 +8,16 @@ import XrScene from './xr-scene';
 import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
+import { XR } from '../xrController';
+import { createTextSprite, createTextPlane } from './planets/text';
 import createGUI from '../menuGUI';
 import 'datguivr';
+
+const mode = {
+  CREATE: 'create'
+};
+
+let setting = mode.SELECT;
 
 export default class FallingScene extends XrScene {
   /**
@@ -30,11 +38,12 @@ export default class FallingScene extends XrScene {
     this.height = 16;
     this._createRoom();
     this._loadTable();
+    this._initMenu();
 
     // Create Gui Menu
     this.menu = createGUI(this.scene, this.camera, this.renderer);
-    this.menu.position.set(3, 0.25, -13);
-
+    this.menu.position.set(18, 0, -32);
+  
     // Add Global Gravity
     this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
       .name('Gravity')
@@ -65,6 +74,87 @@ export default class FallingScene extends XrScene {
     this._addEventListener(window, 'mousedown', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
   }
+
+  _initMenu() {
+    const buttonGeo = new THREE.BoxGeometry(2, 3, 0.5);
+    const buttonGeo2 = new THREE.BoxGeometry(2, 3, 0.5);
+    const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
+    const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
+    const createButton2 = new TriggerMesh(buttonGeo2.clone(), buttonMat.clone());
+    const menu = new THREE.Object3D();
+    const menu2 = new THREE.Object3D();
+    menu.add(createButton);
+    menu2.add(createButton2);
+    this.scene.add(menu);
+    menu.position.set(1, -2, -32);
+    menu2.position.set(8, -2, -32);
+    createButton.position.set(10, 0, 0.25);
+    createButton2.position.set(0, 0, 0.25);
+
+    console.log(setting);
+
+    const createLabel = createTextPlane('Gravity', 'white', 'red');
+    createButton.add(createLabel);
+    createLabel.position.set(-1.5, 3, 0);
+
+    const createLabelOn = createTextPlane('On', 'white', 'green');
+    createButton.add(createLabelOn);
+    createLabelOn.position.set(-3, 0, 0);
+
+    const createLabelOff = createTextPlane('off', 'white', 'red');
+    createButton2.add(createLabelOff);
+    createLabelOff.position.set(3, 0, 0);
+
+    createButton.addFunction('toggleGravity', this.toggleGravity);
+    createButton2.addFunction('reverseGravity', this.reverseGravity);
+
+    createButton.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set(0x999999);
+      }
+    };
+
+    createButton.select = function () {
+      this.functions.toggleGravity();
+      setting = mode.CREATE;
+      this.position.z = -0.125;
+      this.material.color.set('green');
+      createLabel.color('green');
+    };
+
+    createButton.exit = function () {
+      if (setting === mode.CREATE) {
+        this.material.color.set(0x999999);
+      } else {
+        this.material.color.set(0x222222);
+      }
+    };
+
+    createButton2.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set(0x999999);
+      }
+    };
+
+    createButton2.select = function () {
+      this.functions.reverseGravity();
+      setting = mode.CREATE;
+      this.position.z = -0.125;
+      this.material.color.set('red');
+    };
+
+    createButton2.exit = function () {
+      if (setting === mode.CREATE) {
+        this.material.color.set(0x999999);
+      } else {
+        this.material.color.set(0x222222);
+      }
+    };
+
+    this.triggers.add(menu);
+    this.triggers.add(menu2);
+  }
+
 
   _createRoom() {
     // Generate room geometry.

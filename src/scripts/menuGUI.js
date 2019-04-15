@@ -32,7 +32,7 @@ export default function createGUI(scene, camera, renderer) {
   const gui = dat.GUIVR.create('Global Settings');
 
   // Set the size of the gui.
-  gui.scale.set(2, 2, 2);
+  gui.scale.set(6, 6, 6);
 
   scene.add(gui);
   return gui;
