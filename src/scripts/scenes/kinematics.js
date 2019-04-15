@@ -30,12 +30,8 @@ export default class KinematicsScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
 
-    this.camera = camera;
-    this.renderer = renderer;
-
     this.length = 2000;
     this.width = 2000;
-    this.height = 8;
     this._createEnv();
 
     //Assets
@@ -88,7 +84,8 @@ export default class KinematicsScene extends XrScene {
     for(let i = 0; i < 6; i++) {
         mSkybox.push(new THREE.MeshBasicMaterial({
             map : textures[i],
-            side : THREE.DoubleSide
+            side : THREE.DoubleSide,
+            depthTest : false
         }));
     }
     const skybox = new THREE.Mesh(gSkybox, mSkybox);
@@ -183,7 +180,7 @@ export default class KinematicsScene extends XrScene {
     const ground = new THREE.Mesh(gGround, mGround);
     ground.receiveShadow = true;
     ground.rotateX(-1.5708);
-    ground.position.set(0, -this.height, 0);
+    ground.position.set(0, -8, 0);
     this.ground = ground;
     this.scene.add(ground);
 
@@ -191,7 +188,7 @@ export default class KinematicsScene extends XrScene {
     const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide });
     const spawnTubeGeo = new THREE.CylinderGeometry(2, 2, 3, 32, 32, true);
     const spawnTube = new THREE.Mesh(spawnTubeGeo, tubeMaterials);
-    spawnTube.position.set(0, this.height - 1, 0);
+    spawnTube.position.set(0, 8 - 1, 0);
     this.scene.add(spawnTube);
   }
 
@@ -407,7 +404,7 @@ export default class KinematicsScene extends XrScene {
     // const radius = 1;
     const length = this.length / 2;
     const width = this.width / 2;
-    const height = this.height;
+    const height = 8;
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.gravity.set(0, -9.8, 0);
 
