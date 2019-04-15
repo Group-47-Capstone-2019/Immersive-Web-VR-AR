@@ -1,11 +1,11 @@
 import {
   SphereGeometry,
-  Mesh,
   MeshPhongMaterial,
   MeshBasicMaterial,
   Object3D
 } from 'three';
 import { createPlanetText } from './ui';
+import TriggerMesh from '../../trigger';
 
 const DISTANCE_DIVIDER = 1e6;
 export const CAMERA_OFFSET = {
@@ -22,7 +22,7 @@ export const prevPointName = planetName => `PrevPoint${planetName}`;
 /**
  * build planets, with mesh and randomized position
  *
- * @returns {Mesh[]} created planets
+ * @returns {TriggerMesh[]} created planets
  */
 export function createPlanets(planetData, cache) {
   return Object.keys(planetData).map(planetName => {
@@ -37,7 +37,7 @@ export function createPlanets(planetData, cache) {
       material = new MeshPhongMaterial({ map: texture });
     }
 
-    const mesh = new Mesh(geo, material);
+    const mesh = new TriggerMesh(geo, material);
 
     mesh.position.setFromSphericalCoords(
       planet.orbitDistance / DISTANCE_DIVIDER,
