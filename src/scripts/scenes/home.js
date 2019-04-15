@@ -62,6 +62,8 @@ export default class HomeScene extends XrScene {
       console.error('Error creating room mesh.');
     }
 
+    this.bounds.push(new THREE.Box3().setFromObject(room));
+
     this.createDoors();
     this._boxTest();
     this._addEventListener(window, 'mousedown', this.onClick);
