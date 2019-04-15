@@ -19,7 +19,7 @@ import sky_px from '../../assets/textures/skybox/sky_px.png';
 import sky_py from '../../assets/textures/skybox/sky_py.png'; 
 import sky_pz from '../../assets/textures/skybox/sky_pz.png';
 
-export default class FallingScene extends XrScene {
+export default class KinematicsScene extends XrScene {
   /**
   *
   * @param {THREE.Renderer} renderer

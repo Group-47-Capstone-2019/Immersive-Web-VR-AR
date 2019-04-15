@@ -109,7 +109,7 @@ export default class HomeScene extends XrScene {
     };
 
     fallingDoor.select = function () {
-      this.functions.changeRoom('/falling');
+      this.functions.changeRoom('/kinematics');
     };
 
     fallingDoor.exit = function () {
