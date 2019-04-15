@@ -247,23 +247,15 @@ export default class LaserScene extends XrScene {
       },
       drag(matrix) {
         const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
-        const cameraPos = new THREE.Vector3();
-        const newPos = pos.clone();
-        base.camera.getWorldPosition(cameraPos);
-        console.log("cam", cameraPos);
-        console.log("pos", newPos);
-        console.log("subpos", newPos.sub(mirror.position).normalize());
-        console.log("sub", cameraPos.sub(mirror.position).normalize());
-        console.log("subsub", cameraPos.sub(newPos).normalize());
+        const cameraDir = new THREE.Vector3();
+        base.camera.getWorldDirection(cameraDir);
         
-        newPos.x /= cameraPos.z;
-        newPos.z /= cameraPos.x;
+        let newPos = new THREE.Vector3();
+        newPos.subVectors(pos, mirror.position);
+        newPos.x *= cameraDir.z;
+        newPos.z *= -cameraDir.x;
         const ratio = 0.003;
-        let radians = 0;
-        radians += newPos.x;
-        radians -= newPos.z;
-        radians *= ratio;
-        // const radians = pos.distanceTo(mirror.position) * ratio;
+        const radians = -(newPos.x + newPos.z) * ratio;
         const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
         mirror.matrix.multiply(rotMatrix);
         mirror.rotateY(radians);
