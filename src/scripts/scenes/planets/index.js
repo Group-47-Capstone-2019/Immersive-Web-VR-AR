@@ -144,8 +144,8 @@ export default class PlanetsScene extends XrScene {
     const saturn = this.scene.getObjectByName('Saturn');
     const saturnRadius = planetData.Saturn.fakeRadius;
     const saturnRingGeo = new RingGeometry(
-      saturnRadius + 0.5,
-      saturnRadius + 2.5,
+      saturnRadius + 1,
+      saturnRadius + 5,
       50
     );
     const saturnRingMat = new MeshPhongMaterial({
@@ -162,8 +162,8 @@ export default class PlanetsScene extends XrScene {
     const uranus = this.scene.getObjectByName('Uranus');
     const uranusRadius = planetData.Uranus.fakeRadius;
     const uranusRingGeo = new RingGeometry(
-      uranusRadius + 0.5,
-      uranusRadius + 2.5,
+      uranusRadius + 1,
+      uranusRadius + 4,
       50
     );
     const uranusRingMat = new MeshPhongMaterial({
