@@ -9,6 +9,8 @@ import nTable from '../../assets/textures/table/tableNormal.jpeg';
 
 import nGround from '../../assets/textures/groundNormal.png';
 
+import oDoor from '../../assets/door.glb';
+
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
 
@@ -37,18 +39,7 @@ export default class KinematicsScene extends XrScene {
     this._createEnv();
 
     //Assets
-    this.loader.addTextureToQueue(sky_nx, 'sky_nx');
-    this.loader.addTextureToQueue(sky_ny, 'sky_ny');
-    this.loader.addTextureToQueue(sky_nz, 'sky_nz');
-    this.loader.addTextureToQueue(sky_px, 'sky_px');
-    this.loader.addTextureToQueue(sky_py, 'sky_py');
-    this.loader.addTextureToQueue(sky_pz, 'sky_pz');
-
-    this.loader.addOBJToQueue(table, 'table');
-    this.loader.addTextureToQueue(tTable, 'tTable');
-    this.loader.addTextureToQueue(nTable, 'nTable');
-
-    this.loader.addTextureToQueue(nGround, 'ground');
+    this._loadAssets();
 
     // Objects
     this.bodies = [];
@@ -72,6 +63,23 @@ export default class KinematicsScene extends XrScene {
     this._initCannon();
     this._addEventListener(window, 'mousedown', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
+  }
+
+  _loadAssets() {
+    this.loader.addTextureToQueue(sky_nx, 'sky_nx');
+    this.loader.addTextureToQueue(sky_ny, 'sky_ny');
+    this.loader.addTextureToQueue(sky_nz, 'sky_nz');
+    this.loader.addTextureToQueue(sky_px, 'sky_px');
+    this.loader.addTextureToQueue(sky_py, 'sky_py');
+    this.loader.addTextureToQueue(sky_pz, 'sky_pz');
+
+    this.loader.addOBJToQueue(table, 'table');
+    this.loader.addTextureToQueue(tTable, 'tTable');
+    this.loader.addTextureToQueue(nTable, 'nTable');
+
+    this.loader.addTextureToQueue(nGround, 'ground');
+
+    this.loader.addGltfToQueue(oDoor, 'door');
   }
 
   _createSkybox(textures) {
@@ -131,9 +139,37 @@ export default class KinematicsScene extends XrScene {
 
     const groundTexture = cache.ground;
 
+    const door = cache.door.scene.children[0];
+
     this._createSkybox(skyboxTextures);
     this._loadTable(tableAsset);
     this._textureGround(groundTexture);
+    this._createDoor(door);
+  }
+
+  _createDoor(door) {
+    const doorBody = door.children[0]
+    door.scale.set(2.5, 2.5, 2.5);
+    door.position.set(0, -8, 25);
+    const mDoorBody = new THREE.MeshPhongMaterial({color: 0x7c5c3a});
+    const mDoorFrame = new THREE.MeshPhongMaterial({color: 0x543d25});
+    door.material = mDoorFrame;
+    doorBody.material = mDoorBody;
+
+    doorBody[Interactions] = {
+      hover() {
+        door.children[0].material.color.set('tan');
+      },
+      hover_end() {
+        door.children[0].material.color.set(0x7c5c3a);
+      },
+      select: () => {
+        this.changeRoom('/home');
+      }
+    }
+
+    this.scene.add(door);
+
   }
 
   _createEnv() {
@@ -432,6 +468,10 @@ export default class KinematicsScene extends XrScene {
 
     const aLight = new THREE.AmbientLight(0xaabbff, 0.2);
     this.scene.add(aLight);
+
+    const pLight = new THREE.PointLight(0xffffff, 0.5, 75);
+    pLight.position.set(0, 10, 0);
+    this.scene.add(pLight);
   }
 
   animate(delta) {
