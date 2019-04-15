@@ -50,7 +50,7 @@ export function createTextPlane(
 
   const mat = new MeshBasicMaterial({
     map: texture,
-    depthTest: false,
+    // depthTest: false,
     transparent: true,
     side: DoubleSide
   });
