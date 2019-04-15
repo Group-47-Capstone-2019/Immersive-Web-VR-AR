@@ -1,5 +1,5 @@
 import {
-  Scene, Matrix4, Clock, Group
+  Scene, Vector3, Matrix4, Clock, Group
 } from 'three';
 import { World } from 'cannon';
 
@@ -65,11 +65,7 @@ export default class XrScene {
 
     this._checkForKeyboardMouse();
 
-    // Set bounds
-    this.bounds = {
-      one: new Vector3(100, 100, 100),
-      two: new Vector3(-100, -100, -100)
-    };
+    this.bounds = [];
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
@@ -201,9 +197,7 @@ export default class XrScene {
       }
       // Update the user position if keyboard and mouse controls are enabled.
       if (controls && controls.enabled) {
-        this.position.copy(updatePosition());
-        // Constrain user position within bounds
-        this._testBounds(controls.getObject().position);
+        updatePosition();
       }
 
       if (!XR.session) {
@@ -265,18 +259,16 @@ export default class XrScene {
 
           // Update user position if touch controls are in use with magic window.
           if (XR.magicWindowCanvas && !immersive) {
-            this.position.copy(updateTouchPosition(viewMatrix));
+            updateTouchPosition(viewMatrix);
           }
 
-          // Constrain user position within bounds
-          this._testBounds(this.position);
+          // Bound position
+          this._clampInBounds();
 
           this.camera.matrixAutoUpdate = false;
           this.camera.matrix.fromArray(view.transform.matrix);
           this.camera.matrixWorldNeedsUpdate = true;
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-          //          this.scene.matrix.copy(viewMatrix);
-          //          this.scene.updateMatrixWorld(true);
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
         }
@@ -288,48 +280,54 @@ export default class XrScene {
     return this.frame;
   };
 
+  /**
+   * Uses a set of THREE Box3's to clamp the user's position within them.
+   * If user is out of bounds, checks for the closest bounding box and clamps
+   * their position to it. Updates the OffsetMatrix.
+   */
+  _clampInBounds() {
+    const offsetMatrix = XR.getOffsetMatrix();
+    const position = new Vector3().setFromMatrixPosition(offsetMatrix);
+
+    let inBounds = false;
+
+    const boundData = {
+      distance: Number.MAX_SAFE_INTEGER,
+      bound: null
+    };
+
+    for (let i = 0; i < this.bounds.length; i++) {
+      const bound = this.bounds[i];
+      const distance = bound.distanceToPoint(position);
+
+      // If within a boundary, cease bounds checking
+      if (distance === 0) {
+        inBounds = true;
+        break;
+      }
+
+      // Get closest boundary if out of bounds
+      if (distance < boundData.distance) {
+        boundData.distance = distance;
+        boundData.bound = bound;
+      }
+    }
+
+    // If user is out of bounds, clamp position to closest boundary
+    if (!inBounds && boundData.bound) {
+      const clampedPos = new Vector3();
+      boundData.bound.clampPoint(position, clampedPos);
+      offsetMatrix.setPosition(clampedPos);
+      XR.setOffsetMatrix(offsetMatrix);
+    }
+  }
+
   _checkForKeyboardMouse() {
     if (keyboard) {
       this.scene.add(controls.getObject());
       this._addEventListener(window, 'mousedown', this._onMouseDown);
       this._addEventListener(window, 'mouseup', this._onMouseUp);
       this._addEventListener(window, 'keyup', this._onKeyUp);
-    }
-  }
-
-  /**
-   * Set the bounds for movement in this scene
-   * bound1 elements must all be greater than bound2 elements
-   * @param {Vector3} bound1
-   * @param {Vector3} bound2
-   */
-  _setBounds(bound1, bound2) {
-    this.bounds.one.copy(bound1);
-    this.bounds.two.copy(bound2);
-  }
-
-  /**
-   * Tests for boundary collisions in scene
-   */
-  _testBounds(position) {
-    const bound1 = this.bounds.one;
-    const bound2 = this.bounds.two;
-    if (position.x > bound1.x) {
-      position.x = bound1.x;
-    } else if (position.x < bound2.x) {
-      position.x = bound2.x;
-    }
-
-    if (position.y > bound1.y) {
-      position.y = bound1.y;
-    } else if (position.y < bound2.y) {
-      position.y = bound2.y;
-    }
-
-    if (position.z > bound1.z) {
-      position.z = bound1.z;
-    } else if (position.z < bound2.z) {
-      position.z = bound2.z;
     }
   }
 
