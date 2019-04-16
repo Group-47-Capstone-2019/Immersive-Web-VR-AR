@@ -1,7 +1,12 @@
 import * as THREE from 'three';
-import wallTexture from '../../assets/wall.png';
+import doorUrl from '../../assets/door.glb';
+import wallTxUrl from '../../assets/textures/laser-room/wall/wall.jpg';
+import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
 import XrScene from './xr-scene';
 import TriggerMesh from '../trigger';
+import { Interactions } from '../interactions';
+import { createTextPlane } from './planets/text';
+import { XR } from '../xrController';
 
 const settings = {
   global: {
@@ -27,14 +32,19 @@ export default class HomeScene extends XrScene {
    */
   constructor(renderer, camera) {
     super(renderer, camera);
+
+    this.loader.addTextureToQueue(wallTxUrl, 'home-wall');
+    this.loader.addTextureToQueue(floorTxUrl, 'home-floor');
+    this.loader.addGltfToQueue(doorUrl, 'home-door');
+
     // Basic lighting
     if (settings.global.lights.ambient) {
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
       this.scene.add(ambientLight);
     }
 
     if (settings.room.lights.point) {
-      const pointLight = new THREE.PointLight(0xffffff, 0.8);
+      const pointLight = new THREE.PointLight(0xfffccc, 0.5);
       pointLight.position.set(0, 0, 0);
       this.scene.add(pointLight);
     }
@@ -43,204 +53,168 @@ export default class HomeScene extends XrScene {
     this.length = 24;
     this.width = 24;
     this.height = 16;
+
+    this._addEventListener(window, 'mousedown', this.onClick);
+  }
+
+  addDoors(cache) {
+    const doorScene = cache['home-door'];
+    let door = doorScene.scene.getObjectByName('Door_Frame').clone();
+    door.scale.set(2.5, 2.5, 2.5);
+    const doorMat = new THREE.MeshPhongMaterial({color: 0x7c5c3a});
+    const doorFrameMat = new THREE.MeshPhongMaterial({color: 0x543d25});
+    door.children[0].material = doorMat;
+    door.material = doorFrameMat;
+    
+    let fallingDoor = door.clone();
+    fallingDoor.rotateY(Math.PI / 2);
+    fallingDoor.position.set(
+      -12,
+      -8,
+      0
+    );
+
+    let fallingLabel = createTextPlane('KINEMATIC', 'white', 'black');
+    fallingLabel.position.set(0, 5, -0.01);
+    fallingLabel.scale.set(0.3, 0.3, 0.3);
+    fallingLabel.rotateY(Math.PI);
+    fallingDoor.add(fallingLabel);
+
+    let planetsDoor = door.clone();
+    planetsDoor.rotateY(-Math.PI / 2);
+    planetsDoor.position.set(
+      12,
+      -8,
+      0
+    );
+
+    let planetsLabel = createTextPlane('PLANETS', 'white', 'black');
+    planetsLabel.position.set(0, 5, -0.01);
+    planetsLabel.scale.set(0.3, 0.3, 0.3);
+    planetsLabel.rotateY(Math.PI);
+    planetsDoor.add(planetsLabel);
+
+    let pendulumsDoor = door.clone();
+    pendulumsDoor.position.set(
+      0,
+      -8,
+      -12
+    );
+
+    let pendulumsLabel = createTextPlane('PENDULUMS', 'white', 'black');
+    pendulumsLabel.position.set(0, 5, -0.01);
+    pendulumsLabel.scale.set(0.3, 0.3, 0.3);
+    pendulumsLabel.rotateY(Math.PI);
+    pendulumsDoor.add(pendulumsLabel);
+
+    let lasersDoor = door.clone();
+    lasersDoor.rotateY(Math.PI);
+    lasersDoor.position.set(
+      0,
+      -8,
+      12
+    );
+
+    let lasersLabel = createTextPlane('LASERS', 'white', 'black');
+    lasersLabel.position.set(0, 5, -0.01);
+    lasersLabel.scale.set(0.3, 0.3, 0.3);
+    lasersLabel.rotateY(Math.PI);
+    lasersDoor.add(lasersLabel);
+
+    this.addDoorInteraction(fallingDoor, '/falling');
+    this.addDoorInteraction(planetsDoor, '/planets');
+    this.addDoorInteraction(pendulumsDoor, '/pendulums');
+    this.addDoorInteraction(lasersDoor, '/lasers');
+
+    this.scene.add(fallingDoor, planetsDoor, pendulumsDoor, lasersDoor);
+  }
+
+  addDoorInteraction(door, path) {
+    door.children[0][Interactions] = {
+      hover() {
+        door.children[0].material.color.set('tan');
+      },
+      hover_end() {
+        door.children[0].material.color.set(0x7c5c3a);
+      },
+      select() {
+        console.log(path);
+        const newPath = path;
+        const event = new CustomEvent('changeRoom', { detail: { newPath } });
+        window.dispatchEvent(event);
+      }
+    }
+  }
+
+  initRoom(cache) {
+    const wallTx = cache['home-wall'];
+    wallTx.repeat.set(3, 3);
+    wallTx.wrapS = THREE.RepeatWrapping;
+    wallTx.wrapT = THREE.RepeatWrapping;
+    const floorTx = cache['home-floor'];
+    floorTx.repeat.set(10, 10);
+    floorTx.wrapS = THREE.RepeatWrapping;
+    floorTx.wrapT = THREE.RepeatWrapping;
+    const wallMat = new THREE.MeshPhongMaterial({ map: wallTx, side: THREE.BackSide });
+    const floorMat = new THREE.MeshPhongMaterial({ map: floorTx, side: THREE.BackSide });
+    const roomMaterials = [
+      wallMat,
+      wallMat,
+      wallMat,
+      floorMat,
+      wallMat,
+      wallMat
+    ];
+
+    // Generate room geometry.
     const roomGeometry = new THREE.BoxGeometry(this.length, this.height, this.width);
 
-    let roomMaterials;
+    const floorGeo = new THREE.PlaneGeometry(this.length, this.width);
+    const floor = new THREE.Mesh(floorGeo, floorMat.clone());
+    floor.rotateX(Math.PI / 2);
+    floor.position.y = -7.999999;
 
-    if (settings.room.textures.enabled) {
-      // Set room materials to an array such that it can hold a texture for each face
-      roomMaterials = [];
+    this.room = new THREE.Mesh(roomGeometry, roomMaterials);
+    this.room.receiveShadow = true;
+    this.room.castShadow = true;
+    this.room.name = 'room';
+    this.room.add(floor);
 
-      // Load texture images via path and converts them to THREE.Texture objects
-      const loader = new THREE.TextureLoader();
+    floor.functions = {};
+    floor.functions.addMirror = this._addMirrors;
+    floor.functions.displayMirrorOutline = this.displayMirrorOutline;
+    floor.functions.noMirrorOutline = this.noMirrorOutline;
+    floor[Interactions] = {
+      select_start({ point }) {
+        const offsetMatrix = XR.getOffsetMatrix();
+        point.y = 0;
+        point.multiplyScalar(-1);
+        offsetMatrix.setPosition(point);
+        XR.setOffsetMatrix(offsetMatrix); 
+      }
+    };
+    this.scene.add(this.room);
 
-      loader.load(
-        wallTexture,
-        (texture) => {
-          for (let i = 0; i < 6; i++) {
-            roomMaterials.push(
-              new THREE.MeshPhongMaterial({
-                map: texture,
-                side: THREE.BackSide
-              })
-            );
-          }
-        },
-        undefined,
-        () => {
-          console.error(
-            'Texture not loading properly, using default material.'
-          );
-          for (let i = 0; i < 6; i++) {
-            roomMaterials.push(
-              new THREE.MeshPhongMaterial({
-                color: 0x003050,
-                side: THREE.BackSide
-              })
-            );
-          }
-        }
-      );
-    } else {
-      // Set material to default if textures are not enabled
-      roomMaterials = new THREE.MeshPhongMaterial({
-        color: 0x003050,
-        side: THREE.BackSide
-      });
-    }
+    this.addDoors(cache);
 
-    // Generate room mesh using geometry and materials
-    const room = new THREE.Mesh(roomGeometry, roomMaterials);
-
-    if (room) {
-      room.receiveShadow = true;
-      room.castShadow = true;
-      this.scene.add(room);
-    } else {
-      console.error('Error creating room mesh.');
-    }
-
-    this.bounds.push(new THREE.Box3().setFromObject(room));
-
-    this.createDoors();
-    this._boxTest();
-    this._addEventListener(window, 'mousedown', this.onClick);
+    
+    this.bounds.push(new THREE.Box3().setFromObject(this.room));
   }
 
   onAssetsLoaded(cache) {
     super.onAssetsLoaded(cache);
+    
+    this.initRoom(cache);
     return cache;
   }
 
   animate() {
-    const box = this.triggers.getObjectByName('testBox001');
-    box.rotateX(0.01);
-    box.rotateY(0.01);
-    box.rotateZ(0.03);
+
   }
 
-  createDoors() {
-    const doorHeight = 12;
-    const doorWidth = 7;
-    const doorLength = 1;
-    const geometry = new THREE.BoxGeometry(doorLength, doorHeight, doorWidth);
-    const fallingMaterial = new THREE.MeshPhongMaterial({
-      color: 0x402f00
-    });
-    const fallingDoor = new TriggerMesh(geometry, fallingMaterial);
-    fallingDoor.name = 'fallingDoor';
-    fallingDoor.position.set(
-      (doorLength / 2) - (this.length / 2),
-      (doorHeight / 2) - (this.height / 2),
-      0
-    );
-
-    fallingDoor.addFunction('changeRoom', this.changeRoom);
-
-    fallingDoor.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
-      }
-    };
-
-    fallingDoor.select = function () {
-      this.functions.changeRoom('/falling');
-    };
-
-    fallingDoor.exit = function () {
-      this.material.color.set(0x402f00);
-    };
-
-    this.triggers.add(fallingDoor);
-
-    const planetsMaterial = new THREE.MeshPhongMaterial({
-      color: '#402f00'
-    });
-    const planetsDoor = new TriggerMesh(geometry, planetsMaterial);
-    planetsDoor.name = 'planetsDoor';
-    planetsDoor.position.set(
-      (this.length / 2) - (doorLength / 2),
-      (doorHeight / 2) - (this.height / 2),
-      0
-    );
-
-    planetsDoor.addFunction('changeRoom', this.changeRoom);
-
-    planetsDoor.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
-      }
-    };
-
-    planetsDoor.select = function () {
-      this.functions.changeRoom('/planets');
-    };
-
-    planetsDoor.exit = function () {
-      this.material.color.set(0x402f00);
-    };
-
-    this.triggers.add(planetsDoor);
-
-    const pendulumMaterial = new THREE.MeshPhongMaterial({
-      color: 0x402f00
-    });
-    const pendulumDoor = new TriggerMesh(geometry, pendulumMaterial);
-    pendulumDoor.rotateY(Math.PI / 2);
-    pendulumDoor.name = 'pendulumDoor';
-    pendulumDoor.position.set(
-      0,
-      (doorHeight / 2) - (this.height / 2),
-      (doorLength / 2) - (this.length / 2)
-    );
-
-    pendulumDoor.addFunction('changeRoom', this.changeRoom);
-
-    pendulumDoor.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
-      }
-    };
-
-    pendulumDoor.select = function () {
-      this.functions.changeRoom('/pendulums');
-    };
-
-    pendulumDoor.exit = function () {
-      this.material.color.set(0x402f00);
-    };
-
-    this.triggers.add(pendulumDoor);
-
-    const laserMaterial = new THREE.MeshPhongMaterial({
-      color: 0x402f00
-    });
-    const laserDoor = new TriggerMesh(geometry, laserMaterial);
-    laserDoor.rotateY(Math.PI / 2);
-    laserDoor.name = 'laserDoor';
-    laserDoor.position.set(
-      0,
-      (doorHeight / 2) - (this.height / 2),
-      (this.length / 2) - (doorLength / 2)
-    );
-
-    laserDoor.addFunction('changeRoom', this.changeRoom);
-
-    laserDoor.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
-      }
-    };
-
-    laserDoor.select = function () {
-      this.functions.changeRoom('/lasers');
-    };
-
-    laserDoor.exit = function () {
-      this.material.color.set(0x402f00);
-    };
-
-    this.triggers.add(laserDoor);
+  changeRoom(newPath) {
+    const event = new CustomEvent('changeRoom', { detail: { newPath } });
+    window.dispatchEvent(event);
   }
 
   _boxTest() {
