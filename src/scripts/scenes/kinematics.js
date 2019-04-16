@@ -71,6 +71,7 @@ export default class KinematicsScene extends XrScene {
       sky_py, sky_ny,
       sky_nz, sky_pz
     ], 'skybox');
+    
     this.loader.addTextureToQueue(sky_nx, 'sky_nx');
     this.loader.addTextureToQueue(sky_ny, 'sky_ny');
     this.loader.addTextureToQueue(sky_nz, 'sky_nz');
