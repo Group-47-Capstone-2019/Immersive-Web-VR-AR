@@ -17,7 +17,7 @@ const mode = {
   CREATE: 'create'
 };
 
-let setting = mode.SELECT;
+let setting = mode.CREATE;
 
 export default class FallingScene extends XrScene {
   /**
@@ -43,7 +43,7 @@ export default class FallingScene extends XrScene {
     // Create Gui Menu
     this.menu = createGUI(this.scene, this.camera, this.renderer);
     this.menu.position.set(-15, 0, -32);
-  
+
     // Add Global Gravity
     this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
       .name('Gravity')
@@ -54,6 +54,7 @@ export default class FallingScene extends XrScene {
     // Objects
     this.bodies = [];
     this.meshes = [];
+
     this.objectMaterial = new CANNON.Material();
 
     // Balls
@@ -80,18 +81,18 @@ export default class FallingScene extends XrScene {
     const buttonGeo2 = new THREE.BoxGeometry(2, 3, 0.5);
     const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
     const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
-    const createButton2 = new TriggerMesh(buttonGeo2.clone(), buttonMat.clone());
+    const reverseButton = new TriggerMesh(buttonGeo2.clone(), buttonMat.clone());
     const menu = new THREE.Object3D();
     const menu2 = new THREE.Object3D();
     menu.add(createButton);
-    menu2.add(createButton2);
+    menu2.add(reverseButton);
     this.scene.add(menu);
     this.scene.add(menu2);
     menu.position.set(1, -2, -32);
     menu2.position.set(8, -2, -32);
 
     createButton.position.set(10, 0, 0.25);
-    createButton2.position.set(0, 0, 0.25);
+    reverseButton.position.set(0, 0, 0.25);
 
     console.log(setting);
 
@@ -104,15 +105,15 @@ export default class FallingScene extends XrScene {
     createLabelOn.position.set(-3, 0, 0);
 
     const createLabelOff = createTextPlane('off', 'white', 'red');
-    createButton2.add(createLabelOff);
+    reverseButton.add(createLabelOff);
     createLabelOff.position.set(3, 0, 0);
 
     createButton.addFunction('toggleGravity', this.toggleGravity);
-    createButton2.addFunction('reverseGravity', this.reverseGravity);
+    reverseButton.addFunction('reverseGravity', this.reverseGravity);
 
     createButton.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0x999999);
+        this.material.color.set('green');
       }
     };
 
@@ -120,7 +121,7 @@ export default class FallingScene extends XrScene {
       this.functions.toggleGravity();
       setting = mode.CREATE;
       this.position.z = -0.125;
-      this.material.color.set('green');
+      this.material.color.set('white');
     };
 
     createButton.exit = function () {
@@ -131,20 +132,20 @@ export default class FallingScene extends XrScene {
       }
     };
 
-    createButton2.hover = function () {
+    reverseButton.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0x999999);
+        this.material.color.set('green');
       }
     };
 
-    createButton2.select = function () {
+    reverseButton.select = function () {
       this.functions.reverseGravity();
       setting = mode.CREATE;
       this.position.z = -0.125;
-      this.material.color.set('red');
+      this.material.color.set('green');
     };
 
-    createButton2.exit = function () {
+    reverseButton.exit = function () {
       if (setting === mode.CREATE) {
         this.material.color.set(0x999999);
       } else {
@@ -213,39 +214,19 @@ export default class FallingScene extends XrScene {
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
-    // const direction = new THREE.Vector3(0, 0, 0);
-    // const origin = new THREE.Vector3(0, 0, 0);
+    this.arrowHelpers = [];
+    let direction = new THREE.Vector3(0, 0, 0);
+    let origin = new THREE.Vector3(0, 0, 0);
 
     // Ball ArrowHelper
-    // const arrowHelper = new THREE.ArrowHelper(
-    //   direction,
-    //   origin,
-    //   4,
-    //   'red'
-    // );
-
-    // ball.add(arrowHelper);
-
-    // ball.addFunction('_initGui', this._initGui);
-
-    // ball.hover = function () {
-    //   if (!this.isSelected) {
-    //     this.material.color.set('green');
-    //   }
-    // };
-
-    // // Select Ball
-    // ball.select = function () {
-    //   if (!this.debug) console.log('Add Menu Gui Ball Settings');
-    //   this.functions._initGui(this);
-    //   this.material.color.set('white');
-    // };
-
-    // ball.exit = function () {
-    //   this.material.color.set('red');
-    // };
-
-    // this.triggers.add(ball);
+    this.arrowHelper = new THREE.ArrowHelper(
+      direction,
+      origin,
+      3,
+      'yellow'
+    );
+    this.arrowHelpers.push(this.arrowHelper);
+    ball.add(this.arrowHelper);
 
     let lastTime;
     ball[Interactions] = {
@@ -310,43 +291,70 @@ export default class FallingScene extends XrScene {
     const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
     const material = new THREE.MeshPhongMaterial({ color: 'red' });
-    const box = new TriggerMesh(this.boxGeo, material);
+    const box = new THREE.Mesh(this.boxGeo, material);
     box.castShadow = true;
     box.receiveShadow = true;
     this.world.addBody(boxBody);
 
-    // const direction = new THREE.Vector3(0, 0, 0);
-    // const origin = new THREE.Vector3(0, 0, 0);
+    const direction = new THREE.Vector3(0, 0, 0);
+    const origin = new THREE.Vector3(0, 0, 0);
 
     // Box ArrowHelper
-    // const arrowHelper = new THREE.ArrowHelper(
-    //   direction,
-    //   origin,
-    //   4,
-    //   'red'
-    // );
-    // box.add(arrowHelper);
+    this.arrowHelper = new THREE.ArrowHelper(
+      direction,
+      origin,
+      3,
+      'yellow'
+    );
+    box.add(this.arrowHelper);
 
-    // box.addFunction('_initGui', this._initGui);
-
-    box.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set('green');
+    let lastTime;
+    box[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          box.material.color.set(0xFF0000);
+        }
+      },
+      hover_end() {
+        box.material.color.set('orange');
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        // this.paused = true;
+        // TODO: Stop associated pendulum swing's motion
+        lastTime = performance.now();
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag(matrix) {
+        const now = performance.now();
+        const diff = (now - lastTime) / 1000; // ms to s
+        lastTime = now;
+        box.velocity = new THREE.Vector3().setFromMatrixPosition(matrix);
+        box.velocity.sub(new THREE.Vector3().setFromMatrixPosition(box.matrix));
+        box.velocity.divideScalar(diff);
+        box.matrix.copy(matrix);
+        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+        boxBody.position.x = pos.x;
+        boxBody.position.y = pos.y;
+        boxBody.position.z = pos.z;
+        box.updateMatrixWorld(true);
+      },
+      drag_end: () => {
+        const instVel = box.velocity;
+        delete box.velocity;
+        boxBody.velocity.x = instVel.x;
+        boxBody.velocity.y = instVel.y;
+        boxBody.velocity.z = instVel.z;
       }
     };
 
-    // Select Box
-    // box.select = function () {
-    //   if (!this.debug) console.log('Add Menu Gui Box Settings');
-    //   this.functions._initGui(this);
-    //   this.material.color.set('white');
-    // };
-
-    box.exit = function () {
-      this.material.color.set('red');
-    };
-
-    this.triggers.add(box);
+    this.scene.add(box);
 
     this.bodies.push(boxBody);
     this.meshes.push(box);
@@ -599,8 +607,13 @@ export default class FallingScene extends XrScene {
     this.scene.add(pointLight);
   }
 
+  _updateArrowHelpers() {
+
+  }
+
   animate(delta) {
     this.updatePhysics(delta);
+    this._updateArrowHelpers();
 
     // Update position of meshes
     for (let i = 0; i < this.bodies.length; i++) {
