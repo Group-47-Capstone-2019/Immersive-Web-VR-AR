@@ -30,7 +30,7 @@ export default class Controller {
 
   constructor(inputSource) {
     // Used for the controller's laser and cursor material color
-    this.color = new Color(Math.random(), Math.random(), Math.random());
+    this.color = new Color((Math.random()*0.5) + 0.5, (Math.random()*0.5) + 0.5, (Math.random()*0.5) + 0.5);
     this.inputSource = inputSource;
     switch (this.inputSource.targetRayMode) {
       case 'gaze':
