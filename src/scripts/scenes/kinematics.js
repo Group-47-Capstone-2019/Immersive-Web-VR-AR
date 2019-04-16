@@ -347,19 +347,6 @@ export default class KinematicsScene extends XrScene {
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
-    this.arrowHelpers = [];
-    let direction = new THREE.Vector3(0, 0, 0);
-    let origin = new THREE.Vector3(0, 0, 0);
-
-    // Ball ArrowHelper
-    this.arrowHelper = new THREE.ArrowHelper(
-      direction,
-      origin,
-      3,
-      'yellow'
-    );
-    ball.add(this.arrowHelper);
-
     let lastTime;
     ball[Interactions] = {
       hover_start() {
@@ -427,14 +414,7 @@ export default class KinematicsScene extends XrScene {
     const direction = new THREE.Vector3(0, 0, 0);
     const origin = new THREE.Vector3(0, 0, 0);
 
-    // Box ArrowHelper
-    this.arrowHelper = new THREE.ArrowHelper(
-      direction,
-      origin,
-      3,
-      'yellow'
-    );
-    box.add(this.arrowHelper);
+    
 
     let lastTime;
     box[Interactions] = {
@@ -624,12 +604,6 @@ export default class KinematicsScene extends XrScene {
     );
     this.world.addContactMaterial(groundContact);
     this.world.addContactMaterial(objectContact);
-
-    const roofBody = new CANNON.Body({ mass: 0 });
-    roofBody.addShape(groundShape);
-    roofBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
-    roofBody.position.set(0, height, 0);
-    this.world.addBody(roofBody);
 
     const wallFrontBody = new CANNON.Body({ mass: 0 });
     wallFrontBody.addShape(groundShape);
