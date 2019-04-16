@@ -56,8 +56,12 @@ export default class XrScene {
       this.controls.getObject().position.set(0, 0, 0);
       this.controls.getObject().rotation.y = 0;
       this.controls.getObject().children[0].rotation.x = 0;
-      this.position.copy(this.controls.getObject().position);
+    } else {
+      const matrix = XR.getOffsetMatrix();
+      matrix.setPosition(new Vector3(0, 0, 0));
+      XR.setOffsetMatrix(matrix);
     }
+
     this.pause = false;
 
     this.loader.depend(loadControllerMeshes());
@@ -231,6 +235,12 @@ export default class XrScene {
         this.scene.matrixAutoUpdate = false;
         this.renderer.autoClear = false;
         this.renderer.clear();
+
+        // Update render state near and far
+        XR.session.updateRenderState({
+          depthNear : this.camera.near,
+          depthFar  : this.camera.far
+        });
 
         this.renderer.setSize(
           XR.session.renderState.baseLayer.framebufferWidth,

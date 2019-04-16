@@ -1,6 +1,6 @@
 import HomeScene from './scenes/home';
 import { renderer } from './renderer';
-import { camera } from './renderer/camera';
+import { camera, resetCamera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import KinematicsScene from './scenes/kinematics';
 import PendulumScene from './scenes/pendulums';
@@ -41,6 +41,8 @@ async function navigateToScene(pathname, oldPath) {
     SavedStates[oldPath] = currentScene.state;
     currentScene.removeEventListeners();
   }
+
+  resetCamera();
 
   if (pathname === '/') {
     showWelcome();

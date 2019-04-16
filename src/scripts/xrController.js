@@ -85,10 +85,6 @@ async function xrOnSessionStarted(context) {
     console.error(`Error making rendering context XR compatible : ${err}`);
   }
 
-  // Set near and far settings for session camera
-  XR.session.depthNear = cameraSettings.near;
-  XR.session.depthFar = cameraSettings.far;
-
   /* global XRWebGLLayer:true */
   XR.session.updateRenderState({
     baseLayer: new XRWebGLLayer(XR.session, renderer.context),

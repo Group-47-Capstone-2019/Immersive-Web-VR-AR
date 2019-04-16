@@ -1,75 +1,82 @@
 import {
-  SphereGeometry, Mesh, MeshLambertMaterial, Vector3
+  SphereGeometry,
+  MeshPhongMaterial,
+  MeshBasicMaterial,
+  Object3D
 } from 'three';
+import { createPlanetText } from './ui';
+import TriggerMesh from '../../trigger';
 
-function randomColor() {
-  return '#000000'.replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
-}
+const DISTANCE_DIVIDER = 1e6;
+export const CAMERA_OFFSET = {
+  x: 0,
+  y: 5,
+  z: 20
+};
 
-/**
- * build a planet mesh and return it
- *
- * @param {number} size
- * @param {number} x
- * @param {number} y
- * @param {number} z
- */
-export function createPlanetMesh(size, x, y, z) {
-  const geometry = new SphereGeometry(size, 20, 20);
-  const mat = new MeshLambertMaterial({ color: randomColor() });
-
-  const ball = new Mesh(geometry, mat);
-  ball.position.set(x, y, z);
-  ball.material.smoothShading = true;
-
-  return ball;
-}
-
-/**
- * returns a random number between the two values
- *
- * @param {number} low
- * @param {number} high
- */
-const randBetweenPos = (low, high) => Math.random() * (high - low) + low;
-
-/**
- * return random number (posive or negative) whose absolute value
- * lies between the given values.
- *
- * @param {number} low
- * @param {number} high
- */
-const randBetween = (low, high) => randBetweenPos(low, high) * (Math.random() > 0.5 ? -1 : 1);
-
-/**
- * @typedef Planet
- * @property {Vector3} velocity
- * @property {number} mass
- * @property {number} radius
- * @property {Mesh} mesh
- */
+export const cameraPointName = planetName => `CameraPoint${planetName}`;
+export const planetTextName = planetName => `TextPoint${planetName}`;
+export const nextPointName = planetName => `NextPoint${planetName}`;
+export const prevPointName = planetName => `PrevPoint${planetName}`;
 
 /**
  * build planets, with mesh and randomized position
  *
- * @returns {Planet[]} created planets
+ * @returns {TriggerMesh[]} created planets
  */
-export function createPlanets() {
-  const sizes = [0.5, 0.75, 1, 0.5, 1, 0.75, 1, 0.5];
-  return sizes.map((radius) => {
-    const x = randBetween(4, 10);
-    const y = randBetween(4, 10);
-    const z = randBetween(4, 10);
+export function createPlanets(planetData, cache) {
+  return Object.keys(planetData).map(planetName => {
+    const texture = cache[planetName];
+    const planet = planetData[planetName];
+    const geo = new SphereGeometry(planet.fakeRadius, 20, 20);
 
-    const velocity = new Vector3(0, 0, 0);
+    let material;
+    if (planetName === 'Sun') {
+      material = new MeshBasicMaterial({ map: texture });
+    } else {
+      material = new MeshPhongMaterial({ map: texture });
+    }
 
-    return {
-      velocity,
-      radius,
-      mass: Math.PI * (4 / 3) * (radius ** 3),
-      mesh: createPlanetMesh(radius, x, y, z)
-    };
+    const mesh = new TriggerMesh(geo, material);
+
+    mesh.position.setFromSphericalCoords(
+      planet.orbitDistance / DISTANCE_DIVIDER,
+      Math.PI / 2,
+      Math.random() * Math.PI
+    );
+    mesh.name = planetName;
+
+    // camera point
+    const cameraPoint = new Object3D();
+    mesh.add(cameraPoint);
+    cameraPoint.position.set(
+      CAMERA_OFFSET.x,
+      CAMERA_OFFSET.y + planet.fakeRadius,
+      CAMERA_OFFSET.z
+    );
+    cameraPoint.name = cameraPointName(planetName);
+
+    // text description
+    const text = createPlanetText(planet);
+    mesh.add(text);
+    text.position.set(0, planet.fakeRadius + 8, 0);
+
+    text.name = planetTextName(planetName);
+    text.visible = false;
+
+    // next button
+    const nextButtonPoint = new Object3D();
+    nextButtonPoint.position.set(18, planet.fakeRadius + 8, 0);
+    nextButtonPoint.name = nextPointName(planetName);
+    mesh.add(nextButtonPoint);
+
+    // prev button
+    const prevButtonPoint = new Object3D();
+    prevButtonPoint.position.set(-18, planet.fakeRadius + 8, 0);
+    prevButtonPoint.name = prevPointName(planetName);
+    mesh.add(prevButtonPoint);
+
+    return mesh;
   });
 }
 
