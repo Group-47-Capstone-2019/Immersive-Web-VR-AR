@@ -94,8 +94,6 @@ export default class FallingScene extends XrScene {
     createButton.position.set(10, 0, 0.25);
     reverseButton.position.set(0, 0, 0.25);
 
-    console.log(setting);
-
     const createLabelGravity = createTextPlane('Gravity', 'white', 'red');
     createButton.add(createLabelGravity);
     createLabelGravity.position.set(-1.5, 3, 0);
@@ -204,7 +202,7 @@ export default class FallingScene extends XrScene {
   }
 
   _spawnBall = () => {
-    console.log('Spawn ball');
+    //console.log('Spawn ball');
 
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
@@ -286,7 +284,7 @@ export default class FallingScene extends XrScene {
   }
 
   _spawnBox = () => {
-    console.log('Spawn box');
+    //console.log('Spawn box');
 
     const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
@@ -457,7 +455,7 @@ export default class FallingScene extends XrScene {
     function onProgress(xhr) {
       if (xhr.lengthComputable) {
         const percentComplete = xhr.loaded / xhr.total * 100;
-        console.log(`model${Math.round(percentComplete, 2)}% downloaded`);
+        //console.log(`model${Math.round(percentComplete, 2)}% downloaded`);
       }
     }
 
