@@ -236,6 +236,12 @@ export default class XrScene {
         this.renderer.autoClear = false;
         this.renderer.clear();
 
+        // Update render state near and far
+        XR.session.updateRenderState({
+          depthNear : this.camera.near,
+          depthFar  : this.camera.far
+        });
+
         this.renderer.setSize(
           XR.session.renderState.baseLayer.framebufferWidth,
           XR.session.renderState.baseLayer.framebufferHeight,
