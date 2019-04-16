@@ -26,6 +26,32 @@
   user-select: none;
 }
 
+#rotstickControls {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 150px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.562);
+  border-radius: 75px;
+}
+
+#rotstick {
+  display: inline-block;
+  visibility: hidden;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  right: 70px;
+  bottom: 70px;
+  background: rgba(141, 140, 140, 0.562);
+  border-radius: 75px;
+  pointer-events: all;
+  touch-action: none;
+  user-select: none;
+}
+
 .fullscreen-toggle {
   position: absolute;
   visibility: visible;
