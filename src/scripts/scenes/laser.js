@@ -68,20 +68,18 @@ export default class LaserScene extends XrScene {
     resetButton.position.set(-15, 0, 0.25);
 
     const selectLabel = createTextPlane('SELECT', 'white', 'black');
-    selectButton.add(selectLabel);
-    selectLabel.position.set(0, 3, 0);
+    selectLabel.position.set(5, 3, 0.01);
 
     const deleteLabel = createTextPlane('DELETE', 'white', 'black');
-    deleteButton.add(deleteLabel);
-    deleteLabel.position.set(0, 3, 0);
+    deleteLabel.position.set(-5, 3, 0.01);
 
     const createLabel = createTextPlane('CREATE', 'white', 'black');
-    createButton.add(createLabel);
-    createLabel.position.set(0, 3, 0);
+    createLabel.position.set(15, 3, 0.01);
 
     const resetLabel = createTextPlane('RESET', 'white', 'black');
-    resetButton.add(resetLabel);
-    resetLabel.position.set(0, 3, 0);
+    resetLabel.position.set(-15, 3, 0.01);
+
+    menu.add(selectLabel, deleteLabel, createLabel, resetLabel);
 
     selectButton.hover = function () {
       if (!this.isSelected) {
@@ -220,6 +218,11 @@ export default class LaserScene extends XrScene {
         if (setting === mode.DELETE) {
           mirror.material.dispose();
           mirror.geometry.dispose();
+          while (mirror.children.length > 0) {
+            mirror.children[0].geometry.dispose();
+            mirror.children[0].material.dispose();
+            mirror.remove(mirror.children[0]);
+          }
           mirror.parent.remove(mirror);
         }
       },
@@ -234,14 +237,16 @@ export default class LaserScene extends XrScene {
         };
       },
       drag(matrix) {
-        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+        if (setting === mode.SELECT) {
+          const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
 
-        pos.y = -5;
-        mirror.matrix.setPosition(pos);
-        mirror.position.x = pos.x;
-        mirror.position.z = pos.z;
-        mirror.position.y = pos.y;
-        mirror.updateMatrixWorld(true);
+          pos.y = -5;
+          mirror.matrix.setPosition(pos);
+          mirror.position.x = pos.x;
+          mirror.position.z = pos.z;
+          mirror.position.y = pos.y;
+          mirror.updateMatrixWorld(true);
+        }
       }
     };
 
@@ -256,6 +261,18 @@ export default class LaserScene extends XrScene {
       hover_end() {
         base.material.color.set(0x383838);
       },
+      select_start() {
+        if (setting === mode.DELETE) {
+          mirror.material.dispose();
+          mirror.geometry.dispose();
+          while (mirror.children.length > 0) {
+            mirror.children[0].geometry.dispose();
+            mirror.children[0].material.dispose();
+            mirror.remove(mirror.children[0]);
+          }
+          mirror.parent.remove(mirror);
+        }
+      },
       drag_start: (intersection, pointerMatrix) => {
         const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
         const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
@@ -264,42 +281,44 @@ export default class LaserScene extends XrScene {
           object: intersection.object,
           transformMatrix,
           matrixAutoUpdate: intersection.object.matrixAutoUpdate
-        };
+        }
       },
       drag(matrix) {
-        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
-        const cameraDir = new THREE.Vector3();
-        base.camera.getWorldDirection(cameraDir);
-        
-        let newPos = new THREE.Vector3();
-        newPos.subVectors(pos, mirror.position);
-        newPos.x *= cameraDir.z;
-        newPos.z *= -cameraDir.x;
-        const ratio = 0.003;
-        const radians = -(newPos.x + newPos.z) * ratio;
-        const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
-        mirror.matrix.multiply(rotMatrix);
-        mirror.rotateY(radians);
+        if (setting === mode.SELECT) {
+          const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+          const cameraDir = new THREE.Vector3();
+          base.camera.getWorldDirection(cameraDir);
+          
+          let newPos = new THREE.Vector3();
+          newPos.subVectors(pos, mirror.position);
+          newPos.x *= cameraDir.z;
+          newPos.z *= -cameraDir.x;
+          const ratio = 0.003;
+          const radians = -(newPos.x + newPos.z) * ratio;
+          const rotMatrix = new THREE.Matrix4().makeRotationY(radians);
+          mirror.matrix.multiply(rotMatrix);
+          mirror.rotateY(radians);
 
-        let angle = Math.round(((mirror.rotation.y * 180) / Math.PI) * 10) / 10;
-        if (angle !== mirror.angle) {
-          if (mirror.children.length > 1) {
-            mirror.children[1].geometry.dispose();
-            mirror.children[1].material.dispose();
-            mirror.remove(mirror.children[1]);
+          let angle = Math.round(((mirror.rotation.y * 180) / Math.PI) * 10) / 10;
+          if (angle !== mirror.angle) {
+            if (mirror.children.length > 1) {
+              mirror.children[1].geometry.dispose();
+              mirror.children[1].material.dispose();
+              mirror.remove(mirror.children[1]);
+            }
+            const angleLabel = createTextPlane(angle.toString(), 'white');
+            angleLabel.raycast = () => [];
+            mirror.add(angleLabel);
+            mirror.angle = angle;
+            angleLabel.position.set(0, 3, 0);
+
+            const camPos = new THREE.Vector3();
+            base.camera.getWorldPosition(camPos);
+            angleLabel.lookAt(camPos);
           }
-          const angleLabel = createTextPlane(angle.toString(), 'white');
-          angleLabel.raycast = () => [];
-          mirror.add(angleLabel);
-          mirror.angle = angle;
-          angleLabel.position.set(0, 3, 0);
 
-          const camPos = new THREE.Vector3();
-          base.camera.getWorldPosition(camPos);
-          angleLabel.lookAt(camPos);
+          mirror.updateMatrixWorld(true);
         }
-
-        mirror.updateMatrixWorld(true);
       }
     };
 
