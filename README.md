@@ -35,6 +35,8 @@ Configure the port forwarding by selecing the `Port forwarding...` button. Add t
 Go to `localhost:1234`. Click the 'check it out' button and you're in! There should be an 'EnterVR' button in the top left of the screen. Click it to enter immersive VR mode.
  
 ## Working with HMDs (VIVE/Oculus)
+*Currrently, there are some issues with using/setting up HMDs. We met with our client in person on April 5th and he was able to get it working on his VIVE. However, we are unable to manage to get it working with the steps he provided us (down below). For now, we recommend only testing using a Daydream device, although feel free to attempt to get it working using the instructions given.*
+
 In order to use an HMD (head mounted display), such as a VIVE or Oculus Rift, you first need to download Steam and SteamVR. Start up SteamVR and then open `localhost:1234` in your Chrome Dev browser. Ensure that the following flags are enabled by going to `chrome://flags` and enabling:
 - WebXR Device API
 - WebXR Hit Test
