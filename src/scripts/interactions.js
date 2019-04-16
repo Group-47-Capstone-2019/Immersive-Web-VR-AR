@@ -59,45 +59,44 @@ function handlerCommon(func) {
   return function ({ frame, inputSource }) {
     const ray = createRay(inputSource, frame);
     if (ray) {
-      for (const intersection of raycast(ray)) {
-        func(intersection, inputSource, new Matrix4().fromArray(ray.matrix));
-        break;
-      }
+      func(raycast(ray)[0], inputSource, new Matrix4().fromArray(ray.matrix));
     }
   };
 }
 const handleSelectStart = handlerCommon((intersection, inputSource, pointerMatrix) => {
-  const interactions = intersection.object[Interactions];
-  if (interactions) {
-    // Handle select_start
-    if (interactions.select_start) {
-      console.log('Calling select_start');
-      interactions.select_start(intersection);
-    }
-
-    // If there are any drag interactions then handle dragging
-    if (interactions.drag_start || interactions.drag_end || interactions.drag) {
-      let data;
-      if (interactions.drag_start) {
-        console.log('Calling drag_start');
-        data = interactions.drag_start(intersection, pointerMatrix);
-      } else {
-        console.log('Using default drag_start implementation');
-        // This is the default implementation for drag_start
-        const pointerInverse = new Matrix4().getInverse(pointerMatrix, true);
-        const target = new Matrix4().copy(intersection.object.matrixWorld);
-        const transformMatrix = new Matrix4().multiplyMatrices(pointerInverse, target);
-        data = {
-          object: intersection.object,
-          transformMatrix,
-          matrixAutoUpdate: intersection.object.matrixAutoUpdate
-        };
+  if (intersection) {
+    const interactions = intersection.object[Interactions];
+    if (interactions) {
+      // Handle select_start
+      if (interactions.select_start) {
+        console.log('Calling select_start');
+        interactions.select_start(intersection);
       }
-      intersection.object.matrixAutoUpdate = false;
-      dragAndDrop.set(inputSource, data);
+  
+      // If there are any drag interactions then handle dragging
+      if (interactions.drag_start || interactions.drag_end || interactions.drag) {
+        let data;
+        if (interactions.drag_start) {
+          console.log('Calling drag_start');
+          data = interactions.drag_start(intersection, pointerMatrix);
+        } else {
+          console.log('Using default drag_start implementation');
+          // This is the default implementation for drag_start
+          const pointerInverse = new Matrix4().getInverse(pointerMatrix, true);
+          const target = new Matrix4().copy(intersection.object.matrixWorld);
+          const transformMatrix = new Matrix4().multiplyMatrices(pointerInverse, target);
+          data = {
+            object: intersection.object,
+            transformMatrix,
+            matrixAutoUpdate: intersection.object.matrixAutoUpdate
+          };
+        }
+        intersection.object.matrixAutoUpdate = false;
+        dragAndDrop.set(inputSource, data);
+      }
     }
+    selectedObjects.set(inputSource, intersection.object);
   }
-  selectedObjects.set(inputSource, intersection.object);
 });
 const handleSelectEnd = handlerCommon((intersection, inputSource) => {
   // Handle the end of dragging
@@ -113,23 +112,25 @@ const handleSelectEnd = handlerCommon((intersection, inputSource) => {
   }
 
   const selectedObject = selectedObjects.get(inputSource);
-  const interactions = selectedObject[Interactions];
-  if (interactions) {
-    // Handle the end of selection
-    if (interactions.select_end) {
-      console.log('Calling select_end');
-      interactions.select_end();
-    } else { console.log('Using default select_end implementation'); }
-    // Handle select
-    if (interactions.select) {
-      console.log('Calling select');
-      interactions.select(
-        // If you start selecting an object and then move off of that object, then the intersection will be on another object.  In this case, pass null to the select callback.
-        (intersection.object === selectedObject) ? intersection : null
-      );
-    } else { console.log('Using default select implementation'); }
+  if (selectedObject) {
+    const interactions = selectedObject[Interactions];
+    if (interactions) {
+      // Handle the end of selection
+      if (interactions.select_end) {
+        console.log('Calling select_end');
+        interactions.select_end();
+      } else { console.log('Using default select_end implementation'); }
+      // Handle select
+      if (interactions.select) {
+        console.log('Calling select');
+        interactions.select(
+          // If you start selecting an object and then move off of that object, then the intersection will be on another object.  In this case, pass null to the select callback.
+          (intersection.object === selectedObject) ? intersection : null
+        );
+      } else { console.log('Using default select implementation'); }
+    }
+    selectedObjects.delete(inputSource);
   }
-  selectedObjects.delete(inputSource);
 });
 
 // Called when a session is created:

@@ -97,4 +97,6 @@ window.onpopstate = () => {
 };
 
 // update scene when page loaded
-navigateToScene(window.location.pathname);
+window.addEventListener('load', () => {
+  navigateToScene(window.location.pathname);
+});
