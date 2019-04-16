@@ -36,6 +36,7 @@ import sky_nz from '../../assets/textures/Skybox/sky_nz.png';
 import sky_px from '../../assets/textures/Skybox/sky_px.png'; 
 import sky_py from '../../assets/textures/Skybox/sky_py.png'; 
 import sky_pz from '../../assets/textures/Skybox/sky_pz.png';
+import { ArrowHelper } from 'three';
 
 export default class KinematicsScene extends XrScene {
   /**
@@ -69,6 +70,8 @@ export default class KinematicsScene extends XrScene {
     // Objects
     this.bodies = [];
     this.meshes = [];
+
+    this.arrows = [];
 
     this.objectMaterial = new CANNON.Material();
 
@@ -347,18 +350,15 @@ export default class KinematicsScene extends XrScene {
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
-    this.arrowHelpers = [];
-    let direction = new THREE.Vector3(0, 0, 0);
-    let origin = new THREE.Vector3(0, 0, 0);
-
-    // Ball ArrowHelper
-    this.arrowHelper = new THREE.ArrowHelper(
-      direction,
-      origin,
-      3,
+    const arrow = new THREE.ArrowHelper(
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0, 0, 0),
+      0,
       'yellow'
     );
-    ball.add(this.arrowHelper);
+
+    this.arrows.push({position : ball.position, velocity : ballBody.velocity, arrow : arrow});
+    this.scene.add(arrow);
 
     let lastTime;
     ball[Interactions] = {
@@ -422,19 +422,17 @@ export default class KinematicsScene extends XrScene {
     const box = new THREE.Mesh(this.boxGeo, material);
     box.castShadow = true;
     box.receiveShadow = true;
-    this.world.addBody(boxBody);
+    this.world.addBody(boxBody)
 
-    const direction = new THREE.Vector3(0, 0, 0);
-    const origin = new THREE.Vector3(0, 0, 0);
-
-    // Box ArrowHelper
-    this.arrowHelper = new THREE.ArrowHelper(
-      direction,
-      origin,
-      3,
+    const arrow = new THREE.ArrowHelper(
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0, 0, 0),
+      0,
       'yellow'
     );
-    box.add(this.arrowHelper);
+
+    this.arrows.push({position : box.position, velocity : boxBody.velocity, arrow : arrow});
+    this.scene.add(arrow);
 
     let lastTime;
     box[Interactions] = {
@@ -625,12 +623,6 @@ export default class KinematicsScene extends XrScene {
     this.world.addContactMaterial(groundContact);
     this.world.addContactMaterial(objectContact);
 
-    const roofBody = new CANNON.Body({ mass: 0 });
-    roofBody.addShape(groundShape);
-    roofBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
-    roofBody.position.set(0, height, 0);
-    this.world.addBody(roofBody);
-
     const wallFrontBody = new CANNON.Body({ mass: 0 });
     wallFrontBody.addShape(groundShape);
     wallFrontBody.position.set(-length, 0, -width);
@@ -671,7 +663,21 @@ export default class KinematicsScene extends XrScene {
   }
 
   _updateArrowHelpers() {
+    for(let i = 0; i < this.arrows.length; i++) {
+      const velocity = this.arrows[i].velocity;
+      const position = this.arrows[i].position;
+      const arrow = this.arrows[i].arrow
 
+      const direction = new THREE.Vector3(
+        position.x + velocity.x,
+        position.y + velocity.y,
+        position.z + velocity.z
+      );
+
+      arrow.position.copy(position);
+      arrow.setLength(velocity.length());
+      arrow.setDirection(direction.normalize());
+    }
   }
 
   animate(delta) {
