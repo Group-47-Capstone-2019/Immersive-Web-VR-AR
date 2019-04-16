@@ -1,5 +1,5 @@
 import {
-  Scene, Matrix4, Clock, Group
+  Scene, Vector3, Matrix4, Clock, Group
 } from 'three';
 import { World } from 'cannon';
 
@@ -28,6 +28,8 @@ export default class XrScene {
 
   triggers = new Group();
 
+  position = new Vector3(0, 0, 0);
+
   controllers = [];
 
   isActive = true;
@@ -54,13 +56,20 @@ export default class XrScene {
       this.controls.getObject().position.set(0, 0, 0);
       this.controls.getObject().rotation.y = 0;
       this.controls.getObject().children[0].rotation.x = 0;
+    } else {
+      const matrix = XR.getOffsetMatrix();
+      matrix.setPosition(new Vector3(0, 0, 0));
+      XR.setOffsetMatrix(matrix);
     }
+
     this.pause = false;
 
     this.loader.depend(loadControllerMeshes());
     this.scene.add(this.triggers);
 
     this._checkForKeyboardMouse();
+
+    this.bounds = [];
 
     // Make sure that animation callback is called on an xrAnimate event.
     this._addEventListener(window, 'xrAnimate', this._restartAnimation);
@@ -227,6 +236,12 @@ export default class XrScene {
         this.renderer.autoClear = false;
         this.renderer.clear();
 
+        // Update render state near and far
+        XR.session.updateRenderState({
+          depthNear : this.camera.near,
+          depthFar  : this.camera.far
+        });
+
         this.renderer.setSize(
           XR.session.renderState.baseLayer.framebufferWidth,
           XR.session.renderState.baseLayer.framebufferHeight,
@@ -257,13 +272,13 @@ export default class XrScene {
             updateTouchPosition(viewMatrix);
           }
 
-          // this.camera.matrixWorldInverse.fromArray(view.viewMatrix);
+          // Bound position
+          this._clampInBounds();
+
           this.camera.matrixAutoUpdate = false;
           this.camera.matrix.fromArray(view.transform.matrix);
           this.camera.matrixWorldNeedsUpdate = true;
           this.camera.projectionMatrix.fromArray(view.projectionMatrix);
-          //          this.scene.matrix.copy(viewMatrix);
-          //          this.scene.updateMatrixWorld(true);
           this.renderer.render(this.scene, this.camera);
           this.renderer.clearDepth();
         }
@@ -274,6 +289,48 @@ export default class XrScene {
     this.frame = null;
     return this.frame;
   };
+
+  /**
+   * Uses a set of THREE Box3's to clamp the user's position within them.
+   * If user is out of bounds, checks for the closest bounding box and clamps
+   * their position to it. Updates the OffsetMatrix.
+   */
+  _clampInBounds() {
+    const offsetMatrix = XR.getOffsetMatrix();
+    const position = new Vector3().setFromMatrixPosition(offsetMatrix);
+
+    let inBounds = false;
+
+    const boundData = {
+      distance: Number.MAX_SAFE_INTEGER,
+      bound: null
+    };
+
+    for (let i = 0; i < this.bounds.length; i++) {
+      const bound = this.bounds[i];
+      const distance = bound.distanceToPoint(position);
+
+      // If within a boundary, cease bounds checking
+      if (distance === 0) {
+        inBounds = true;
+        break;
+      }
+
+      // Get closest boundary if out of bounds
+      if (distance < boundData.distance) {
+        boundData.distance = distance;
+        boundData.bound = bound;
+      }
+    }
+
+    // If user is out of bounds, clamp position to closest boundary
+    if (!inBounds && boundData.bound) {
+      const clampedPos = new Vector3();
+      boundData.bound.clampPoint(position, clampedPos);
+      offsetMatrix.setPosition(clampedPos);
+      XR.setOffsetMatrix(offsetMatrix);
+    }
+  }
 
   _checkForKeyboardMouse() {
     if (keyboard) {
@@ -305,6 +362,15 @@ export default class XrScene {
       type,
       listener
     });
+  }
+
+  /**
+   * Fires event to change room scene provided a path to it.
+   * @param {String} newPath 
+   */
+  changeRoom(newPath) {
+    const event = new CustomEvent('changeRoom', { detail: { newPath } });
+    window.dispatchEvent(event);
   }
 
   /**
