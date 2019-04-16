@@ -29,10 +29,12 @@ export const XR = {
     const rotation = new Quaternion();
     matrix.decompose(position, rotation, scale);
     /* global XRRigidTransform */
-    this.refSpace.originOffset = new XRRigidTransform(
-      new DOMPoint(position.x, position.y, position.z, 1),
-      new DOMPoint(rotation.x, rotation.y, rotation.z, rotation.w)
-    );
+    if (this.refspace) {
+      this.refSpace.originOffset = new XRRigidTransform(
+        new DOMPoint(position.x, position.y, position.z, 1),
+        new DOMPoint(rotation.x, rotation.y, rotation.z, rotation.w)
+      );
+    }
   }
 };
 
