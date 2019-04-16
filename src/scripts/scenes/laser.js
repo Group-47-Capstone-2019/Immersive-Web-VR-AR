@@ -7,7 +7,7 @@ import floorTxUrl from '../../assets/textures/laser-room/floor/floor_diff.jpg';
 import doorUrl from '../../assets/door.glb';
 import { Interactions } from '../interactions';
 import { XR } from '../xrController';
-import { createTextSprite, createTextPlane } from './planets/text';
+import { createTextPlane } from './planets/text';
 
 const mode = {
   SELECT: 'select',
@@ -50,39 +50,22 @@ export default class LaserScene extends XrScene {
     this.height = 16;
   }
 
-  selectInteraction() {
-    return {
-      select_start({ point }) {
-        if (setting === mode.CREATE) {
-          this._addMirrors();
-        } else {
-          console.log('Teleporting to:', point);
-          const offsetMatrix = XR.getOffsetMatrix();
-          point.y = 0;
-          point.multiplyScalar(-1);
-          offsetMatrix.setPosition(point);
-          XR.setOffsetMatrix(offsetMatrix);
-        }
-      }
-    };
-  }
-
   _initMenu() {
     const buttonGeo = new THREE.BoxGeometry(4, 3, 0.5);
     const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
     const selectButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const deleteButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
+    const resetButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const menu = new THREE.Object3D();
-    menu.add(selectButton, deleteButton, createButton);
+    menu.add(selectButton, deleteButton, createButton, resetButton);
     this.scene.add(menu);
     menu.position.set(0, -2, -32);
     selectButton.material.color.set(0x999999);
-    createButton.position.set(10, 0, 0.25);
-    selectButton.position.set(0, 0, -0.125);
-    deleteButton.position.set(-10, 0, 0.25);
-
-    console.log(setting);
+    createButton.position.set(15, 0, 0.25);
+    selectButton.position.set(5, 0, -0.125);
+    deleteButton.position.set(-5, 0, 0.25);
+    resetButton.position.set(-15, 0, 0.25);
 
     const selectLabel = createTextPlane('SELECT', 'white', 'black');
     selectButton.add(selectLabel);
@@ -95,6 +78,10 @@ export default class LaserScene extends XrScene {
     const createLabel = createTextPlane('CREATE', 'white', 'black');
     createButton.add(createLabel);
     createLabel.position.set(0, 3, 0);
+
+    const resetLabel = createTextPlane('RESET', 'white', 'black');
+    resetButton.add(resetLabel);
+    resetLabel.position.set(0, 3, 0);
 
     selectButton.hover = function () {
       if (!this.isSelected) {
@@ -113,7 +100,6 @@ export default class LaserScene extends XrScene {
     };
 
     selectButton.exit = function () {
-      console.log(setting);
       if (setting === mode.SELECT) {
         this.material.color.set(0x999999);
       } else {
@@ -138,15 +124,12 @@ export default class LaserScene extends XrScene {
     };
 
     deleteButton.exit = function () {
-      console.log(setting);
       if (setting === mode.DELETE) {
         this.material.color.set(0x999999);
       } else {
         this.material.color.set(0x222222);
       }
     };
-
-    createButton.addFunction('spawnMirror', this._addMirrors);
 
     createButton.hover = function () {
       if (!this.isSelected) {
@@ -155,7 +138,6 @@ export default class LaserScene extends XrScene {
     };
 
     createButton.select = function () {
-      // this.functions.spawnMirror();
       setting = mode.CREATE;
       this.position.z = -0.125;
       this.material.color.set(0x999999);
@@ -173,7 +155,45 @@ export default class LaserScene extends XrScene {
       }
     };
 
+    resetButton.addFunction('reset', this._reset);
+
+    resetButton.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set(0x999999);
+      }
+    };
+
+    resetButton.select = function () {
+      this.functions.reset();
+      this.position.z = -0.125;
+      this.material.color.set(0x999999);
+    };
+
+    resetButton.exit = function () {
+      this.position.z = 0.25;
+      this.material.color.set(0x222222);
+    };
+
     this.triggers.add(menu);
+  }
+
+  _reset = () => {
+    const mirror = this.mirrors.children;
+
+    while (mirror.length > 0) {
+      while (mirror[0].children.length > 0) {
+        mirror[0].children[0].geometry.dispose();
+        mirror[0].children[0].material.dispose();
+        mirror[0].remove(mirror[0].children[0]);
+      }
+      mirror[0].geometry.dispose();
+      mirror[0].material.dispose();
+      this.mirrors.remove(mirror[0]);
+    }
+
+    let goal = this.scene.getObjectByName('group');
+    const randPos = this.getRandomPosition();
+    goal.position.set(randPos.x, randPos.y, randPos.z);
   }
 
   _addMirrors = (point) => {
@@ -185,8 +205,7 @@ export default class LaserScene extends XrScene {
     const base = new THREE.Mesh(baseGeo, baseMat);
     mirror.add(base);
     base.position.set(0, -2.375, 0);
-    mirror.reflectAngle = -1;
-    mirror.isReflecting = false;
+    mirror.angle = -1;
 
     mirror[Interactions] = {
       hover_start() {
@@ -262,16 +281,51 @@ export default class LaserScene extends XrScene {
         mirror.matrix.multiply(rotMatrix);
         mirror.rotateY(radians);
 
+        let angle = Math.round(((mirror.rotation.y * 180) / Math.PI) * 10) / 10;
+        if (angle !== mirror.angle) {
+          if (mirror.children.length > 1) {
+            mirror.children[1].geometry.dispose();
+            mirror.children[1].material.dispose();
+            mirror.remove(mirror.children[1]);
+          }
+          const angleLabel = createTextPlane(angle.toString(), 'white');
+          angleLabel.raycast = () => [];
+          mirror.add(angleLabel);
+          mirror.angle = angle;
+          angleLabel.position.set(0, 3, 0);
+
+          const camPos = new THREE.Vector3();
+          base.camera.getWorldPosition(camPos);
+          angleLabel.lookAt(camPos);
+        }
+
         mirror.updateMatrixWorld(true);
       }
     };
 
     // const randPos = this.getRandomPosition();
-    console.log(point);
     mirror.position.x = point.x;
     mirror.position.y = -5;
     mirror.position.z = point.z;
     mirror.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
+
+    let angle = Math.round(((mirror.rotation.y * 180) / Math.PI) * 10) / 10;
+    if (angle !== mirror.angle) {
+      if (mirror.children.length > 1) {
+        mirror.children[1].geometry.dispose();
+        mirror.children[1].material.dispose();
+        mirror.remove(mirror.children[1]);
+      }
+      const angleLabel = createTextPlane(angle.toString(), 'white');
+      angleLabel.raycast = () => [];
+      mirror.add(angleLabel);
+      mirror.angle = angle;
+      angleLabel.position.set(0, 3, 0);
+      const camPos = new THREE.Vector3();
+      this.camera.getWorldPosition(camPos);
+      angleLabel.lookAt(camPos);
+    }
+    
     this.mirrors.add(mirror);
 
     this.triggers.add(this.mirrors);
@@ -390,20 +444,6 @@ export default class LaserScene extends XrScene {
     direction = incomingDirection.clone();
     direction.reflect(normal);
 
-    const radAngle = normal.angleTo(direction) * 2;
-    let angle = radAngle / Math.PI * 180;
-    angle = Math.round(angle * 10) / 10;
-
-    if (angle !== res.object.reflectAngle) {
-      const angleLabel = createTextPlane(angle.toString(), 'white');
-      angleLabel.raycast = () => [];
-      res.object.add(angleLabel);
-      res.object.reflectAngle = angle;
-      res.object.isReflecting = true;
-      angleLabel.position.set(0, 3, 0);
-      angleLabel.lookAt(this.camera.position);
-    }
-
     const newRay = new THREE.Raycaster();
     newRay.set(res.point, direction);
     this.laserRays.push(newRay);
@@ -485,7 +525,6 @@ export default class LaserScene extends XrScene {
     floorTx.wrapT = THREE.RepeatWrapping;
     const wallMat = new THREE.MeshPhongMaterial({ map: wallTx, side: THREE.BackSide });
     const floorMat = new THREE.MeshPhongMaterial({ map: floorTx, side: THREE.BackSide });
-    console.log(wallMat);
     const roomMaterials = [
       wallMat,
       wallMat,
@@ -551,7 +590,6 @@ export default class LaserScene extends XrScene {
         if (setting === mode.CREATE) {
           floor.functions.addMirror(point);
         } else {
-          console.log('Teleporting to:', point);
           const offsetMatrix = XR.getOffsetMatrix();
           point.y = 0;
           point.multiplyScalar(-1);
@@ -590,11 +628,13 @@ export default class LaserScene extends XrScene {
     this.laserRays[0].set(raycasterOrigin, raycasterDestination.transformDirection(rayMatrixWorld));
   }
 
-  _resetMirrors() {
+  _updateMirrors() {
     const mirror = this.mirrors.children;
     for (let i = 0; i < mirror.length; i++) {
-      if (!mirror[i].isReflecting) {
-        mirror[i].remove(mirror[i].children[1]);
+      if (mirror[i].children.length > 1) {
+        const camPos = new THREE.Vector3();
+        this.camera.getWorldPosition(camPos);
+        mirror[i].children[1].lookAt(camPos);
       }
     }
   }
@@ -615,7 +655,7 @@ export default class LaserScene extends XrScene {
   }
 
   animate() {
-    this._resetMirrors();
+    this._updateMirrors();
     this._createLaser();
     this.laserRays = [];
     this.laserRays.push(this._copyRay(this.laserRay));
