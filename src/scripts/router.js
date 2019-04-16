@@ -4,6 +4,7 @@ import { camera, resetCamera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
 import FallingScene from './scenes/falling';
 import PendulumScene from './scenes/pendulums';
+import LaserScene from './scenes/laser';
 import {
   showWelcome, hideWelcome, showLoading, hideLoading
 } from './welcome';
@@ -23,6 +24,9 @@ const Routes = {
   },
   get '/falling'() {
     return new FallingScene(renderer, camera);
+  },
+  get '/lasers'() {
+    return new LaserScene(renderer, camera);
   },
   get '/pendulums'() {
     return new PendulumScene(renderer, camera);
@@ -80,6 +84,7 @@ export function navigate(newPath) {
 }
 
 function onChangeRoom(event) {
+  console.log(event.detail.newPath);
   navigate(event.detail.newPath);
 }
 
