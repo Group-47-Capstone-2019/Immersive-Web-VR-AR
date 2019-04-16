@@ -2,7 +2,7 @@ import HomeScene from './scenes/home';
 import { renderer } from './renderer';
 import { camera, resetCamera } from './renderer/camera';
 import PlanetsScene from './scenes/planets';
-import FallingScene from './scenes/falling';
+import KinematicsScene from './scenes/kinematics';
 import PendulumScene from './scenes/pendulums';
 import LaserScene from './scenes/laser';
 import {
@@ -22,8 +22,8 @@ const Routes = {
   get '/planets'() {
     return new PlanetsScene(renderer, camera);
   },
-  get '/falling'() {
-    return new FallingScene(renderer, camera);
+  get '/kinematics'() {
+    return new KinematicsScene(renderer, camera);
   },
   get '/lasers'() {
     return new LaserScene(renderer, camera);

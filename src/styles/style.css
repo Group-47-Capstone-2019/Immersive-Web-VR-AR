@@ -38,7 +38,7 @@
   width: 50px;
   outline: none;
   opacity: 1;
-  background-image: url('../images/fullscreen.png');
+  background-image: url('../assets/textures/fullscreen.png');
   background-position: center center;
   background-size: 100%;
 }
