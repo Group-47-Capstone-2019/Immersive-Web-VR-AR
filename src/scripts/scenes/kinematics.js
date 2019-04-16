@@ -30,12 +30,12 @@ let setting = mode.CREATE;
 
 import { updateCamera } from '../renderer/camera';
 
-import sky_nx from '../../assets/textures/skybox/sky_nx.png';
-import sky_ny from '../../assets/textures/skybox/sky_ny.png'; 
-import sky_nz from '../../assets/textures/skybox/sky_nz.png';
-import sky_px from '../../assets/textures/skybox/sky_px.png'; 
-import sky_py from '../../assets/textures/skybox/sky_py.png'; 
-import sky_pz from '../../assets/textures/skybox/sky_pz.png';
+import sky_nx from '../../assets/textures/Skybox/sky_nx.png';
+import sky_ny from '../../assets/textures/Skybox/sky_ny.png'; 
+import sky_nz from '../../assets/textures/Skybox/sky_nz.png';
+import sky_px from '../../assets/textures/Skybox/sky_px.png'; 
+import sky_py from '../../assets/textures/Skybox/sky_py.png'; 
+import sky_pz from '../../assets/textures/Skybox/sky_pz.png';
 
 export default class KinematicsScene extends XrScene {
   /**
