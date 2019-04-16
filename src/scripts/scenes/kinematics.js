@@ -180,12 +180,14 @@ export default class KinematicsScene extends XrScene {
     ground.position.set(0, -8, 0);
 
     ground[Interactions] = {
-      select_start({ point }) {
-        point.y += 8;
-        const offsetMatrix = XR.getOffsetMatrix();
-        point.multiplyScalar(-1);
-        offsetMatrix.setPosition(point);
-        XR.setOffsetMatrix(offsetMatrix);
+      select_start({ distance, point }) {
+        if(distance <= 75) {
+          point.y += 8;
+          const offsetMatrix = XR.getOffsetMatrix();
+          point.multiplyScalar(-1);
+          offsetMatrix.setPosition(point);
+          XR.setOffsetMatrix(offsetMatrix);
+        }
       }
     }
 
@@ -222,8 +224,6 @@ export default class KinematicsScene extends XrScene {
         ball.material.color.set('orange');
       },
       drag_start: (intersection, pointerMatrix) => {
-        // this.paused = true;
-        // TODO: Stop associated pendulum swing's motion
         lastTime = performance.now();
         const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
         const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
