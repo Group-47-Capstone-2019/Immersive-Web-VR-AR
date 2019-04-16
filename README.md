@@ -15,8 +15,29 @@ $ npm run dev
 ```
 The project will be running on `http://localhost:1234`. The development server will watch for changes in the source files and automatically reload the page after compiling them.
 
-## Working with remote devices
-To then work on a remote device, install Chrome Canary (we're playing with cutting edge stuff) and open the inspect tab: chrome://inspect  Configure the port forwarding.  It should have a port (such as 8080) for the http that forwards to localhost:1234 and another one from 64320 to localhost:64320 which is how Parcel does it's live updating stuff.
+## Working with mobile devices (Daydream)
+To then work on a remote device, install Chrome Dev v75.0.3759.4 for Windows 10 (we're playing with cutting edge stuff) and open the inspect tab: `chrome://inspect`  
+Configure the port forwarding by selecing the `Port forwarding...` button. Add the following ports (such as the default 8080):
+ - `localhost:1234` for the http that forwards to localhost:1234 
+ - `localhost:64320` which is how Parcel does it's live updating stuff
+ 
+ In order for the port forwarding to work on your device, there are some settings you need to enable.
+ 
+ *settings info here*
+ 
+ Now, connect an Android device with Daydream support via a USB cable and install and open Chrome Dev on your device. There are a couple flags that need to be enabled. Go to `chrome://flags` and ensure the following flags are enabled:
+ - WebXR Device API
+ - WebXR Hit Test
+ 
+Go to `localhost:1234`. Click the 'check it out' button and you're in! There should be an 'EnterVR' button in the top left of the screen. Click it to enter immersive VR mode.
+ 
+## Working with HMDs (VIVE/Oculus)
+In order to use an HMD (head mounted display), such as a VIVE or Oculus Rift, you first need to download Steam and SteamVR. Start up SteamVR and then open `localhost:1234` in your Chrome Dev browser. Ensure that the following flags are enabled by going to `chrome://flags` and enabling:
+- WebXR Device API
+- WebXR Hit Test
+- OpenVR hardware support
+
+At `localhost:1234` click 'check it out' to load the home room. There should be an 'EnterVR' button in the top left of the screen. Click it to enter immersive VR mode.
 
 # How to use the experiments:
 ## The Falling Objects Scene
