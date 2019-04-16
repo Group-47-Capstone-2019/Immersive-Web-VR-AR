@@ -227,16 +227,14 @@ export default class LaserScene extends XrScene {
         }
       },
       drag_start: (intersection, pointerMatrix) => {
-        if (setting === mode.SELECT) {
-          const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
-          const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
-          const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
-          return {
-            object: intersection.object,
-            transformMatrix,
-            matrixAutoUpdate: intersection.object.matrixAutoUpdate
-          };
-        }
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
       },
       drag(matrix) {
         if (setting === mode.SELECT) {
@@ -276,15 +274,13 @@ export default class LaserScene extends XrScene {
         }
       },
       drag_start: (intersection, pointerMatrix) => {
-        if (setting === mode.SELECT) {
-          const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
-          const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
-          const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
-          return {
-            object: intersection.object,
-            transformMatrix,
-            matrixAutoUpdate: intersection.object.matrixAutoUpdate
-          };
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
         }
       },
       drag(matrix) {
