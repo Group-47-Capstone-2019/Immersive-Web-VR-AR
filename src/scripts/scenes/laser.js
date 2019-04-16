@@ -68,16 +68,16 @@ export default class LaserScene extends XrScene {
     resetButton.position.set(-15, 0, 0.25);
 
     const selectLabel = createTextPlane('SELECT', 'white', 'black');
-    selectLabel.position.set(5, 3, 0);
+    selectLabel.position.set(5, 3, 0.01);
 
     const deleteLabel = createTextPlane('DELETE', 'white', 'black');
-    deleteLabel.position.set(-5, 3, 0);
+    deleteLabel.position.set(-5, 3, 0.01);
 
     const createLabel = createTextPlane('CREATE', 'white', 'black');
-    createLabel.position.set(15, 3, 0);
+    createLabel.position.set(15, 3, 0.01);
 
     const resetLabel = createTextPlane('RESET', 'white', 'black');
-    resetLabel.position.set(-15, 3, 0);
+    resetLabel.position.set(-15, 3, 0.01);
 
     menu.add(selectLabel, deleteLabel, createLabel, resetLabel);
 
