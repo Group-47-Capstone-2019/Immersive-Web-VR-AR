@@ -3,20 +3,23 @@ The WebXR API is a brand new spec that gives developers the ability to create VR
 
 This is an OSU Senior Capstone project for group 47. The goal is to demonstrate the abilities of the WebXR API by creating a sample project that can be referenced by others later. The project is sponsored by Intel. 
 
-## Getting set up
-After cloning the project, open up the root project repo and install the dependencies using
-```
-$ npm i
-```
+## Building and running the project
+- Ensure the latest versions of [Node.js and Node Package Manager (npm)](https://nodejs.org/en/download/) are installed on your machine, and are accessible from the terminal. 
 
-Start the development server using 
-```
-$ npm run dev
-```
-The project will be running on `http://localhost:1234`. The development server will watch for changes in the source files and automatically reload the page after compiling them.
+- After cloning the project, open up the root project repo and install the dependencies using
+  ```
+  $ npm i
+  ```
+- Start the development server using 
+  ```
+  $ npm run dev
+  ```
+- The project will be running on [`http://localhost:1234`](http://localhost:1234). The development server will watch for changes in the source files and automatically reload the page after compiling them.
 
 ## Working with mobile devices (Daydream)
-To then work on a remote device, install Chrome Dev v75.0.3759.4 for Windows 10 (we're playing with cutting edge stuff) and open the inspect tab: `chrome://inspect`  
+Install [Chrome Dev](https://www.google.com/chrome/dev/). We tested using Chrome 75.0.3759.4, but later versions should work as well. 
+
+Open the inspect tab: [`chrome://inspect`](chrome://inspect)  
 Configure the port forwarding by selecing the `Port forwarding...` button. Add the following ports (such as the default 8080):
  - `localhost:1234` for the http that forwards to localhost:1234 
  - `localhost:64320` which is how Parcel does it's live updating stuff
@@ -51,6 +54,9 @@ Once you've gained a feeling for how the pendulums swing on each planet, hit the
 Once you're ready to go back to the other experiments, there should be a door on the opposite side of the platform that will take you back to the home room.
 
 ## The Planets Scene
+Upon entering the solar system simulation, you should see the sun, along with some information about it. You can explore the planets in the solar system either by clicking the "Next Planet" and "Previous Planet" buttons, or by clicking on another planet.
+
+You can exit the simulation by returning to the Sun and clicking "Exit to Home".
 
 ## The Lasers Scene
 Inside the laser room, there should be a wall with 4 large buttons on it. 3 of the buttons set the controls to a specific mode:
