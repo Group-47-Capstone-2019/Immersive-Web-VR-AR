@@ -117,6 +117,7 @@ export default class XrScene {
     // Remove controller from array
     this.controllers.splice(index, 1);
 
+    // Remove controller
     controller = undefined;
   }
 
