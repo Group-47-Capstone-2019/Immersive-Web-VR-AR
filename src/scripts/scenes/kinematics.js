@@ -14,6 +14,8 @@ import oDoor from '../../assets/door.glb';
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
 
+import { updateCamera } from '../renderer/camera';
+
 import sky_nx from '../../assets/textures/skybox/sky_nx.png';
 import sky_ny from '../../assets/textures/skybox/sky_ny.png'; 
 import sky_nz from '../../assets/textures/skybox/sky_nz.png';
@@ -29,6 +31,8 @@ export default class KinematicsScene extends XrScene {
   */
   constructor(renderer, camera) {
     super(renderer, camera);
+
+    updateCamera({far : 500});
 
     this.length = 2000;
     this.width = 2000;
@@ -62,6 +66,11 @@ export default class KinematicsScene extends XrScene {
   }
 
   _loadAssets() {
+    this.loader.addCubeTextureToQueue([
+      sky_nx, sky_px,
+      sky_py, sky_ny,
+      sky_nz, sky_pz
+    ], 'skybox');
     this.loader.addTextureToQueue(sky_nx, 'sky_nx');
     this.loader.addTextureToQueue(sky_ny, 'sky_ny');
     this.loader.addTextureToQueue(sky_nz, 'sky_nz');
@@ -76,21 +85,6 @@ export default class KinematicsScene extends XrScene {
     this.loader.addTextureToQueue(nGround, 'ground');
 
     this.loader.addGltfToQueue(oDoor, 'door');
-  }
-
-  _createSkybox(textures) {
-    const gSkybox = new THREE.BoxGeometry(1000, 1000, 1000);
-    const mSkybox = [];
-    for(let i = 0; i < 6; i++) {
-        mSkybox.push(new THREE.MeshBasicMaterial({
-            map : textures[i],
-            side : THREE.DoubleSide,
-            depthTest : false
-        }));
-    }
-    const skybox = new THREE.Mesh(gSkybox, mSkybox);
-    skybox.name = 'skybox';
-    this.scene.add(skybox);
   }
 
   _loadTable(asset) {
@@ -138,7 +132,7 @@ export default class KinematicsScene extends XrScene {
 
     const door = cache.door.scene.children[0];
 
-    this._createSkybox(skyboxTextures);
+    this.scene.background = cache.skybox;
     this._loadTable(tableAsset);
     this._textureGround(groundTexture);
     this._createDoor(door);
