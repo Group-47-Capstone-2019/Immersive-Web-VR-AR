@@ -11,6 +11,8 @@ import nGround from '../../assets/textures/groundNormal.png';
 
 import oDoor from '../../assets/door.glb';
 
+import { XR } from '../xrController';
+
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
 
@@ -71,7 +73,7 @@ export default class KinematicsScene extends XrScene {
       sky_py, sky_ny,
       sky_nz, sky_pz
     ], 'skybox');
-    
+
     this.loader.addTextureToQueue(sky_nx, 'sky_nx');
     this.loader.addTextureToQueue(sky_ny, 'sky_ny');
     this.loader.addTextureToQueue(sky_nz, 'sky_nz');
@@ -176,6 +178,17 @@ export default class KinematicsScene extends XrScene {
     ground.receiveShadow = true;
     ground.rotateX(-1.5708);
     ground.position.set(0, -8, 0);
+
+    ground[Interactions] = {
+      select_start({ point }) {
+        point.y += 8;
+        const offsetMatrix = XR.getOffsetMatrix();
+        point.multiplyScalar(-1);
+        offsetMatrix.setPosition(point);
+        XR.setOffsetMatrix(offsetMatrix);
+      }
+    }
+
     this.ground = ground;
     this.scene.add(ground);
 
