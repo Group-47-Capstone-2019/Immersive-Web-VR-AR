@@ -1,4 +1,7 @@
+/* eslint-disable func-names */
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-restricted-syntax */
 import * as CANNON from 'cannon';
 import THREE from '../three';
 import XrScene from './xr-scene';
@@ -15,6 +18,15 @@ import { XR } from '../xrController';
 
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
+import { createTextPlane } from './planets/text';
+import createGUI from '../menuGUI';
+import 'datguivr';
+
+const mode = {
+  CREATE: 'create'
+};
+
+let setting = mode.CREATE;
 
 import { updateCamera } from '../renderer/camera';
 
@@ -40,12 +52,24 @@ export default class KinematicsScene extends XrScene {
     this.width = 2000;
     this._createEnv();
 
+    this._initMenu();
+
+    // Create Gui Menu
+    this.menu = createGUI(this.scene, this.camera, this.renderer);
+    this.menu.position.set(-15, 0, -32);
+
+    // Add Global Gravity
+    this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
+      .name('Gravity')
+      .listen();
+
     //Assets
     this._loadAssets();
 
     // Objects
     this.bodies = [];
     this.meshes = [];
+
     this.objectMaterial = new CANNON.Material();
 
     // Balls
@@ -166,6 +190,90 @@ export default class KinematicsScene extends XrScene {
 
   }
 
+  _initMenu() {
+    const buttonGeo = new THREE.BoxGeometry(2, 3, 0.5);
+    const buttonGeo2 = new THREE.BoxGeometry(2, 3, 0.5);
+
+    const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
+    const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
+    const reverseButton = new TriggerMesh(buttonGeo2.clone(), buttonMat.clone());
+
+    const menu = new THREE.Object3D();
+    const menu2 = new THREE.Object3D();
+
+    menu.add(createButton);
+    menu2.add(reverseButton);
+
+    this.scene.add(menu);
+    this.scene.add(menu2);
+
+    menu.position.set(1, -2, -32);
+    menu2.position.set(8, -2, -32);
+
+    createButton.position.set(10, 0, 0.25);
+    reverseButton.position.set(0, 0, 0.25);
+
+    const createLabelGravity = createTextPlane('Gravity', 'white', 'orange');
+    createButton.add(createLabelGravity);
+    createLabelGravity.position.set(-1.5, 3, 0.26);
+
+    const createLabelOn = createTextPlane('On', 'white', 'green');
+    createButton.add(createLabelOn);
+    createLabelOn.position.set(-3, -1, 1);
+
+    const createLabelOff = createTextPlane('off', 'white', 'red');
+    reverseButton.add(createLabelOff);
+    createLabelOff.position.set(3, -1, 1);
+
+    createButton.addFunction('toggleGravity', this.toggleGravity);
+    reverseButton.addFunction('reverseGravity', this.reverseGravity);
+
+    createButton.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set('green');
+      }
+    };
+
+    createButton.select = function () {
+      this.functions.toggleGravity();
+      setting = mode.CREATE;
+      this.position.z = -0.125;
+      this.material.color.set(0x999999);
+      reverseButton.position.z = 0.25;
+      reverseButton.material.color.set(0x222222);
+    };
+
+    createButton.exit = function () {
+      if (setting === mode.CREATE) {
+        this.material.color.set(0x999999);
+      }
+    };
+
+    reverseButton.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set('green');
+      }
+    };
+
+    reverseButton.select = function () {
+      this.functions.reverseGravity();
+      setting = mode.CREATE;
+      this.position.z = -0.125;
+      this.material.color.set(0x999999);
+      createButton.position.z = 0.25;
+      createButton.material.color.set(0x222222);
+    };
+
+    reverseButton.exit = function () {
+      if (setting === mode.CREATE) {
+        this.material.color.set(0x999999);
+      }
+    };
+
+    this.triggers.add(menu);
+    this.triggers.add(menu2);
+  }
+
   _createEnv() {
     // Generate room geometry.
     const gGround = new THREE.PlaneGeometry(this.width, this.length);
@@ -202,16 +310,55 @@ export default class KinematicsScene extends XrScene {
     this.scene.add(spawnTube);
   }
 
-  _spawnBall = () => {
-    console.log('Spawn ball');
+  // Create Gui folders.
+  _initGui = (context) => {
+    const createFolder = dat.GUIVR.create('Object Settings');
+    this.menu.addFolder(createFolder);
 
+    createFolder.add(context.position, 'x').min(-1)
+      .max(1)
+      .step(0.25)
+      .name('Position X')
+      .listen();
+
+    createFolder.add(context.position, 'y').min(-1)
+      .max(1)
+      .step(0.25)
+      .name('Position Y')
+      .listen();
+
+    createFolder.add(context.position, 'z').min(-1)
+      .max(1)
+      .step(0.25)
+      .name('Position Z')
+      .listen();
+
+    createFolder.add(context.material, 'wireframe')
+      .name('Wireframe')
+      .listen();
+  }
+
+  _spawnBall = () => {
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
+    const material = new THREE.MeshPhongMaterial({ color: 'red' });
     const ball = new THREE.Mesh(this.ballGeo, material);
     ball.castShadow = true;
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
+
+    this.arrowHelpers = [];
+    let direction = new THREE.Vector3(0, 0, 0);
+    let origin = new THREE.Vector3(0, 0, 0);
+
+    // Ball ArrowHelper
+    this.arrowHelper = new THREE.ArrowHelper(
+      direction,
+      origin,
+      3,
+      'yellow'
+    );
+    ball.add(this.arrowHelper);
 
     let lastTime;
     ball[Interactions] = {
@@ -269,27 +416,73 @@ export default class KinematicsScene extends XrScene {
   }
 
   _spawnBox = () => {
-    console.log('Spawn box');
-
     const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
-    const box = new TriggerMesh(this.boxGeo, material);
+    const material = new THREE.MeshPhongMaterial({ color: 'red' });
+    const box = new THREE.Mesh(this.boxGeo, material);
     box.castShadow = true;
     box.receiveShadow = true;
     this.world.addBody(boxBody);
 
-    box.hover = function () {
-      if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+    const direction = new THREE.Vector3(0, 0, 0);
+    const origin = new THREE.Vector3(0, 0, 0);
+
+    // Box ArrowHelper
+    this.arrowHelper = new THREE.ArrowHelper(
+      direction,
+      origin,
+      3,
+      'yellow'
+    );
+    box.add(this.arrowHelper);
+
+    let lastTime;
+    box[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          box.material.color.set(0xFF0000);
+        }
+      },
+      hover_end() {
+        box.material.color.set('orange');
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        // this.paused = true;
+        // TODO: Stop associated pendulum swing's motion
+        lastTime = performance.now();
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag(matrix) {
+        const now = performance.now();
+        const diff = (now - lastTime) / 1000; // ms to s
+        lastTime = now;
+        box.velocity = new THREE.Vector3().setFromMatrixPosition(matrix);
+        box.velocity.sub(new THREE.Vector3().setFromMatrixPosition(box.matrix));
+        box.velocity.divideScalar(diff);
+        box.matrix.copy(matrix);
+        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+        boxBody.position.x = pos.x;
+        boxBody.position.y = pos.y;
+        boxBody.position.z = pos.z;
+        box.updateMatrixWorld(true);
+      },
+      drag_end: () => {
+        const instVel = box.velocity;
+        delete box.velocity;
+        boxBody.velocity.x = instVel.x;
+        boxBody.velocity.y = instVel.y;
+        boxBody.velocity.z = instVel.z;
       }
     };
 
-    box.exit = function () {
-      this.material.color.set('orange');
-    };
-
-    this.triggers.add(box);
+    this.scene.add(box);
 
     this.bodies.push(boxBody);
     this.meshes.push(box);
@@ -312,16 +505,17 @@ export default class KinematicsScene extends XrScene {
 
     ballSpawner.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+        this.material.color.set('green');
       }
     };
 
     ballSpawner.select = function () {
+      this.material.color.set('white');
       this.functions.spawnBall();
     };
 
     ballSpawner.exit = function () {
-      this.material.color.set(0xFFFFFF);
+      this.material.color.set('grey');
     };
 
     this.triggers.add(ballSpawner);
@@ -347,16 +541,17 @@ export default class KinematicsScene extends XrScene {
 
     boxSpawner.hover = function () {
       if (!this.isSelected) {
-        this.material.color.set(0xFF0000);
+        this.material.color.set('green');
       }
     };
 
     boxSpawner.select = function () {
+      this.material.color.set('white');
       this.functions.spawnBox();
     };
 
     boxSpawner.exit = function () {
-      this.material.color.set(0xFFFFFF);
+      this.material.color.set('grey');
     };
 
     this.triggers.add(boxSpawner);
@@ -368,19 +563,15 @@ export default class KinematicsScene extends XrScene {
   }
 
   toggleGravity = () => {
-    console.log('Toggling gravity.');
     if (this.world.gravity.y === -9.8) {
-      console.log('Gravity off');
       this.world.gravity.y = 0;
-    } else {
-      console.log('Gravity on');
-      this.world.gravity.y = -9.8;
     }
   }
 
-  reverseGravity() {
-    console.log('Reverse gravity.');
-    this.world.gravity.y *= -1;
+  reverseGravity = () => {
+    if (this.world.gravity.y === 0) {
+      this.world.gravity.y = -9.8;
+    }
   }
 
   onKeyUp = (event) => {
@@ -479,8 +670,13 @@ export default class KinematicsScene extends XrScene {
     this.scene.add(pLight);
   }
 
+  _updateArrowHelpers() {
+
+  }
+
   animate(delta) {
     this.updatePhysics(delta);
+    this._updateArrowHelpers();
 
     // Update position of meshes
     for (let i = 0; i < this.bodies.length; i++) {
