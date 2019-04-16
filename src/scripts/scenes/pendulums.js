@@ -225,8 +225,8 @@ export default class PendulumScene extends XrScene {
        * NOTE: the format for the parameters to these functions are:
        * hover({ distance, point, face, faceIndex, uv });
        */
-      select() {
-        navigate('/home'); // Navigate to the home room
+      select: () => {
+        this.changeRoom('/home'); // Navigate to the home room
       }
     });
 

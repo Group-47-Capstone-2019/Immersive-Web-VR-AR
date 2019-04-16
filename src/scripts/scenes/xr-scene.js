@@ -56,8 +56,12 @@ export default class XrScene {
       this.controls.getObject().position.set(0, 0, 0);
       this.controls.getObject().rotation.y = 0;
       this.controls.getObject().children[0].rotation.x = 0;
-      this.position.copy(this.controls.getObject().position);
+    } else {
+      const matrix = XR.getOffsetMatrix();
+      matrix.setPosition(new Vector3(0, 0, 0));
+      XR.setOffsetMatrix(matrix);
     }
+
     this.pause = false;
 
     this.loader.depend(loadControllerMeshes());
@@ -232,6 +236,12 @@ export default class XrScene {
         this.renderer.autoClear = false;
         this.renderer.clear();
 
+        // Update render state near and far
+        XR.session.updateRenderState({
+          depthNear : this.camera.near,
+          depthFar  : this.camera.far
+        });
+
         this.renderer.setSize(
           XR.session.renderState.baseLayer.framebufferWidth,
           XR.session.renderState.baseLayer.framebufferHeight,
@@ -352,6 +362,15 @@ export default class XrScene {
       type,
       listener
     });
+  }
+
+  /**
+   * Fires event to change room scene provided a path to it.
+   * @param {String} newPath 
+   */
+  changeRoom(newPath) {
+    const event = new CustomEvent('changeRoom', { detail: { newPath } });
+    window.dispatchEvent(event);
   }
 
   /**

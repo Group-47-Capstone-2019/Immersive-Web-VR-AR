@@ -119,11 +119,6 @@ export default class HomeScene extends XrScene {
     box.rotateZ(0.03);
   }
 
-  changeRoom(newPath) {
-    const event = new CustomEvent('changeRoom', { detail: { newPath } });
-    window.dispatchEvent(event);
-  }
-
   createDoors() {
     const doorHeight = 12;
     const doorWidth = 7;
@@ -228,6 +223,23 @@ export default class HomeScene extends XrScene {
       (doorHeight / 2) - (this.height / 2),
       (this.length / 2) - (doorLength / 2)
     );
+
+    laserDoor.addFunction('changeRoom', this.changeRoom);
+
+    laserDoor.hover = function () {
+      if (!this.isSelected) {
+        this.material.color.set(0xFF0000);
+      }
+    };
+
+    laserDoor.select = function () {
+      this.functions.changeRoom('/lasers');
+    };
+
+    laserDoor.exit = function () {
+      this.material.color.set(0x402f00);
+    };
+
     this.triggers.add(laserDoor);
   }
 

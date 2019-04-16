@@ -89,11 +89,23 @@ export default class Controller {
     this.laser.raycast = () => []; // Disable raycast intersections
   }
 
+  allDescendants(obj) {
+    for (let i = 0; i < obj.children.length; i++) {
+      const child = obj.children[i];
+      this.allDescendants(child);
+      if (child.isObject3D === true) {
+        child.raycast = () => [];
+      }
+    }
+  }
+
   createController() {
     this.controller = meshCache.controller.scene.clone();
     this.controller.matrixAutoUpdate = false;
     this.controller.name = 'controller';
+    this.allDescendants(this.controller);
     this.controller.raycast = () => []; // Disable raycast intersections
+    console.log(this.controller);
   }
 
   /**
@@ -112,11 +124,7 @@ export default class Controller {
       if (gripPose) {
         // Get the grip transform matrix
         this.controller.matrix.fromArray(gripPose.transform.matrix);
-        // this.controller.matrix.setPosition(new Vector3(0, 0, 0));
-        console.log(gripPose.transform);
         this.controller.updateMatrixWorld(true);
-        console.log(new Vector3().setFromMatrixPosition(this.controller.matrixWorld));
-        console.log(new Vector3().setFromMatrixPosition(XR.getOffsetMatrix()));
       } else {
         // TODO: hide the controller while WebXR doesn't know where it is.
       }
@@ -168,6 +176,7 @@ export default class Controller {
     // Set end vertex by multiplying the direciton vector by the length
     // Add the origin so the end vertex is translated into the correct position
     this.laser.geometry.vertices[1] = new Vector3().copy(destination);
+    this.laser.geometry.computeBoundingSphere();
     this.laser.geometry.verticesNeedUpdate = true;
   }
 }
