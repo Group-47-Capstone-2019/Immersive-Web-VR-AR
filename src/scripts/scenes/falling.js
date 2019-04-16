@@ -54,6 +54,12 @@ export default class FallingScene extends XrScene {
     // Objects
     this.bodies = [];
     this.meshes = [];
+    
+    this.arrowHelpers = [];
+    this.arrowHelperOrigin = new THREE.Vector3(0, 0, 0);
+    this.arrowHelperDirection = new THREE.Vector3(0, 0, 0);
+    this.arrowHelper = new THREE.ArrowHelper(this.arrowHelperDirection, this.arrowHelperOrigin, 3, 'yellow');
+    this.arrowHelpers.push(this.arrowHelper);
 
     this.objectMaterial = new CANNON.Material();
 
@@ -214,17 +220,6 @@ export default class FallingScene extends XrScene {
     ball.receiveShadow = true;
     this.world.addBody(ballBody);
 
-    this.arrowHelpers = [];
-    let direction = new THREE.Vector3(0, 0, 0);
-    let origin = new THREE.Vector3(0, 0, 0);
-
-    // Ball ArrowHelper
-    this.arrowHelper = new THREE.ArrowHelper(
-      direction,
-      origin,
-      3,
-      'yellow'
-    );
     ball.add(this.arrowHelper);
 
     let lastTime;
@@ -360,6 +355,14 @@ export default class FallingScene extends XrScene {
 
     boxBody.position.set(0, 7, 0);
     box.position.set(0, 7, 0);
+  }
+
+  _updateArrowHelpers(object) {
+    for (let i = 0; i < this.arrowHelpers.length; i++) {
+      const arrowHelperDirection = this.arrowHelpers[i].clone();
+      const arrowHelperOrigin = this.arrowHelperDirection.clone();
+
+    }
   }
 
   _createSpawners() {
@@ -596,10 +599,6 @@ export default class FallingScene extends XrScene {
     const pointLight = new THREE.PointLight('white', 0.8, 500);
 
     this.scene.add(pointLight);
-  }
-
-  _updateArrowHelpers() {
-
   }
 
   animate(delta) {
