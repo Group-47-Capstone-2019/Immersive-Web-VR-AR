@@ -185,24 +185,12 @@ export default class HomeScene extends XrScene {
     floor.functions.displayMirrorOutline = this.displayMirrorOutline;
     floor.functions.noMirrorOutline = this.noMirrorOutline;
     floor[Interactions] = {
-      hover({ point }) {
-        if (setting === mode.CREATE) {
-          floor.functions.displayMirrorOutline(point);
-        }
-      },
-      hover_end() {
-        floor.functions.noMirrorOutline();
-      },
       select_start({ point }) {
-        if (setting === mode.CREATE) {
-          floor.functions.addMirror(point);
-        } else {
-          const offsetMatrix = XR.getOffsetMatrix();
-          point.y = 0;
-          point.multiplyScalar(-1);
-          offsetMatrix.setPosition(point);
-          XR.setOffsetMatrix(offsetMatrix);
-        }
+        const offsetMatrix = XR.getOffsetMatrix();
+        point.y = 0;
+        point.multiplyScalar(-1);
+        offsetMatrix.setPosition(point);
+        XR.setOffsetMatrix(offsetMatrix); 
       }
     };
     this.scene.add(this.room);
