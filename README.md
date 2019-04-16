@@ -27,8 +27,20 @@ Once you enter the pendulum scene, you should see two pendulums on a table and a
 
 Once you've gained a feeling for how the pendulums swing on each planet, hit the quiz icon which will put a box around you so that you can't see what planet you're on.  Then you can play with the pendulums and when you're ready, click the icon that you think is the planet you are on.  The correct planet's icon will light up green and if you're guess was incorrect then it will be shown as red.
 
-Once you're ready to go back to the other experiments, there should be a door on the oposite side of the platform that will take you back to the home room.
+Once you're ready to go back to the other experiments, there should be a door on the opposite side of the platform that will take you back to the home room.
 
 ## The Planets Scene
 
 ## The Lasers Scene
+Inside the laser room, there should be a wall with 4 large buttons on it. 3 of the buttons set the controls to a specific mode:
+- CREATE: While in creation mode, you are not able to teleport, but will instead see an outline of a mirror where it would be placed if you selected the ground. Select the ground, and a mirror will be created in it's place. You can create as many mirrors as you would like while in this mode.
+
+- SELECT: Selection mode allows the user to move mirrors via dragging them (holding the select button). Release the select button to place the mirror. Mirrors can also be rotated by dragging their base left or right.
+
+- DELETE: Any mirror clicked on is this mode is deleted instantly, so be careful!
+
+The final button, RESET, resets the entire scene, removing any placed mirrors and repositioning the goal.
+
+The goal is the small box randomly placed in the scene. You're mission is to place and rotate mirrors in such a way to reflect the laser into the white cylinder on the goal. 
+
+Finally, to exit the room, simply click on the door and you'll be transported back to the home room.
