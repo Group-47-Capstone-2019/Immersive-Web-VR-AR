@@ -74,7 +74,7 @@ export default class HomeScene extends XrScene {
       0
     );
 
-    let fallingLabel = createTextPlane('KINEMATIC', 'white', 'black');
+    let fallingLabel = createTextPlane('KINEMATICS', 'white', 'black');
     fallingLabel.position.set(0, 5, -0.01);
     fallingLabel.scale.set(0.3, 0.3, 0.3);
     fallingLabel.rotateY(Math.PI);
@@ -121,7 +121,7 @@ export default class HomeScene extends XrScene {
     lasersLabel.rotateY(Math.PI);
     lasersDoor.add(lasersLabel);
 
-    this.addDoorInteraction(fallingDoor, '/falling');
+    this.addDoorInteraction(fallingDoor, '/kinematics');
     this.addDoorInteraction(planetsDoor, '/planets');
     this.addDoorInteraction(pendulumsDoor, '/pendulums');
     this.addDoorInteraction(lasersDoor, '/lasers');
