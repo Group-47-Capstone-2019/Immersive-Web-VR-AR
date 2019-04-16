@@ -28,6 +28,7 @@ import starsTextureUrl from '../../../assets/planets/stars.jpg';
 import { createTextPlane } from './text';
 import TWEEN from '@tweenjs/tween.js';
 import { XR } from '../../xrController';
+import {updateCamera} from '../../renderer/camera';
 
 const EARTH_YEAR_SECONDS = 120;
 const TWEEN_SECONDS = 5;
@@ -45,6 +46,8 @@ export default class PlanetsScene extends XrScene {
    */
   constructor(renderer, camera) {
     super(renderer, camera);
+
+    updateCamera({far : 10000});
 
     Object.keys(planetData).forEach(planet =>
       this.loader.addTextureToQueue(planetData[planet].texture, planet)
