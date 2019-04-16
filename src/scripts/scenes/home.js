@@ -6,6 +6,7 @@ import XrScene from './xr-scene';
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
 import { createTextPlane } from './planets/text';
+import { XR } from '../xrController';
 
 const settings = {
   global: {
