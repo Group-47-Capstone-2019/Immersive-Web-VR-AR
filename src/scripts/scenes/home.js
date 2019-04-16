@@ -100,6 +100,8 @@ export default class HomeScene extends XrScene {
       console.error('Error creating room mesh.');
     }
 
+    this.bounds.push(new THREE.Box3().setFromObject(room));
+
     this.createDoors();
     this._boxTest();
     this._addEventListener(window, 'mousedown', this.onClick);
@@ -115,11 +117,6 @@ export default class HomeScene extends XrScene {
     box.rotateX(0.01);
     box.rotateY(0.01);
     box.rotateZ(0.03);
-  }
-
-  changeRoom(newPath) {
-    const event = new CustomEvent('changeRoom', { detail: { newPath } });
-    window.dispatchEvent(event);
   }
 
   createDoors() {

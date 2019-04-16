@@ -129,31 +129,41 @@ export default class Controller {
         this.controller.updateMatrixWorld(true);
         // console.log(new Vector3().setFromMatrixPosition(this.controller.matrixWorld));
         // console.log(new Vector3().setFromMatrixPosition(XR.getOffsetMatrix()));
+      } else {
+        // TODO: hide the controller while WebXR doesn't know where it is.
       }
     }
 
-    if (this.laser && this.inputSource.targetRaySpace) {
+
+    if (this.inputSource.targetRaySpace) {
       const rayPose = xrFrame.getPose(this.inputSource.targetRaySpace, XR.refSpace);
       /* global XRRay */
       const ray = new XRRay(rayPose.transform);
       if (rayPose) {
         // If there was an intersection, get the intersection length else default laser to 100
         const rayLength = intersection ? intersection.distance : 100;
-        const rayOrigin = new Vector3(
+        const origin = new Vector3(
           ray.origin.x, ray.origin.y, ray.origin.z
         );
-        const rayDirection = new Vector3(
+        const destination = new Vector3(
           ray.direction.x,
           ray.direction.y,
           ray.direction.z
-        );
-        this.updateLaser(rayOrigin, rayDirection, rayLength);
-      }
-    }
+        ).multiplyScalar(rayLength).add(origin);
 
-    if (this.cursor && intersection) {
-      this.cursor.matrix.setPosition(intersection.point);
-      this.cursor.updateMatrixWorld(true);
+        // If we have a laser then render it in
+        if (this.laser) {
+          this.updateLaser(origin, destination);
+        }
+
+        // If we have a cursor (which we will for most input source types) then move it to the end of the laser
+        if (this.cursor) {
+          this.cursor.matrix.setPosition(destination);
+          this.cursor.updateMatrixWorld(true);
+        }
+      } else {
+        // TODO: Hide the laser and cursor while WebXR doesn't know where they are.
+      }
     }
   }
 
@@ -163,13 +173,14 @@ export default class Controller {
    * @param {Vector3} direction
    * @param {Number} length
    */
-  updateLaser(origin, direction, length) {
+  updateLaser(origin, destination) {
     // Set origin vertex
     this.laser.geometry.vertices[0] = origin;
 
     // Set end vertex by multiplying the direciton vector by the length
     // Add the origin so the end vertex is translated into the correct position
-    this.laser.geometry.vertices[1] = direction.multiplyScalar(length).add(origin);
+    this.laser.geometry.vertices[1] = new Vector3().copy(destination);
+    this.laser.geometry.computeBoundingSphere();
     this.laser.geometry.verticesNeedUpdate = true;
   }
 }

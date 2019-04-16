@@ -1,14 +1,12 @@
 import {
   CanvasTexture,
-  Sprite,
-  SpriteMaterial,
   LinearFilter,
   ClampToEdgeWrapping,
   PlaneBufferGeometry,
   MeshBasicMaterial,
-  Mesh,
   DoubleSide
 } from 'three';
+import TriggerMesh from '../../trigger';
 
 function createTextCanvas(text, textColor, backgroundColor) {
   const canvas = document.createElement('canvas');
@@ -17,7 +15,10 @@ function createTextCanvas(text, textColor, backgroundColor) {
   const lines = text.split('\n');
 
   context.font = '160px Georgia';
-  const width = context.measureText(text).width + 200;
+  let width = 0;
+  lines.forEach(
+    l => (width = Math.max(width, context.measureText(l).width + 200))
+  );
   const height = 160 * lines.length + 200;
 
   canvas.width = width;
@@ -49,7 +50,7 @@ export function createTextPlane(
 
   const mat = new MeshBasicMaterial({
     map: texture,
-    depthTest: false,
+    // depthTest: false,
     transparent: true,
     side: DoubleSide
   });
@@ -58,21 +59,7 @@ export function createTextPlane(
     canvas.width / 160,
     canvas.height / 160
   );
-  const mesh = new Mesh(plane, mat);
+  const mesh = new TriggerMesh(plane, mat);
 
-  return mesh; 
-}
-
-export function createTextSprite(
-  text,
-  textColor = 'white',
-  backgroundColor = undefined
-) {
-  const canvas = createTextCanvas(text, textColor, backgroundColor);
-  const texture = new CanvasTexture(canvas);
-
-  const mat = new SpriteMaterial({ map: texture, depthTest: false });
-  const sprite = new Sprite(mat);
-  sprite.scale.set(canvas.width, canvas.height, 1).divideScalar(160);
-  return sprite;
+  return mesh;
 }

@@ -231,22 +231,6 @@ export function updatePosition() {
 
   controlsYaw.translateX(velocity.x * delta);
   controlsYaw.translateZ(velocity.z * delta);
-
-  // Temporary boundaries
-
-  // if (controlsYaw.position.z > 31) {
-  //   controlsYaw.position.z = 31;
-  // }
-  // if (controlsYaw.position.z < -31) {
-  //   controlsYaw.position.z = -31;
-  // }
-
-  // if (controlsYaw.position.x > 31) {
-  //   controlsYaw.position.x = 31;
-  // }
-  // if (controlsYaw.position.x < -31) {
-  //   controlsYaw.position.x = -31;
-  // }
-
   prevTime = time;
+  return controls.getObject().position;
 }

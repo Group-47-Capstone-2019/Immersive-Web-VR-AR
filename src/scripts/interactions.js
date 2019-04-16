@@ -38,7 +38,7 @@ const handleInputSourcesChange = ({ session }) => {
     }
   }
   inputSources = newSources;
-  // console.log('Input Sources Changed.', inputSources);
+  console.log('Input Sources Changed.', inputSources);
 };
 
 // Create a ray from the input source.  Used in the event listeners as well as handle interactions
@@ -69,14 +69,20 @@ function handlerCommon(func) {
 const handleSelectStart = handlerCommon((intersection, inputSource, pointerMatrix) => {
   const interactions = intersection.object[Interactions];
   if (interactions) {
+    // Handle select_start
+    if (interactions.select_start) {
+      console.log('Calling select_start');
+      interactions.select_start(intersection);
+    }
+
     // If there are any drag interactions then handle dragging
     if (interactions.drag_start || interactions.drag_end || interactions.drag) {
       let data;
       if (interactions.drag_start) {
-        // console.log('Calling drag_start');
+        console.log('Calling drag_start');
         data = interactions.drag_start(intersection, pointerMatrix);
       } else {
-        // console.log('Using default drag_start implementation');
+        console.log('Using default drag_start implementation');
         // This is the default implementation for drag_start
         const pointerInverse = new Matrix4().getInverse(pointerMatrix, true);
         const target = new Matrix4().copy(intersection.object.matrixWorld);
@@ -90,15 +96,10 @@ const handleSelectStart = handlerCommon((intersection, inputSource, pointerMatri
       intersection.object.matrixAutoUpdate = false;
       dragAndDrop.set(inputSource, data);
     }
-    // Handle select_start
-    if (interactions.select_start) {
-      // console.log('Calling select_start');
-      interactions.select_start(intersection);
-    }
   }
   selectedObjects.set(inputSource, intersection.object);
 });
-const handleSelectEnd = handlerCommon((_, inputSource) => {
+const handleSelectEnd = handlerCommon((intersection, inputSource) => {
   // Handle the end of dragging
   const data = dragAndDrop.get(inputSource);
   if (data) {
@@ -106,9 +107,9 @@ const handleSelectEnd = handlerCommon((_, inputSource) => {
     data.object.matrixAutoUpdate = data.matrixAutoUpdate;
     dragAndDrop.delete(inputSource);
     if (dragend) {
-      // console.log('Calling drag_end');
+      console.log('Calling drag_end');
       dragend();
-    }
+    } else { console.log('Using default drag_end implementation'); }
   }
 
   const selectedObject = selectedObjects.get(inputSource);
@@ -116,29 +117,27 @@ const handleSelectEnd = handlerCommon((_, inputSource) => {
   if (interactions) {
     // Handle the end of selection
     if (interactions.select_end) {
-      // console.log('Calling select_end');
+      console.log('Calling select_end');
       interactions.select_end();
-    }
+    } else { console.log('Using default select_end implementation'); }
+    // Handle select
+    if (interactions.select) {
+      console.log('Calling select');
+      interactions.select(
+        // If you start selecting an object and then move off of that object, then the intersection will be on another object.  In this case, pass null to the select callback.
+        (intersection.object === selectedObject) ? intersection : null
+      );
+    } else { console.log('Using default select implementation'); }
   }
   selectedObjects.delete(inputSource);
-});
-const handleSelect = handlerCommon((intersection) => {
-  const interactions = intersection.object[Interactions];
-  if (interactions) {
-    if (interactions.select) {
-      // console.log('Calling select');
-      interactions.select(intersection);
-    }
-  }
 });
 
 // Called when a session is created:
 export function setupInteractions() {
-  // console.log('Setting up interactions');
+  console.log('Setting up interactions');
   handleInputSourcesChange({ session: XR.session });
   XR.session.addEventListener('inputsourceschange', handleInputSourcesChange);
 
-  XR.session.addEventListener('select', handleSelect);
   XR.session.addEventListener('selectstart', handleSelectStart);
   XR.session.addEventListener('selectend', handleSelectEnd);
 }
@@ -199,23 +198,22 @@ function updateInputSource(inputSource, ray, frame) {
   const intersections = raycast(ray);
   if (!selectedObjects.get(inputSource)) {
     for (const intersection of intersections) {
-      // console.log(intersection);
-      // if (intersection.object.name === 'controller') {
-      //   continue;
-      // }
+      if (intersection.object.name === 'controller') {
+        continue;
+      }
       const interactions = intersection.object[Interactions];
       if (lastHovered !== intersection.object) {
         // End the hover of the previous object
         if (lastHovered && lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
           console.log('Calling hover_end');
           lastHovered[Interactions].hover_end();
-        }
+        } else { console.log('Using default hover_end implementation'); }
 
         // Hover the new Object
         if (interactions && interactions.hover_start) {
-          // console.log('Calling hover_start');
+          console.log('Calling hover_start');
           interactions.hover_start(intersection);
-        }
+        } else { console.log('Using default hover_start implementation'); }
 
         // Mark the object as the one hovered by this input source
         hoveredObjects.set(inputSource, intersection.object);
@@ -240,7 +238,7 @@ function updateInputSource(inputSource, ray, frame) {
       if (lastHovered[Interactions] && lastHovered[Interactions].hover_end) {
         lastHovered[Interactions].hover_end();
       }
-      lastHovered.delete(inputSource);
+      hoveredObjects.delete(inputSource);
     }
   }
 }
@@ -264,7 +262,7 @@ export function closeInteractions(session) {
         if (object[Interactions]) {
           for (const interaction of interactions) {
             if (object[Interactions][interaction]) {
-              // console.log(`Calling ${interaction}`);
+              console.log(`Calling ${interaction}`);
               object[Interactions][interaction]();
             }
           }
@@ -278,7 +276,7 @@ export function closeInteractions(session) {
   cleanupHelper(selectedObjects, ['select_end', 'select']);
   cleanupHelper(dragAndDrop, ['drag_end']);
 
-  // console.log('Closing interactions');
+  console.log('Closing interactions');
   // console.trace();
   session.removeEventListener('inputsourceschange', handleInputSourcesChange);
   for (const [inputSource, controller] of controllers.entries()) {
@@ -287,7 +285,6 @@ export function closeInteractions(session) {
     controllers.delete(inputSource);
   }
 
-  session.removeEventListener('select', handleSelect);
   session.removeEventListener('selectstart', handleSelectStart);
   session.removeEventListener('selectend', handleSelectEnd);
 }
