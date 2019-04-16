@@ -9,7 +9,7 @@ import Table from '../../assets/Simple Wood Table.obj';
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
 import { XR } from '../xrController';
-import { createTextSprite, createTextPlane } from './planets/text';
+import { createTextPlane } from './planets/text';
 import createGUI from '../menuGUI';
 import 'datguivr';
 
@@ -79,32 +79,37 @@ export default class FallingScene extends XrScene {
   _initMenu() {
     const buttonGeo = new THREE.BoxGeometry(2, 3, 0.5);
     const buttonGeo2 = new THREE.BoxGeometry(2, 3, 0.5);
+
     const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
     const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
     const reverseButton = new TriggerMesh(buttonGeo2.clone(), buttonMat.clone());
+
     const menu = new THREE.Object3D();
     const menu2 = new THREE.Object3D();
+
     menu.add(createButton);
     menu2.add(reverseButton);
+
     this.scene.add(menu);
     this.scene.add(menu2);
+
     menu.position.set(1, -2, -32);
     menu2.position.set(8, -2, -32);
 
     createButton.position.set(10, 0, 0.25);
     reverseButton.position.set(0, 0, 0.25);
 
-    const createLabelGravity = createTextPlane('Gravity', 'white', 'red');
+    const createLabelGravity = createTextPlane('Gravity', 'white', 'orange');
     createButton.add(createLabelGravity);
-    createLabelGravity.position.set(-1.5, 3, 0);
+    createLabelGravity.position.set(-1.5, 3, 0.26);
 
     const createLabelOn = createTextPlane('On', 'white', 'green');
     createButton.add(createLabelOn);
-    createLabelOn.position.set(-3, 0, 0);
+    createLabelOn.position.set(-3, -1, 1);
 
     const createLabelOff = createTextPlane('off', 'white', 'red');
     reverseButton.add(createLabelOff);
-    createLabelOff.position.set(3, 0, 0);
+    createLabelOff.position.set(3, -1, 1);
 
     createButton.addFunction('toggleGravity', this.toggleGravity);
     reverseButton.addFunction('reverseGravity', this.reverseGravity);
@@ -119,14 +124,14 @@ export default class FallingScene extends XrScene {
       this.functions.toggleGravity();
       setting = mode.CREATE;
       this.position.z = -0.125;
-      this.material.color.set('white');
+      this.material.color.set(0x999999);
+      reverseButton.position.z = 0.25;
+      reverseButton.material.color.set(0x222222);
     };
 
     createButton.exit = function () {
       if (setting === mode.CREATE) {
         this.material.color.set(0x999999);
-      } else {
-        this.material.color.set(0x222222);
       }
     };
 
@@ -140,21 +145,20 @@ export default class FallingScene extends XrScene {
       this.functions.reverseGravity();
       setting = mode.CREATE;
       this.position.z = -0.125;
-      this.material.color.set('green');
+      this.material.color.set(0x999999);
+      createButton.position.z = 0.25;
+      createButton.material.color.set(0x222222);
     };
 
     reverseButton.exit = function () {
       if (setting === mode.CREATE) {
         this.material.color.set(0x999999);
-      } else {
-        this.material.color.set(0x222222);
       }
     };
 
     this.triggers.add(menu);
     this.triggers.add(menu2);
   }
-
 
   _createRoom() {
     // Generate room geometry.
@@ -202,8 +206,6 @@ export default class FallingScene extends XrScene {
   }
 
   _spawnBall = () => {
-    //console.log('Spawn ball');
-
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
     const material = new THREE.MeshPhongMaterial({ color: 'red' });
@@ -223,7 +225,6 @@ export default class FallingScene extends XrScene {
       3,
       'yellow'
     );
-    this.arrowHelpers.push(this.arrowHelper);
     ball.add(this.arrowHelper);
 
     let lastTime;
@@ -284,8 +285,6 @@ export default class FallingScene extends XrScene {
   }
 
   _spawnBox = () => {
-    //console.log('Spawn box');
-
     const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
     const material = new THREE.MeshPhongMaterial({ color: 'red' });
@@ -445,7 +444,6 @@ export default class FallingScene extends XrScene {
     const manager = new THREE.LoadingManager(loadModel.bind(this));
 
     manager.onProgress = function (item, loaded, total) {
-      console.log(item, loaded, total);
     };
 
     const textureLoader = new THREE.TextureLoader(manager);
@@ -455,7 +453,6 @@ export default class FallingScene extends XrScene {
     function onProgress(xhr) {
       if (xhr.lengthComputable) {
         const percentComplete = xhr.loaded / xhr.total * 100;
-        //console.log(`model${Math.round(percentComplete, 2)}% downloaded`);
       }
     }
 
@@ -468,17 +465,13 @@ export default class FallingScene extends XrScene {
   }
 
   toggleGravity = () => {
-    console.log('Toggling gravity.');
     if (this.world.gravity.y === -9.8) {
-      console.log('Gravity off');
       this.world.gravity.y = 0;
     }
   }
 
   reverseGravity = () => {
-    console.log('Reverse gravity.');
     if (this.world.gravity.y === 0) {
-      console.log('Gravity on');
       this.world.gravity.y = -9.8;
     }
   }
