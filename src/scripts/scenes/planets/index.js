@@ -2,12 +2,16 @@ import {
   AmbientLight,
   PointLight,
   MeshPhongMaterial,
+  MeshBasicMaterial,
   Mesh,
   RingGeometry,
   DoubleSide,
   Spherical,
   Object3D,
-  Vector3
+  Vector3,
+  SphereBufferGeometry,
+  BackSide,
+  RepeatWrapping
 } from 'three';
 import XrScene from '../xr-scene';
 import {
@@ -20,10 +24,11 @@ import {
 } from './create';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
+import starsTextureUrl from '../../../assets/planets/stars.jpg';
 import { createTextPlane } from './text';
 import TWEEN from '@tweenjs/tween.js';
 import { XR } from '../../xrController';
-import { navigate } from '../../router';
+import {updateCamera} from '../../renderer/camera';
 
 const EARTH_YEAR_SECONDS = 120;
 const TWEEN_SECONDS = 5;
@@ -42,11 +47,14 @@ export default class PlanetsScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
 
+    updateCamera({far : 10000});
+
     Object.keys(planetData).forEach(planet =>
       this.loader.addTextureToQueue(planetData[planet].texture, planet)
     );
 
     this.loader.addTextureToQueue(ringTextureUrl, 'rings-texture');
+    this.loader.addTextureToQueue(starsTextureUrl, 'stars-texture');
     this.addLighting();
   }
 
@@ -76,11 +84,44 @@ export default class PlanetsScene extends XrScene {
     } else {
       this.isXr = true;
     }
-    
+
     sunCamera.add(this.cameraPoint);
 
     // just for testing...
     // document.planets = this;
+  }
+
+  addPlanetClickHandlers() {
+    this.planets.forEach((mesh, idx) => {
+      mesh.select = () => {
+        if (this.buttonsEnabled) {
+          const currIdx = this.planets.findIndex(
+            p => p.name === this.currentPlanet.name
+          );
+          const offset = idx - currIdx;
+          this.movePlanets(offset);
+        }
+      };
+    });
+  }
+
+  /**
+   *
+   * @param {THREE.Texture} texture
+   */
+  addStars(texture) {
+    texture.repeat.set(10, 10);
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    const geo = new SphereBufferGeometry(5000, 25, 25);
+    const material = new MeshBasicMaterial({
+      map: texture,
+      fog: false,
+      side: BackSide
+    });
+
+    const mesh = new Mesh(geo, material);
+    this.scene.add(mesh);
   }
 
   addLighting() {
@@ -97,6 +138,8 @@ export default class PlanetsScene extends XrScene {
     this.addPlanetRings(cache);
     this.addSunLight();
     this.addGui();
+    this.addStars(cache['stars-texture']);
+    this.addPlanetClickHandlers();
   }
 
   addPlanetRings(cache) {
@@ -104,8 +147,8 @@ export default class PlanetsScene extends XrScene {
     const saturn = this.scene.getObjectByName('Saturn');
     const saturnRadius = planetData.Saturn.fakeRadius;
     const saturnRingGeo = new RingGeometry(
-      saturnRadius + 0.5,
-      saturnRadius + 2.5,
+      saturnRadius + 1,
+      saturnRadius + 5,
       50
     );
     const saturnRingMat = new MeshPhongMaterial({
@@ -122,8 +165,8 @@ export default class PlanetsScene extends XrScene {
     const uranus = this.scene.getObjectByName('Uranus');
     const uranusRadius = planetData.Uranus.fakeRadius;
     const uranusRingGeo = new RingGeometry(
-      uranusRadius + 0.5,
-      uranusRadius + 2.5,
+      uranusRadius + 1,
+      uranusRadius + 4,
       50
     );
     const uranusRingMat = new MeshPhongMaterial({
@@ -151,9 +194,9 @@ export default class PlanetsScene extends XrScene {
 
   exitToHome = () => {
     if (this.buttonsEnabled) {
-      navigate('/home');
+      this.changeRoom('/home');
     }
-  }
+  };
 
   movePlanets(offset) {
     // index of current planet
@@ -180,7 +223,7 @@ export default class PlanetsScene extends XrScene {
     this.startTween(nextIndex);
 
     // move next button and hide it if needed
-    if (nextIndex < this.planets.length - 2) {
+    if (nextIndex < this.planets.length - 1) {
       const nextPlanetNextButton = nextPlanetMesh.getObjectByName(
         nextPointName(nextPlanetName)
       );
@@ -203,11 +246,6 @@ export default class PlanetsScene extends XrScene {
       this.prevButton.visible = false;
       this.exitButton.visible = true;
       nextPlanetPrevButton.add(this.exitButton);
-    }
-
-    // show/hide exit button
-    if(nextIndex === 0) {
-
     }
 
     // update currentPlanet with next planet's data
@@ -251,7 +289,7 @@ export default class PlanetsScene extends XrScene {
     new TWEEN.Tween(from)
       .to(coords, TWEEN_SECONDS * 1000)
       .easing(TWEEN.Easing.Quadratic.InOut)
-      .onUpdate((a) => {
+      .onUpdate(a => {
         this.cameraPoint.position.set(a.x, a.y, a.z);
         // this.camera.lookAt(coords);
       })
