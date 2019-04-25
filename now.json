@@ -10,9 +10,11 @@
   ],
   "routes": [
     { "src": "/planets", "dest": "/index.html" },
-    { "src": "/pendulum", "dest": "/index.html" },
-    { "src": "/gravity", "dest": "/index.html" },
-    { "src": "/lasers", "dest": "/index.html" }
+    { "src": "/pendulums", "dest": "/index.html" },
+    { "src": "/kinematics", "dest": "/index.html" },
+    { "src": "/lasers", "dest": "/index.html" },
+    { "src": "/home", "dest": "/index.html" }
+    
   ],
   "alias": "webxr-physics.now.sh"
 }
