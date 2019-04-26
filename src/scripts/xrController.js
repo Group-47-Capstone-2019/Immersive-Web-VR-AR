@@ -121,7 +121,7 @@ async function xrOnRequestSession() {
 
   // Attempt to create an XR session using the mirror canvas and the connected device
   try {
-    XR.session = await navigator.xr.requestSession({ mode: 'immersive-vr' });
+    XR.session = await navigator.xr.requestSession('immersive-vr');
     document.body.appendChild(xrMirrorCanvas);
     xrOnSessionStarted(xrMirrorContext);
   } catch (err) {
@@ -145,7 +145,7 @@ async function xrValidateMagicWindow() {
   const xrMagicWindowContext = XR.magicWindowCanvas.getContext('xrpresent');
 
   try {
-    XR.session = await navigator.xr.requestSession();
+    XR.session = await navigator.xr.requestSession('inline');
     canvas.style.display = 'none';
     canvas.parentNode.insertBefore(XR.magicWindowCanvas, canvas);
     xrOnSessionStarted(xrMagicWindowContext);
