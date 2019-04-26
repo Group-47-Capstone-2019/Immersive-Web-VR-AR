@@ -300,6 +300,9 @@ export default class LaserScene extends XrScene {
           mirror.rotateY(radians);
 
           let angle = Math.round(((mirror.rotation.y * 180) / Math.PI) * 10) / 10;
+          if (angle < 0) {
+            angle *= -1;
+          }
           if (angle !== mirror.angle) {
             if (mirror.children.length > 1) {
               mirror.children[1].geometry.dispose();
@@ -494,7 +497,7 @@ export default class LaserScene extends XrScene {
               goal.material.color.set(0x111111);
             }
 
-            if (result.object.parent === this.mirrors) {
+            if (result.object.parent === this.mirrors || result.object === this.scene.getObjectByName('mirror-outline')) {
               this._reflect(result, raycasterDestination);
             }
           }
@@ -509,7 +512,7 @@ export default class LaserScene extends XrScene {
     this.mirrorOutline = new THREE.Mesh(mirrorOutlineGeo, mirrorOutlineMat);
     this.mirrorOutline.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
     this.mirrorOutline.visible = false;
-    this.mirrorOutline.raycast = (function () { return null; });
+    this.mirrorOutline.name = 'mirror-outline';
 
     const baseGeo = new THREE.CylinderGeometry(1, 1, 0.75, 50);
     const baseMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
@@ -518,7 +521,7 @@ export default class LaserScene extends XrScene {
     base.position.set(0, -2.375, 0);
 
     this.mirrorOutline.add(base);
-    this.scene.add(this.mirrorOutline);
+    this.intersects.add(this.mirrorOutline);
   }
 
   displayMirrorOutline = (point) => {
