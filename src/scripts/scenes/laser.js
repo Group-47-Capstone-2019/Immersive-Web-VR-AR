@@ -50,6 +50,27 @@ export default class LaserScene extends XrScene {
     this.height = 16;
   }
 
+  _initGuide() {
+    const guide = createTextPlane(
+    `                                                                                     GOAL
+                                                                                     ---------
+          Reflect the laser off of mirrors and into the center of the target goal on the black box 
+                                                          randomly located in the room.
+
+                                                                                CONTROLS
+                                                                                -----------------
+    CREATE:                                                                              DELETE:
+    Add mirrors by clicking on the ground.                      Click a mirror to delete it.
+    
+    SELECT:                                                                              RESET:
+    Click and drag a mirrors face to move it.                   Remove all mirrors and reset the target goal.
+    Click and drag a mirrors base to rotate it.
+    `, 'black');
+    guide.position.set(31.9, 0, 0);
+    guide.rotateY(-Math.PI / 2);
+    this.scene.add(guide);
+  }
+
   _initMenu() {
     const buttonGeo = new THREE.BoxGeometry(4, 3, 0.5);
     const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
@@ -667,6 +688,7 @@ export default class LaserScene extends XrScene {
     this._createMirrorOutline();
     this._initGoal();
     this._initMenu();
+    this._initGuide();
     this._addLight();
   }
 
