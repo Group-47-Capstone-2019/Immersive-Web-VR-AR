@@ -262,6 +262,22 @@ export default class LaserScene extends XrScene {
           const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
 
           pos.y = -5;
+          var xBound = 30.5;
+          var zBound = 30.5;
+
+          console.log(xBound, zBound);
+          if (pos.x > xBound) {
+            pos.x = xBound;
+          } else if (pos.x < -(xBound)) {
+            pos.x = -(xBound);
+          }
+
+          if (pos.z > zBound) {
+            pos.z = zBound;
+          } else if (pos.z < -(zBound)) {
+            pos.z = -(zBound);
+          }
+          
           mirror.matrix.setPosition(pos);
           mirror.position.x = pos.x;
           mirror.position.z = pos.z;
