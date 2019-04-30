@@ -50,6 +50,27 @@ export default class LaserScene extends XrScene {
     this.height = 16;
   }
 
+  _initGuide() {
+    const guide = createTextPlane(
+    `                                                                                     GOAL
+                                                                                     ---------
+          Reflect the laser off of mirrors and into the center of the target goal on the black box 
+                                                          randomly located in the room.
+
+                                                                                CONTROLS
+                                                                                -----------------
+    CREATE:                                                                              DELETE:
+    Add mirrors by clicking on the ground.                      Click a mirror to delete it.
+    
+    SELECT:                                                                              RESET:
+    Click and drag a mirrors face to move it.                   Remove all mirrors and reset the target goal.
+    Click and drag a mirrors base to rotate it.
+    `, 'black');
+    guide.position.set(31.9, 0, 0);
+    guide.rotateY(-Math.PI / 2);
+    this.scene.add(guide);
+  }
+
   _initMenu() {
     const buttonGeo = new THREE.BoxGeometry(4, 3, 0.5);
     const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
@@ -241,6 +262,22 @@ export default class LaserScene extends XrScene {
           const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
 
           pos.y = -5;
+          var xBound = 30.5;
+          var zBound = 30.5;
+
+          console.log(xBound, zBound);
+          if (pos.x > xBound) {
+            pos.x = xBound;
+          } else if (pos.x < -(xBound)) {
+            pos.x = -(xBound);
+          }
+
+          if (pos.z > zBound) {
+            pos.z = zBound;
+          } else if (pos.z < -(zBound)) {
+            pos.z = -(zBound);
+          }
+          
           mirror.matrix.setPosition(pos);
           mirror.position.x = pos.x;
           mirror.position.z = pos.z;
@@ -300,6 +337,9 @@ export default class LaserScene extends XrScene {
           mirror.rotateY(radians);
 
           let angle = Math.round(((mirror.rotation.y * 180) / Math.PI) * 10) / 10;
+          if (angle < 0) {
+            angle *= -1;
+          }
           if (angle !== mirror.angle) {
             if (mirror.children.length > 1) {
               mirror.children[1].geometry.dispose();
@@ -494,7 +534,7 @@ export default class LaserScene extends XrScene {
               goal.material.color.set(0x111111);
             }
 
-            if (result.object.parent === this.mirrors) {
+            if (result.object.parent === this.mirrors || result.object === this.scene.getObjectByName('mirror-outline')) {
               this._reflect(result, raycasterDestination);
             }
           }
@@ -509,7 +549,7 @@ export default class LaserScene extends XrScene {
     this.mirrorOutline = new THREE.Mesh(mirrorOutlineGeo, mirrorOutlineMat);
     this.mirrorOutline.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
     this.mirrorOutline.visible = false;
-    this.mirrorOutline.raycast = (function () { return null; });
+    this.mirrorOutline.name = 'mirror-outline';
 
     const baseGeo = new THREE.CylinderGeometry(1, 1, 0.75, 50);
     const baseMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
@@ -518,7 +558,7 @@ export default class LaserScene extends XrScene {
     base.position.set(0, -2.375, 0);
 
     this.mirrorOutline.add(base);
-    this.scene.add(this.mirrorOutline);
+    this.intersects.add(this.mirrorOutline);
   }
 
   displayMirrorOutline = (point) => {
@@ -664,6 +704,7 @@ export default class LaserScene extends XrScene {
     this._createMirrorOutline();
     this._initGoal();
     this._initMenu();
+    this._initGuide();
     this._addLight();
   }
 
