@@ -117,7 +117,7 @@ export default class KinematicsScene extends XrScene {
       normalMap : asset.normal
     });
     mesh.material.copy(material);
-    mesh.position.set(0, -5.5, -15);
+    mesh.position.set(0, -5.5, -19);
     this.scene.add(mesh);
   }
 
@@ -194,7 +194,7 @@ export default class KinematicsScene extends XrScene {
     const gravSliderGeo = new THREE.BoxGeometry(1, 1, 0.25);
     const gravSliderMat = new THREE.MeshBasicMaterial( {color: 'white'} );
     const gravitySlider = new THREE.Mesh(gravSliderGeo, gravSliderMat);
-    gravitySlider.position.set(8, 3, -32);
+    gravitySlider.position.set(-3.8, 8, -20);
     gravitySlider.add(gravityLabel);
     gravityLabel.position.set(0, 2, 0);
 
@@ -219,15 +219,15 @@ export default class KinematicsScene extends XrScene {
       },
       drag: (matrix) => {
         const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
-        pos.y = 3;
-        pos.z = -32;
+        pos.y = 8;
+        pos.z = -20;
 
-        if (pos.x < 5.56) {
-          pos.x = 5.56;
-        } else if (pos.x > 15.5) {
-          pos.x = 15.5;
+        if (pos.x < -6.24) {
+          pos.x = -6.24;
+        } else if (pos.x > 6.25) {
+          pos.x = 6.25;
         }
-        let scalar = (pos.x - 8) * 4 + 9.8;
+        let scalar = (pos.x + 3.8) * 4 + 9.8;
         let gravity = this.world.gravity;
         let grav = new THREE.Vector3();
         grav.set(gravity.x, gravity.y, gravity.z);
@@ -255,11 +255,11 @@ export default class KinematicsScene extends XrScene {
     const gravGeo = new THREE.SphereGeometry(0.5, 32, 32);
     const gravMat = new THREE.MeshBasicMaterial( {color: 'white'} );
     const gravityBall = new THREE.Mesh(gravGeo, gravMat);
-    gravityBall.position.set(15, 1, -32);
+    gravityBall.position.set(9, 4, -20);
     
     const gravityArrow = new THREE.ArrowHelper(
       new THREE.Vector3(0, -1, 0),
-      new THREE.Vector3(15, 1, -32),
+      new THREE.Vector3(9, 4, -20),
       6,
       'white'
     );
@@ -319,15 +319,15 @@ export default class KinematicsScene extends XrScene {
     this.scene.add(menu);
     this.scene.add(menu2);
 
-    menu.position.set(1, -2, -32);
-    menu2.position.set(8, -2, -32);
+    menu.position.set(-4, 3, -20);
+    menu2.position.set(4, 3, -20);
 
-    zeroButton.position.set(10, 0, 0.25);
-    resetButton.position.set(0, 0, 0.25);
+    zeroButton.position.set(6, 0, 0.25);
+    resetButton.position.set(-6, 0, 0.25);
 
     const createLabelGravity = createTextPlane('Gravity', 'white', 'orange');
     zeroButton.add(createLabelGravity);
-    createLabelGravity.position.set(-1.5, 3, 0.26);
+    createLabelGravity.position.set(-2, 3, 0.26);
 
     const createLabelZero = createTextPlane('Zero', 'white', 'red');
     zeroButton.add(createLabelZero);
@@ -353,7 +353,7 @@ export default class KinematicsScene extends XrScene {
       resetButton.position.z = 0.25;
       resetButton.material.color.set(0x222222);
 
-      gravitySlider.position.x = 5.56;
+      gravitySlider.position.x = -6.26;
 
       if (gravitySlider.children.length > 0) {
         gravitySlider.children[0].geometry.dispose();
@@ -384,7 +384,7 @@ export default class KinematicsScene extends XrScene {
       zeroButton.position.z = 0.25;
       zeroButton.material.color.set(0x222222);
 
-      gravitySlider.position.x = 8;
+      gravitySlider.position.x = -3.8;
 
       if (gravitySlider.children.length > 0) {
         gravitySlider.children[0].geometry.dispose();
@@ -444,7 +444,7 @@ export default class KinematicsScene extends XrScene {
     const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide });
     const spawnTubeGeo = new THREE.CylinderGeometry(2, 2, 3, 32, 32, true);
     const spawnTube = new THREE.Mesh(spawnTubeGeo, tubeMaterials);
-    spawnTube.position.set(0, 8 - 1, 0);
+    spawnTube.position.set(0, 12, -10);
     this.scene.add(spawnTube);
   }
 
@@ -479,7 +479,7 @@ export default class KinematicsScene extends XrScene {
   _spawnBall = () => {
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'red' });
+    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
     const ball = new THREE.Mesh(this.ballGeo, material);
     ball.castShadow = true;
     ball.receiveShadow = true;
@@ -546,14 +546,14 @@ export default class KinematicsScene extends XrScene {
 
     this.checkObjectLimit();
 
-    ballBody.position.set(0, 7, 0);
-    ball.position.set(0, 7, 0);
+    ballBody.position.set(0, 11, -10);
+    ball.position.set(0, 11, -10);
   }
 
   _spawnBox = () => {
     const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'red' });
+    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
     const box = new THREE.Mesh(this.boxGeo, material);
     box.castShadow = true;
     box.receiveShadow = true;
@@ -622,8 +622,8 @@ export default class KinematicsScene extends XrScene {
 
     this.checkObjectLimit();
 
-    boxBody.position.set(0, 7, 0);
-    box.position.set(0, 7, 0);
+    boxBody.position.set(0, 11, -10);
+    box.position.set(0, 11, -10);
   }
 
   _createSpawners() {
@@ -632,7 +632,7 @@ export default class KinematicsScene extends XrScene {
     const ballSpawner = new TriggerMesh(this.ballGeo, material);
     ballSpawner.castShadow = true;
     ballSpawner.receiveShadow = true;
-    ballSpawner.position.set(0, -1.6, -13);
+    ballSpawner.position.set(0, -1.6, -17);
 
     ballSpawner.addFunction('spawnBall', this._spawnBall);
 
@@ -668,7 +668,7 @@ export default class KinematicsScene extends XrScene {
     const boxSpawner = new TriggerMesh(this.boxGeo, material);
     boxSpawner.castShadow = true;
     boxSpawner.receiveShadow = true;
-    boxSpawner.position.set(-4, -1.6, -13);
+    boxSpawner.position.set(-4, -1.6, -17);
 
     boxSpawner.addFunction('spawnBox', this._spawnBox);
 
