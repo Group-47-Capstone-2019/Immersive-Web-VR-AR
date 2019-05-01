@@ -22,12 +22,6 @@ import { createTextPlane } from './planets/text';
 import createGUI from '../menuGUI';
 import 'datguivr';
 
-const mode = {
-  CREATE: 'create'
-};
-
-let setting = mode.CREATE;
-
 import { updateCamera } from '../renderer/camera';
 
 import sky_nx from '../../assets/textures/Skybox/sky_nx.png';
@@ -56,13 +50,13 @@ export default class KinematicsScene extends XrScene {
     this._initMenu();
 
     // Create Gui Menu
-    this.menu = createGUI(this.scene, this.camera, this.renderer);
-    this.menu.position.set(-15, 0, -32);
+    //this.menu = createGUI(this.scene, this.camera, this.renderer);
+    //this.menu.position.set(-15, 0, -32);
 
     // Add Global Gravity
-    this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
-      .name('Gravity')
-      .listen();
+    // this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
+    //   .name('Gravity')
+    //   .listen();
 
     //Assets
     this._loadAssets();
@@ -123,7 +117,7 @@ export default class KinematicsScene extends XrScene {
       normalMap : asset.normal
     });
     mesh.material.copy(material);
-    mesh.position.set(0, -5.5, -15);
+    mesh.position.set(0, -5.5, -19);
     this.scene.add(mesh);
   }
 
@@ -194,84 +188,225 @@ export default class KinematicsScene extends XrScene {
   }
 
   _initMenu() {
+    const gravityLabel = createTextPlane('9.8', 'white', 'orange');
+    gravityLabel.raycast = () => [];
+
+    const gravSliderGeo = new THREE.BoxGeometry(1, 1, 0.25);
+    const gravSliderMat = new THREE.MeshBasicMaterial( {color: 'white'} );
+    const gravitySlider = new THREE.Mesh(gravSliderGeo, gravSliderMat);
+    gravitySlider.position.set(-3.8, 8, -20);
+    gravitySlider.add(gravityLabel);
+    gravityLabel.position.set(0, 2, 0);
+
+    gravitySlider[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          gravitySlider.material.color.set(0x999999);
+        }
+      },
+      hover_end() {
+        gravitySlider.material.color.set(0xfafafa);
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag: (matrix) => {
+        const pos = new THREE.Vector3().setFromMatrixPosition(matrix);
+        pos.y = 8;
+        pos.z = -20;
+
+        if (pos.x < -6.24) {
+          pos.x = -6.24;
+        } else if (pos.x > 6.25) {
+          pos.x = 6.25;
+        }
+        let scalar = (pos.x + 3.8) * 4 + 9.8;
+        let gravity = this.world.gravity;
+        let grav = new THREE.Vector3();
+        grav.set(gravity.x, gravity.y, gravity.z);
+        grav.normalize().multiplyScalar(scalar);
+
+        if (gravitySlider.children.length > 0) {
+          gravitySlider.children[0].geometry.dispose();
+          gravitySlider.children[0].material.dispose();
+          gravitySlider.remove(gravitySlider.children[0]);
+        }
+
+        const rounded = Math.round(scalar * 10) / 10;
+        const gravityLabel = createTextPlane(rounded.toString(), 'white', 'orange');
+        gravityLabel.raycast = () => [];
+        gravitySlider.add(gravityLabel);
+        gravityLabel.position.set(0, 2, 0);
+
+        gravitySlider.matrix.setPosition(pos);
+        gravitySlider.position.x = pos.x
+        gravitySlider.updateMatrixWorld(true);
+        this.world.gravity.set(grav.x, grav.y, grav.z);
+      }
+    };
+
+    const gravGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const gravMat = new THREE.MeshBasicMaterial( {color: 'white'} );
+    const gravityBall = new THREE.Mesh(gravGeo, gravMat);
+    gravityBall.position.set(9, 4, -20);
+    
+    const gravityArrow = new THREE.ArrowHelper(
+      new THREE.Vector3(0, -1, 0),
+      new THREE.Vector3(9, 4, -20),
+      6,
+      'white'
+    );
+    gravityArrow.raycast = () => [];
+
+    gravityBall[Interactions] = {
+      hover_start() {
+        if (!this.isSelected) {
+          gravityBall.material.color.set(0x999999);
+        }
+      },
+      hover_end() {
+        gravityBall.material.color.set(0xfafafa);
+      },
+      drag_start: (intersection, pointerMatrix) => {
+        const pointerInverse = new THREE.Matrix4().getInverse(pointerMatrix, true);
+        const target = new THREE.Matrix4().copy(intersection.object.matrixWorld);
+        const transformMatrix = new THREE.Matrix4().multiplyMatrices(pointerInverse, target);
+        return {
+          object: intersection.object,
+          transformMatrix,
+          matrixAutoUpdate: intersection.object.matrixAutoUpdate
+        };
+      },
+      drag: (matrix) => {
+        const dir = new THREE.Vector3();
+
+        const controller = this.scene.getObjectByName('controller');
+        controller.getWorldDirection(dir);
+
+        gravityArrow.setDirection(dir.negate());
+
+        let gravity = new THREE.Vector3();
+        gravity.set(this.world.gravity.x, this.world.gravity.y, this.world.gravity.z);
+        const scalar = gravity.length();
+        console.log(scalar);
+
+        dir.multiplyScalar(scalar);
+
+        this.world.gravity.set(dir.x, dir.y, dir.z);
+      }
+    };
+
     const buttonGeo = new THREE.BoxGeometry(2, 3, 0.5);
     const buttonGeo2 = new THREE.BoxGeometry(2, 3, 0.5);
 
     const buttonMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
-    const createButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
-    const reverseButton = new TriggerMesh(buttonGeo2.clone(), buttonMat.clone());
+    const zeroButton = new TriggerMesh(buttonGeo.clone(), buttonMat.clone());
+    const resetButton = new TriggerMesh(buttonGeo2.clone(), buttonMat.clone());
 
     const menu = new THREE.Object3D();
     const menu2 = new THREE.Object3D();
 
-    menu.add(createButton);
-    menu2.add(reverseButton);
+    menu.add(zeroButton);
+    menu2.add(resetButton);
 
     this.scene.add(menu);
     this.scene.add(menu2);
 
-    menu.position.set(1, -2, -32);
-    menu2.position.set(8, -2, -32);
+    menu.position.set(-4, 3, -20);
+    menu2.position.set(4, 3, -20);
 
-    createButton.position.set(10, 0, 0.25);
-    reverseButton.position.set(0, 0, 0.25);
+    zeroButton.position.set(6, 0, 0.25);
+    resetButton.position.set(-6, 0, 0.25);
 
     const createLabelGravity = createTextPlane('Gravity', 'white', 'orange');
-    createButton.add(createLabelGravity);
-    createLabelGravity.position.set(-1.5, 3, 0.26);
+    zeroButton.add(createLabelGravity);
+    createLabelGravity.position.set(-2, 3, 0.26);
 
-    const createLabelOn = createTextPlane('On', 'white', 'green');
-    createButton.add(createLabelOn);
-    createLabelOn.position.set(-3, -1, 1);
+    const createLabelZero = createTextPlane('Zero', 'white', 'red');
+    zeroButton.add(createLabelZero);
+    createLabelZero.position.set(0, -1, 1);
 
-    const createLabelOff = createTextPlane('off', 'white', 'red');
-    reverseButton.add(createLabelOff);
-    createLabelOff.position.set(3, -1, 1);
+    const createLabelReset = createTextPlane('Reset', 'white', 'green');
+    resetButton.add(createLabelReset);
+    createLabelReset.position.set(0, -1, 1);
 
-    createButton.addFunction('toggleGravity', this.toggleGravity);
-    reverseButton.addFunction('reverseGravity', this.reverseGravity);
+    zeroButton.addFunction('toggleGravity', this.toggleGravity);
+    resetButton.addFunction('reverseGravity', this.reverseGravity);
 
-    createButton.hover = function () {
+    zeroButton.hover = function () {
       if (!this.isSelected) {
         this.material.color.set('green');
       }
     };
 
-    createButton.select = function () {
+    zeroButton.select = function () {
       this.functions.toggleGravity();
-      setting = mode.CREATE;
       this.position.z = -0.125;
       this.material.color.set(0x999999);
-      reverseButton.position.z = 0.25;
-      reverseButton.material.color.set(0x222222);
-    };
+      resetButton.position.z = 0.25;
+      resetButton.material.color.set(0x222222);
 
-    createButton.exit = function () {
-      if (setting === mode.CREATE) {
-        this.material.color.set(0x999999);
+      gravitySlider.position.x = -6.26;
+
+      if (gravitySlider.children.length > 0) {
+        gravitySlider.children[0].geometry.dispose();
+        gravitySlider.children[0].material.dispose();
+        gravitySlider.remove(gravitySlider.children[0]);
       }
+
+      const gravityLabel = createTextPlane('0', 'white', 'orange');
+      gravityLabel.raycast = () => [];
+      gravitySlider.add(gravityLabel);
+      gravityLabel.position.set(0, 2, 0);
     };
 
-    reverseButton.hover = function () {
+    zeroButton.exit = function () {
+      this.material.color.set(0x999999);
+    };
+
+    resetButton.hover = function () {
       if (!this.isSelected) {
         this.material.color.set('green');
       }
     };
 
-    reverseButton.select = function () {
+    resetButton.select = function () {
       this.functions.reverseGravity();
-      setting = mode.CREATE;
       this.position.z = -0.125;
       this.material.color.set(0x999999);
-      createButton.position.z = 0.25;
-      createButton.material.color.set(0x222222);
+      zeroButton.position.z = 0.25;
+      zeroButton.material.color.set(0x222222);
+
+      gravitySlider.position.x = -3.8;
+
+      if (gravitySlider.children.length > 0) {
+        gravitySlider.children[0].geometry.dispose();
+        gravitySlider.children[0].material.dispose();
+        gravitySlider.remove(gravitySlider.children[0]);
+      }
+
+      const gravityLabel = createTextPlane('9.8', 'white', 'orange');
+      gravityLabel.raycast = () => [];
+      gravitySlider.add(gravityLabel);
+      gravityLabel.position.set(0, 2, 0);
+
+      gravityArrow.setDirection(new THREE.Vector3(0, -1, 0));
     };
 
-    reverseButton.exit = function () {
-      if (setting === mode.CREATE) {
-        this.material.color.set(0x999999);
-      }
+    resetButton.exit = function () {
+      this.material.color.set(0x999999);
     };
+    
+    this.scene.add(gravitySlider);
+    this.scene.add(gravityBall);
+    this.scene.add(gravityArrow);
 
     this.triggers.add(menu);
     this.triggers.add(menu2);
@@ -309,7 +444,7 @@ export default class KinematicsScene extends XrScene {
     const tubeMaterials = new THREE.MeshPhongMaterial({ color: 'gray', side: THREE.DoubleSide });
     const spawnTubeGeo = new THREE.CylinderGeometry(2, 2, 3, 32, 32, true);
     const spawnTube = new THREE.Mesh(spawnTubeGeo, tubeMaterials);
-    spawnTube.position.set(0, 8 - 1, 0);
+    spawnTube.position.set(0, 12, -10);
     this.scene.add(spawnTube);
   }
 
@@ -344,7 +479,7 @@ export default class KinematicsScene extends XrScene {
   _spawnBall = () => {
     const ballBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     ballBody.addShape(this.ballShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'red' });
+    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
     const ball = new THREE.Mesh(this.ballGeo, material);
     ball.castShadow = true;
     ball.receiveShadow = true;
@@ -411,14 +546,14 @@ export default class KinematicsScene extends XrScene {
 
     this.checkObjectLimit();
 
-    ballBody.position.set(0, 7, 0);
-    ball.position.set(0, 7, 0);
+    ballBody.position.set(0, 11, -10);
+    ball.position.set(0, 11, -10);
   }
 
   _spawnBox = () => {
     const boxBody = new CANNON.Body({ mass: 1, material: this.objectMaterial });
     boxBody.addShape(this.boxShape);
-    const material = new THREE.MeshPhongMaterial({ color: 'red' });
+    const material = new THREE.MeshPhongMaterial({ color: 'orange' });
     const box = new THREE.Mesh(this.boxGeo, material);
     box.castShadow = true;
     box.receiveShadow = true;
@@ -487,8 +622,8 @@ export default class KinematicsScene extends XrScene {
 
     this.checkObjectLimit();
 
-    boxBody.position.set(0, 7, 0);
-    box.position.set(0, 7, 0);
+    boxBody.position.set(0, 11, -10);
+    box.position.set(0, 11, -10);
   }
 
   _createSpawners() {
@@ -497,7 +632,7 @@ export default class KinematicsScene extends XrScene {
     const ballSpawner = new TriggerMesh(this.ballGeo, material);
     ballSpawner.castShadow = true;
     ballSpawner.receiveShadow = true;
-    ballSpawner.position.set(0, -1.6, -13);
+    ballSpawner.position.set(0, -1.6, -17);
 
     ballSpawner.addFunction('spawnBall', this._spawnBall);
 
@@ -533,7 +668,7 @@ export default class KinematicsScene extends XrScene {
     const boxSpawner = new TriggerMesh(this.boxGeo, material);
     boxSpawner.castShadow = true;
     boxSpawner.receiveShadow = true;
-    boxSpawner.position.set(-4, -1.6, -13);
+    boxSpawner.position.set(-4, -1.6, -17);
 
     boxSpawner.addFunction('spawnBox', this._spawnBox);
 
@@ -561,15 +696,11 @@ export default class KinematicsScene extends XrScene {
   }
 
   toggleGravity = () => {
-    if (this.world.gravity.y === -9.8) {
-      this.world.gravity.y = 0;
-    }
+    this.world.gravity.set(0, 0.001, 0);
   }
 
   reverseGravity = () => {
-    if (this.world.gravity.y === 0) {
-      this.world.gravity.y = -9.8;
-    }
+    this.world.gravity.set(0, -9.8, 0);
   }
 
   onKeyUp = (event) => {
