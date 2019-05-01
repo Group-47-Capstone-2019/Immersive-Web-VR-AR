@@ -24,15 +24,17 @@ export const XR = {
     return new Matrix4();
   },
   setOffsetMatrix(matrix) {
-    const position = new Vector3();
-    const scale = new Vector3();
-    const rotation = new Quaternion();
-    matrix.decompose(position, rotation, scale);
-    /* global XRRigidTransform */
-    this.refSpace.originOffset = new XRRigidTransform(
-      new DOMPoint(position.x, position.y, position.z, 1),
-      new DOMPoint(rotation.x, rotation.y, rotation.z, rotation.w)
-    );
+    if (this.refSpace) {
+      const position = new Vector3();
+      const scale = new Vector3();
+      const rotation = new Quaternion();
+      matrix.decompose(position, rotation, scale);
+      /* global XRRigidTransform */
+      this.refSpace.originOffset = new XRRigidTransform(
+        new DOMPoint(position.x, position.y, position.z, 1),
+        new DOMPoint(rotation.x, rotation.y, rotation.z, rotation.w)
+      );
+    }
   }
 };
 

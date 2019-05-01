@@ -8,6 +8,11 @@ import { navigate } from '../router';
 import { Interactions } from '../interactions';
 import pendulumSceneGlb from '../../assets/pendulum_scene.glb';
 import { XR } from '../xrController';
+import MoonTexture from '../../assets/textures/moon.png';
+import EarthTexture from '../../assets/textures/earth.png';
+import MarsTexture from '../../assets/textures/mars.png';
+import WoodTexture from '../../assets/textures/wood.png';
+import WoodTexture2 from '../../assets/textures/wood-2.png';
 
 const selectedMaterial = new MeshBasicMaterial({
   color: '#f5b700'
@@ -122,6 +127,11 @@ export default class PendulumScene extends XrScene {
     this.animateFunctions = new Map();
 
     this.loader.addGltfToQueue(pendulumSceneGlb, 'pendulum_scene');
+    this.loader.addTextureToQueue(MoonTexture, 'moon-texture');
+    this.loader.addTextureToQueue(EarthTexture, 'earth-texture');
+    this.loader.addTextureToQueue(MarsTexture, 'mars-texture');
+    this.loader.addTextureToQueue(WoodTexture, 'wood-texture');
+    this.loader.addTextureToQueue(WoodTexture2, 'wood-2-texture');
 
     this.surfaces = {};
     this.currentSurface = 'Earth';
@@ -138,7 +148,7 @@ export default class PendulumScene extends XrScene {
 
   onAssetsLoaded(assetCache) {
     const importedScene = assetCache['pendulum_scene'].scene;
-    this.loadScene(importedScene);
+    this.loadScene(importedScene, assetCache);
     this.setupInteractions(importedScene);
 
     this.run();
@@ -270,7 +280,33 @@ export default class PendulumScene extends XrScene {
     }
   }
 
-  loadScene(importedScene) {
+  loadScene(importedScene, assetCache) {
+    const static_materials = {
+      'Moon': new MeshPhongMaterial({
+        map: assetCache['moon-texture']
+      }),
+      'Earth': new MeshPhongMaterial({
+        map: assetCache['earth-texture']
+      }),
+      'Mars': new MeshPhongMaterial({
+        map: assetCache['mars-texture']
+      }),
+      'Wood': new MeshPhongMaterial({
+        map: assetCache['wood-texture']
+      }),
+      'Wood_2': new MeshPhongMaterial({
+        map: assetCache['wood-2-texture']
+      })
+    };
+
+    // Add textured materials:
+    importedScene.getObjectByName('Exit').material = static_materials['Wood'];
+    importedScene.getObjectByName('Exit_Frame').material = static_materials['Wood_2'];
+
+    importedScene.getObjectByName('Pendulum').material = static_materials['Wood_2'];
+    importedScene.getObjectByName('Pendulum_Tall').material = static_materials['Wood_2'];
+
+    importedScene.getObjectByName('Table').material = static_materials['Wood'];
 
     // Upgrade light placeholders into full fledged lights
     for (let i = 1, placeholder = importedScene.getObjectByName(`Light_${i}`); placeholder; placeholder = importedScene.getObjectByName(`Light_${++i}`)) {
@@ -298,6 +334,7 @@ export default class PendulumScene extends XrScene {
     };
     for (const planet of ['Earth', 'Mars', 'Moon']) {
       const surface = importedScene.getObjectByName(planet + '_Surface');
+      surface.material = static_materials[planet];
       if (planet != this.currentSurface) {
         surface.parent.remove(surface);
       }
