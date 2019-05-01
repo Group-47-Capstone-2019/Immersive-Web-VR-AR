@@ -18,6 +18,7 @@ export const cameraPointName = planetName => `CameraPoint${planetName}`;
 export const planetTextName = planetName => `TextPoint${planetName}`;
 export const nextPointName = planetName => `NextPoint${planetName}`;
 export const prevPointName = planetName => `PrevPoint${planetName}`;
+export const exitPointName = planetName => `ExitPoint${planetName}`;
 
 /**
  * build planets, with mesh and randomized position
@@ -75,6 +76,12 @@ export function createPlanets(planetData, cache) {
     prevButtonPoint.position.set(-18, planet.fakeRadius + 8, 0);
     prevButtonPoint.name = prevPointName(planetName);
     mesh.add(prevButtonPoint);
+
+    // exit button
+    const exitButtonPoint = new Object3D();
+    exitButtonPoint.position.set(0, planet.fakeRadius + 2, 0);
+    exitButtonPoint.name = exitPointName(planetName);
+    mesh.add(exitButtonPoint);
 
     return mesh;
   });
