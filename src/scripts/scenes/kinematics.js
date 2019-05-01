@@ -300,7 +300,6 @@ export default class KinematicsScene extends XrScene {
         let gravity = new THREE.Vector3();
         gravity.set(this.world.gravity.x, this.world.gravity.y, this.world.gravity.z);
         const scalar = gravity.length();
-        console.log(scalar);
 
         dir.multiplyScalar(scalar);
 
