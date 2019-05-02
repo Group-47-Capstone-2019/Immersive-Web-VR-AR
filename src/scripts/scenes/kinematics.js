@@ -286,16 +286,20 @@ export default class KinematicsScene extends XrScene {
       },
       drag: (matrix) => {
         const dir = new THREE.Vector3();
+        
+        if (this.scene.getObjectByName('controller')) {
+          const controller = this.scene.getObjectByName('controller');
+          controller.getWorldDirection(dir);
+          dir.negate();
+        } else {
+          this.camera.getWorldDirection(dir);
+        }
 
-        const controller = this.scene.getObjectByName('controller');
-        controller.getWorldDirection(dir);
-
-        gravityArrow.setDirection(dir.negate());
+        gravityArrow.setDirection(dir);
 
         let gravity = new THREE.Vector3();
         gravity.set(this.world.gravity.x, this.world.gravity.y, this.world.gravity.z);
         const scalar = gravity.length();
-        console.log(scalar);
 
         dir.multiplyScalar(scalar);
 
