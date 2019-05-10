@@ -127,11 +127,11 @@ export default class PendulumScene extends XrScene {
     this.animateFunctions = new Map();
 
     this.loader.addGltfToQueue(pendulumSceneGlb, 'pendulum_scene');
-    this.loader.addTextureToQueue(MoonTexture, 'moon-texture');
-    this.loader.addTextureToQueue(EarthTexture, 'earth-texture');
-    this.loader.addTextureToQueue(MarsTexture, 'mars-texture');
-    this.loader.addTextureToQueue(WoodTexture, 'wood-texture');
-    this.loader.addTextureToQueue(WoodTexture2, 'wood-2-texture');
+    // this.loader.addTextureToQueue(MoonTexture, 'moon-texture');
+    // this.loader.addTextureToQueue(EarthTexture, 'earth-texture');
+    // this.loader.addTextureToQueue(MarsTexture, 'mars-texture');
+    // this.loader.addTextureToQueue(WoodTexture, 'wood-texture');
+    // this.loader.addTextureToQueue(WoodTexture2, 'wood-2-texture');
 
     this.surfaces = {};
     this.currentSurface = 'Earth';
@@ -300,13 +300,13 @@ export default class PendulumScene extends XrScene {
     };
 
     // Add textured materials:
-    importedScene.getObjectByName('Exit').material = static_materials['Wood'];
-    importedScene.getObjectByName('Exit_Frame').material = static_materials['Wood_2'];
+    // importedScene.getObjectByName('Exit').material = static_materials['Wood'];
+    // importedScene.getObjectByName('Exit_Frame').material = static_materials['Wood_2'];
 
-    importedScene.getObjectByName('Pendulum').material = static_materials['Wood_2'];
-    importedScene.getObjectByName('Pendulum_Tall').material = static_materials['Wood_2'];
+    // importedScene.getObjectByName('Pendulum').material = static_materials['Wood_2'];
+    // importedScene.getObjectByName('Pendulum_Tall').material = static_materials['Wood_2'];
 
-    importedScene.getObjectByName('Table').material = static_materials['Wood'];
+    // importedScene.getObjectByName('Table').material = static_materials['Wood'];
 
     // Upgrade light placeholders into full fledged lights
     for (let i = 1, placeholder = importedScene.getObjectByName(`Light_${i}`); placeholder; placeholder = importedScene.getObjectByName(`Light_${++i}`)) {
@@ -334,7 +334,7 @@ export default class PendulumScene extends XrScene {
     };
     for (const planet of ['Earth', 'Mars', 'Moon']) {
       const surface = importedScene.getObjectByName(planet + '_Surface');
-      surface.material = static_materials[planet];
+      // surface.material = static_materials[planet];
       if (planet != this.currentSurface) {
         surface.parent.remove(surface);
       }
