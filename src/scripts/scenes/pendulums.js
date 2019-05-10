@@ -4,15 +4,9 @@ import {
   MeshBasicMaterial, MeshPhongMaterial
 } from 'three';
 import XrScene from './xr-scene';
-import { navigate } from '../router';
 import { Interactions } from '../interactions';
 import pendulumSceneGlb from '../../assets/pendulum_scene.glb';
 import { XR } from '../xrController';
-import MoonTexture from '../../assets/textures/moon.png';
-import EarthTexture from '../../assets/textures/earth.png';
-import MarsTexture from '../../assets/textures/mars.png';
-import WoodTexture from '../../assets/textures/wood.png';
-import WoodTexture2 from '../../assets/textures/wood-2.png';
 
 const selectedMaterial = new MeshBasicMaterial({
   color: '#f5b700'
@@ -127,11 +121,6 @@ export default class PendulumScene extends XrScene {
     this.animateFunctions = new Map();
 
     this.loader.addGltfToQueue(pendulumSceneGlb, 'pendulum_scene');
-    // this.loader.addTextureToQueue(MoonTexture, 'moon-texture');
-    // this.loader.addTextureToQueue(EarthTexture, 'earth-texture');
-    // this.loader.addTextureToQueue(MarsTexture, 'mars-texture');
-    // this.loader.addTextureToQueue(WoodTexture, 'wood-texture');
-    // this.loader.addTextureToQueue(WoodTexture2, 'wood-2-texture');
 
     this.surfaces = {};
     this.currentSurface = 'Earth';
@@ -230,15 +219,17 @@ export default class PendulumScene extends XrScene {
     
     // Interactions for the exit door
     const exitObj = importedScene.getObjectByName('Exit');
-    exitObj[Interactions] = Object.assign(yellowOnHover(exitObj), {
-      /**
-       * NOTE: the format for the parameters to these functions are:
-       * hover({ distance, point, face, faceIndex, uv });
-       */
-      select: () => {
-        this.changeRoom('/home'); // Navigate to the home room
-      }
-    });
+    for (const child of exitObj.children) {
+      child[Interactions] = Object.assign(yellowOnHover(exitObj), {
+        /**
+         * NOTE: the format for the parameters to these functions are:
+         * hover({ distance, point, face, faceIndex, uv });
+         */
+        select: () => {
+          this.changeRoom('/home'); // Navigate to the home room
+        }
+      });
+    }
 
     // Interactions for the floor + surfaces (Teleport);
     const floor = importedScene.getObjectByName('Floor');
@@ -298,24 +289,6 @@ export default class PendulumScene extends XrScene {
         map: assetCache['wood-2-texture']
       })
     };
-
-    // Add textured materials:
-    // importedScene.getObjectByName('Exit').material = static_materials['Wood'];
-    // importedScene.getObjectByName('Exit_Frame').material = static_materials['Wood_2'];
-
-    // importedScene.getObjectByName('Pendulum').material = static_materials['Wood_2'];
-    // importedScene.getObjectByName('Pendulum_Tall').material = static_materials['Wood_2'];
-
-    // importedScene.getObjectByName('Table').material = static_materials['Wood'];
-
-    // Upgrade light placeholders into full fledged lights
-    for (let i = 1, placeholder = importedScene.getObjectByName(`Light_${i}`); placeholder; placeholder = importedScene.getObjectByName(`Light_${++i}`)) {
-      console.log(placeholder);
-      const pointLight = new PointLight(0xffffff, 1);
-      pointLight.position.copy(placeholder.position);
-      placeholder.parent.add(pointLight);
-      placeholder.parent.remove(placeholder);
-    }
 
     // Pull the snapping points out of the imported scene
     for (
