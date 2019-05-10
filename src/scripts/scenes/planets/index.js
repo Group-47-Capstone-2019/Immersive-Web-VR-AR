@@ -20,7 +20,8 @@ import {
   nextPointName,
   cameraPointName,
   prevPointName,
-  CAMERA_OFFSET
+  CAMERA_OFFSET,
+  exitPointName
 } from './create';
 import planetData from './planets';
 import ringTextureUrl from '../../../assets/planets/saturnRings.jpg';
@@ -28,7 +29,7 @@ import starsTextureUrl from '../../../assets/planets/stars.jpg';
 import { createTextPlane } from './text';
 import TWEEN from '@tweenjs/tween.js';
 import { XR } from '../../xrController';
-import {updateCamera} from '../../renderer/camera';
+import { updateCamera } from '../../renderer/camera';
 
 const EARTH_YEAR_SECONDS = 120;
 const TWEEN_SECONDS = 5;
@@ -47,7 +48,7 @@ export default class PlanetsScene extends XrScene {
   constructor(renderer, camera) {
     super(renderer, camera);
 
-    updateCamera({far : 10000});
+    updateCamera({ far: 10000 });
 
     Object.keys(planetData).forEach(planet =>
       this.loader.addTextureToQueue(planetData[planet].texture, planet)
@@ -74,8 +75,8 @@ export default class PlanetsScene extends XrScene {
     const sunNext = sun.getObjectByName(nextPointName('Sun'));
     sunNext.add(this.nextButton);
 
-    const sunPrev = sun.getObjectByName(prevPointName('Sun'));
-    sunPrev.add(this.exitButton);
+    const sunExit = sun.getObjectByName(exitPointName('Sun'));
+    sunExit.add(this.exitButton);
 
     const sunCamera = sun.getObjectByName(cameraPointName('Sun'));
 
@@ -222,6 +223,10 @@ export default class PlanetsScene extends XrScene {
 
     this.startTween(nextIndex);
 
+    // move exit button and hide if needed
+    const nextPlanetExitButton = nextPlanetMesh.getObjectByName(exitPointName(nextPlanetName));
+    nextPlanetExitButton.add(this.exitButton)
+
     // move next button and hide it if needed
     if (nextIndex < this.planets.length - 1) {
       const nextPlanetNextButton = nextPlanetMesh.getObjectByName(
@@ -240,12 +245,9 @@ export default class PlanetsScene extends XrScene {
     if (nextIndex > 0) {
       nextPlanetPrevButton.add(this.prevButton);
       this.prevButton.visible = true;
-      this.exitButton.visible = false;
     } else {
       // show/hide exit button
       this.prevButton.visible = false;
-      this.exitButton.visible = true;
-      nextPlanetPrevButton.add(this.exitButton);
     }
 
     // update currentPlanet with next planet's data
