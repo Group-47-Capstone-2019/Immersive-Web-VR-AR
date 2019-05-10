@@ -259,7 +259,7 @@ export default class XrScene {
         for (let i = 0; i < pose.views.length; i++) {
           const view = pose.views[i];
           const viewport = XR.session.renderState.baseLayer.getViewport(view);
-          const viewMatrix = new Matrix4().fromArray(view.transform.inverse.matrix);
+          const viewMatrix = new Matrix4().getInverse(new Matrix4().fromArray(view.transform.matrix));
 
           this.renderer.context.viewport(
             viewport.x,
