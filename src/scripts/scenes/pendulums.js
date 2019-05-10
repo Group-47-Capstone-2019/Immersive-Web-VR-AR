@@ -248,7 +248,7 @@ export default class PendulumScene extends XrScene {
     for (const key in this.surfaces) {
       const surface = this.surfaces[key];
       // Teleport for the floors
-      surface.surface[Interactions] = teleportOnSelect();
+      //surface.surface[Interactions] = teleportOnSelect();
 
       // Promises for the icons
       let resolver = null;
