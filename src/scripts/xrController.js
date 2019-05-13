@@ -168,7 +168,7 @@ async function xrValidate() {
 
     // Check if device is capable of an immersive-vr sessions
     try {
-      await navigator.xr.supportsSessionMode('immersive-vr');
+      await navigator.xr.supportsSession('immersive-vr');
       createVRButton();
     } catch (reason) {
       console.log(`Device unable to support immersive-vr session : ${reason || ''}`);
@@ -176,7 +176,7 @@ async function xrValidate() {
 
     // Check to see if an non-immersive xr session is supported
     try {
-      await navigator.xr.supportsSessionMode('inline');
+      await navigator.xr.supportsSession('inline');
       showTouchControls();
       xrValidateMagicWindow();
     } catch (reason) {

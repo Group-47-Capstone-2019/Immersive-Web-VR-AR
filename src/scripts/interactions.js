@@ -58,7 +58,7 @@ function createRay(inputSource, xrFrame) {
 function handlerCommon(func) {
   return function ({ frame, inputSource }) {
     const ray = createRay(inputSource, frame);
-    if (ray) {
+    if (ray && ray.matrix) {
       func(raycast(ray)[0], inputSource, new Matrix4().fromArray(ray.matrix));
     }
   };
@@ -146,6 +146,8 @@ export function setupInteractions() {
 // Only have one Raycaster
 const raycaster = new Raycaster();
 function raycast(xrRay) {
+  if (!xrRay.matrix)
+    return;
   const { scene } = getCurrentScene();
 
   const trMatrix = new Matrix4().fromArray(xrRay.matrix);
