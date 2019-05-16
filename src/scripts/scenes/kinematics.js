@@ -19,8 +19,6 @@ import { XR } from '../xrController';
 import TriggerMesh from '../trigger';
 import { Interactions } from '../interactions';
 import { createTextPlane } from './planets/text';
-import createGUI from '../menuGUI';
-import 'datguivr';
 
 import { updateCamera } from '../renderer/camera';
 
@@ -30,7 +28,6 @@ import sky_nz from '../../assets/textures/Skybox/sky_nz.png';
 import sky_px from '../../assets/textures/Skybox/sky_px.png'; 
 import sky_py from '../../assets/textures/Skybox/sky_py.png'; 
 import sky_pz from '../../assets/textures/Skybox/sky_pz.png';
-import { ArrowHelper } from 'three';
 
 export default class KinematicsScene extends XrScene {
   /**
@@ -48,15 +45,6 @@ export default class KinematicsScene extends XrScene {
     this._createEnv();
 
     this._initMenu();
-
-    // Create Gui Menu
-    //this.menu = createGUI(this.scene, this.camera, this.renderer);
-    //this.menu.position.set(-15, 0, -32);
-
-    // Add Global Gravity
-    // this.menu.add(this.world.gravity, 'y', -9.8, 9.8).step(0.2)
-    //   .name('Gravity')
-    //   .listen();
 
     //Assets
     this._loadAssets();
@@ -83,9 +71,35 @@ export default class KinematicsScene extends XrScene {
 
     this._addLight();
 
+    this._initGuide();
+
     this._initCannon();
     this._addEventListener(window, 'mousedown', this.onClick);
     this._addEventListener(window, 'keyup', this.onKeyUp);
+  }
+
+  _initGuide() {
+    const guide = createTextPlane(
+    `
+    KINEMATICS SANDBOX
+    ------------------
+
+    In this experience, you can spawn in spheres and cubes to toss around the scene.
+    
+    Spheres and Cubes are spawned by pointing the cursor at the respective shape
+    on the table and clicking. The object will spawn from the tube above the table.
+
+    Pick up and throw objects by pointing the cursor at them and holding the select button down
+    then releasing when you wish to let go of the object.
+
+    Drag the gravity slider to the left and right to change the magnitude of gravity in the scene.
+
+    Change the direction of gravity by selecting and dragging the white directional arrow to the
+    right of the table.
+    `, 'white');
+    guide.position.set(-20, 2.5, 2.5);
+    guide.rotateY(Math.PI / 2);
+    this.scene.add(guide);
   }
 
   _loadAssets() {
