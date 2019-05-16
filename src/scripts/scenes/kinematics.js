@@ -97,7 +97,7 @@ export default class KinematicsScene extends XrScene {
     Change the direction of gravity by selecting and dragging the white directional arrow to the
     right of the table.
     `, 'white');
-    guide.position.set(-20, 2.5, 2.5);
+    guide.position.set(-30, 2.5, 2.5);
     guide.rotateY(Math.PI / 2);
     guide.raycast = (function () { return null; });
     this.scene.add(guide);
