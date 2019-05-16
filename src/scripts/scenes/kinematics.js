@@ -99,6 +99,7 @@ export default class KinematicsScene extends XrScene {
     `, 'white');
     guide.position.set(-20, 2.5, 2.5);
     guide.rotateY(Math.PI / 2);
+    guide.raycast = (function () { return null; });
     this.scene.add(guide);
   }
 
